@@ -1,0 +1,266 @@
+const clone = require('clone');
+const { generateSessionToken, verifySessionToken } = require('./utils');
+
+const db = {
+  "user": {
+    sessionToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyIiwiaWF0IjoxNTA0ODMwMzM3fQ.3TV_r0Bngo1Mvl-zKtzb6gUJt9BKKVbbg7PXJa9QTBg',
+    email: 'sample@email.com',
+    password: 'password',
+    profile: {
+      id: 'user',
+      created: 1468166872634,
+      comments: ['894tuq4ut84ut8v4t8wun89g', '8tu4bsun805n8un48ve89'],
+      posts: ['8xf0y6ziyjabvozdd253nd', '6ni6ok3ym7mf1p33lnez'],
+      commentScore: 0,
+      postScore: 0,
+      categories: [],
+      votes: {},
+    },
+  },
+};
+
+// Default profile data object for a new user
+const newUserProfileData = {
+  comments: [],
+  posts: [],
+  commentScore: 0,
+  postScore: 0,
+  categories: [],
+  votes: {},
+};
+
+/**
+ * @description Access database
+ */
+function getData () {
+  const data = db;
+  return data;
+}
+
+/**
+ * @description Retrieve user profile data
+ * @param {string} userId
+ */
+function getProfile (userId) {
+  return new Promise((res) => {
+    const users = getData();
+    const { profile } = users[userId];
+    res(profile);
+  });
+}
+
+/**
+ * @description Retrieve user posts
+ * @param {string} userId
+ * @returns {array} Post ids for the specified user
+ */
+function getPosts (userId) {
+  return new Promise((res) => {
+    const users = getData();
+    const { profile } = users[userId];
+    const { posts } = profile;
+    res(posts);
+  });
+}
+
+/**
+ * @description Retrieve user comments
+ * @param {string} userId
+ * @returns {array} Comment ids for the specified user
+ */
+function getComments (userId) {
+  return new Promise((res) => {
+    const users = getData();
+    const { profile } = users[userId];
+    const { comments } = profile;
+    res(comments);
+  });
+}
+
+/**
+ * @description Check if username available
+ * @param {string} userId
+ * @returns {string} string if available
+ */
+function checkUserExists (userId) {
+  return new Promise((res, reject) => {
+    const users = getData();
+    if (users[userId]) {
+      reject('User already exists.');
+    } else {
+      res({ success: 'Username is available.' });
+    }
+  });
+}
+
+/**
+ * @description User login
+ * @param {string} userId
+ * @param {string} password
+ * @returns {object} Access token, user profile details
+ */
+function login (userId, password) {
+  return new Promise((res, reject) => {
+    const users = getData();
+    const { password: dbPassword, profile } = users[userId];
+    if (password === dbPassword) {
+      const sessionToken = generateSessionToken(userId);
+      users[userId].sessionToken = sessionToken;
+      res({ sessionToken, profile });
+    } else {
+      reject('Incorrect password.', 403);
+    }
+  });
+}
+
+/**
+ * @description Create a new user
+ * @param {string} userId
+ * @param {object} newData - password (req), email (opt)
+ */
+function create (userId, newData) {
+  return new Promise((res, reject) => {
+    const users = getData();
+    if (users[userId]) {
+      reject(403);
+    } else {
+      const { password, email } = newData;
+      users[userId] = {
+        profile: Object.assign(
+          {
+            userId,
+            created: Date.now(),
+          }, 
+          clone(newUserProfileData),
+        ),
+      };
+      users[userId].password = password;
+      if (email) users[userId].email = email;
+      const sessionToken = generateSessionToken(userId);
+      users[userId].sessionToken = sessionToken;
+      res(users[userId]);
+    }
+  });
+}
+
+/**
+ * @description Update user meta data
+ * @param {string} sessionToken - for user validation
+ * @param {string} userId
+ * @param {object} updatedData - password, email
+ */
+function update (sessionToken, userId, updatedData) {
+  return new Promise((res, reject) => {
+    const users = getData();
+    const { sessionToken: dbSessionToken, userId: dbUserId } = users[userId];
+    verifySessionToken(sessionToken, dbUserId)
+      .then(data => {
+        const { email, password } = updatedData;
+        if (password) users[userId].password = password;
+        if (email) users[userId].email = email;
+        res(profile);
+      }).catch(err => reject(err));
+  });
+}
+
+/**
+ * @description Track post id reference
+ * @param {string} userId
+ * @param {string} postId
+ */
+function addPost (userId, postId) {
+  const users = getData();
+  users[userId].posts.push(postId);
+}
+
+/**
+ * @description Remove post id reference
+ * @param {string} userId
+ * @param {string} postId
+ */
+function removePost (userId, postId) {
+  const users = getData();
+  const { posts } = users[userId];
+  posts.splice(posts.indexOf(postId));
+}
+
+
+/**
+ * @description Track comment id reference
+ * @param {string} userId
+ * @param {string} commentId
+ */
+function addComment (userId, commentId) {
+  const users = getData();
+  users[userId].comments.push(commentId);
+}
+
+/**
+ * @description Remove comment id reference
+ * @param {string} userId
+ * @param {string} commentId
+ */
+function removeComment (userId, commentId) {
+  const users = getData();
+  const { comments } = users[userId];
+  comments.splice(comments.indexOf(commentId));
+}
+
+/**
+ * @description Update user Post score
+ * @param {string} userId
+ * @param {string} vote option, i.e. 'upVote'/'downVote'
+ */
+function updatePostScore (userId, option) {
+  const users = getData();
+  const delta = option === 'upVote' ? 1 : -1;
+  users[userId].profile.postScore += delta;
+}
+
+/**
+ * @description Update user Comment score
+ * @param {string} userId
+ * @param {string} vote option
+ */
+function updateCommentScore (userId, option) {
+  const users = getData();
+  const delta = option === 'upVote' ? 1 : -1;
+  users[userId].profile.commentScore += delta;
+}
+
+/**
+ * @description Add post to user votes
+ * @param {string} userId
+ * @param {string} vote option
+ */
+function updateUserVote (userId, { voteId, option }) {
+  return new Promise((res) => {
+    const users = getData();
+    // query old vote record
+    const oldOption = users[userId].profile.votes[voteId];
+    // overwrite old option if one existed
+    users[userId].profile.votes[voteId] = option;
+    let newOption = option;
+    if (oldOption && !option) {
+      newOption = oldOption === 'upVote' ? 'downVote' : 'upVote';
+    }
+    res(newOption);
+  });
+}
+
+module.exports = {
+  getProfile,
+  getPosts,
+  getComments,
+  checkUserExists,
+  login,
+  create,
+  update,
+  addPost,
+  removePost,
+  addComment,
+  removeComment,
+  updatePostScore,
+  updateCommentScore,
+  updateUserVote,
+};

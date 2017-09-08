@@ -1,8 +1,6 @@
-const clone = require('clone')
+const { verifySessionToken } = require('./utils');
 
-let db = {}
-
-const defaultData = {
+const db = {
   "8xf0y6ziyjabvozdd253nd": {
     id: '8xf0y6ziyjabvozdd253nd',
     timestamp: 1467166872634,
@@ -10,6 +8,7 @@ const defaultData = {
     body: 'Everyone says so after all.',
     author: 'thingtwo',
     category: 'react',
+    comments: [],
     voteScore: 6,
     deleted: false 
   },
@@ -20,110 +19,176 @@ const defaultData = {
     body: 'Just kidding. It takes more than 10 minutes to learn technology.',
     author: 'thingone',
     category: 'redux',
+    comments: [],
     voteScore: -5,
     deleted: false
   }
 }
 
-function getData (token) {
-  let data = db[token]
-  if (data == null) {
-    data = db[token] = clone(defaultData)
-  }
-  return data
+/**
+ * @description Access database
+ */
+function getData () {
+  const data = db;
+  return data;
 }
 
-function getByCategory (token, category) {
+/**
+ * @description Get all active posts by a specified category
+ * @param {string} category
+ * @returns {array} all post objects matching a category
+ */
+function getByCategory (category) {
   return new Promise((res) => {
-    let posts = getData(token)
-    let keys = Object.keys(posts)
-    let filtered_keys = keys.filter(key => posts[key].category === category && !posts[key].deleted)
-    res(filtered_keys.map(key => posts[key]))
-  })
+    const posts = getData();
+    const keys = Object.keys(posts);
+    const filtered_keys = keys.filter(key => posts[key].category === category && !posts[key].deleted);
+    res(filtered_keys.map(key => posts[key]));
+  });
 }
 
-function get (token, id) {
+/**
+ * @description Get a specific post by id
+ * @param {string} id
+ * @returns {object} post details 
+ */
+function get (postId) {
   return new Promise((res) => {
-    const posts = getData(token)
+    const posts = getData();
     res(
-      posts[id].deleted 
+      posts[postId].deleted 
         ? {}
-        : posts[id]
-    )
-  })
+        : posts[postId]
+    );
+  });
 }
 
-function getAll (token) {
+/**
+ * @description Get posts by array of ids
+ * @param {array} postIds
+ * @returns {array} batch of posts by ids
+ */
+function getByIds (postIds) {
   return new Promise((res) => {
-    const posts = getData(token)
-    let keys = Object.keys(posts)
-    let filtered_keys = keys.filter(key => !posts.deleted)
-    res(filtered_keys.map(key => posts[key]))
-  })
+    const posts = getData();
+    res(postIds.map(id => posts[id]));
+  });
 }
 
-function add (token, post) {
+/**
+ * @description Get all posts
+ * @returns {array} all post data
+ */
+function getAll () {
   return new Promise((res) => {
-    let posts = getData(token)
-    
-    posts[post.id] = {
-      id: post.id,
-      timestamp: post.timestamp,
-      title: post.title,
-      body: post.body,
-      author: post.author,
-      category: post.category,
-      voteScore: 1,
-      deleted: false
-    }
-     
-    res(posts[post.id])
-  })
+    const posts = getData();
+    const keys = Object.keys(posts);
+    const filtered_keys = keys.filter(key => !posts.deleted);
+    res(filtered_keys.map(key => posts[key]));
+  });
 }
 
-function vote (token, id, option) {
-  return new Promise((res) => {
-    let posts = getData(token)
-    post = posts[id]
-    switch(option) {
-        case "upVote":
-            post.voteScore = post.voteScore + 1
-            break
-        case "downVote":
-            post.voteScore = post.voteScore - 1
-            break
-        default:
-            console.log(`posts.vote received incorrect parameter: ${option}`)
-    }
-    res(post)
-  })
+/**
+ * @description Add a new post object
+ * @param {string} sessionToken - action validation
+ * @param {object} post - contains post details 
+ */
+function add (sessionToken, post) {
+  return new Promise((res, reject) => {
+    verifySessionToken(sessionToken, post.author)
+        .then(data => {
+          const posts = getData();
+          
+          posts[post.id] = {
+            id: post.id,
+            timestamp: post.timestamp,
+            title: post.title,
+            body: post.body,
+            author: post.author,
+            category: post.category,
+            comments: [],
+            voteScore: 1,
+            deleted: false,
+          };
+           
+          res(posts[post.id]);
+        })
+        .catch(err => reject(err));
+  });
 }
 
-function disable (token, id) {
-    return new Promise((res) => {
-      let posts = getData(token)
-      posts[id].deleted = true
-      res(posts[id])
-    })
+/**
+ * @description Vote on a post
+ * @param {string} sessionToken
+ * @param {string} postId
+ * @param {string} option, i.e. 'upVote'/'downVote'
+ */
+function vote (sessionToken, postId, option, userId) {
+  return new Promise((res, reject) => {
+    verifySessionToken(sessionToken, userId)
+        .then(data => {
+          const posts = getData();
+          post = posts[postId];
+          let delta;
+          switch(option) {
+            case "upVote":
+              delta = 1;
+              break;
+            case "downVote":
+              delta = -1;
+              break;
+            default:
+              console.log(`posts.vote received incorrect parameter: ${option}`);
+          }
+          post.voteScore += delta;
+          res(post);
+        }).catch(err => reject(err));
+  });
 }
 
-function edit (token, id, post) {
-    return new Promise((res) => {
-        let posts = getData(token)
-        for (prop in post) {
-            posts[id][prop] = post[prop]
-        }
-        res(posts[id])
-    })
+/**
+ * @description 'Delete' a post
+ * @param {string} sessionToken
+ * @param {string} postId
+ */
+function disable (sessionToken, postId, userId) {
+    return new Promise((res, reject) => {
+      verifySessionToken(sessionToken, userId)
+          .then(data => {
+            const posts = getData();
+            posts[postId].deleted = true;
+            res(posts[postId]);
+          });
+    }).catch(err => reject(err));
+}
+
+/**
+ * @description Edit a post
+ * @param {string} sessionToken
+ * @param {string} postId
+ * @param {string} post - updated details
+ */
+function edit (sessionToken, postId, editedPost) {
+  return new Promise((res, reject) => {
+    verifySessionToken(sessionToken, posts[postId].author)
+      .then(data => {
+        const posts = getData();
+        Object.keys(editedPost).forEach((prop) => {
+          posts[postId][prop] = editedPost[prop];
+        });
+        res(posts[postId]);
+      }).catch(err => reject(err));
+  });
 }
 
 module.exports = {
   get,
+  getByIds,
   getAll,
   getByCategory,
   add,
   vote,
   disable,
   edit,
-  getAll
-}
+  getAll,
+};

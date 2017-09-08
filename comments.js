@@ -1,129 +1,195 @@
-const clone = require('clone')
+const { verifySessionToken } = require('./utils');
 
-let db = {}
-
-const defaultData = {
+const db = {
   "894tuq4ut84ut8v4t8wun89g": {
     id: '894tuq4ut84ut8v4t8wun89g',
-    parentId: "8xf0y6ziyjabvozdd253nd",
+    postId: "8xf0y6ziyjabvozdd253nd",
+    parentId: null,
+    ancestorId: null,
     timestamp: 1468166872634,
     body: 'Hi there! I am a COMMENT.',
-    author: 'thingtwo',
+    author: 'user',
     voteScore: 6,
     deleted: false,
-    parentDeleted: false 
+    postDeleted: false,
   },
   "8tu4bsun805n8un48ve89": {
     id: '8tu4bsun805n8un48ve89',
-    parentId: "8xf0y6ziyjabvozdd253nd",
+    postId: "8xf0y6ziyjabvozdd253nd",
+    parentId: '894tuq4ut84ut8v4t8wun89g',
+    ancestorId: '894tuq4ut84ut8v4t8wun89g',
     timestamp: 1469479767190,
     body: 'Comments. Are. Cool.',
-    author: 'thingone',
+    author: 'user',
     voteScore: -5,
     deleted: false,
-    parentDeleted: false
-  }
+    postDeleted: false,
+  },
+};
+
+/**
+ * @description Access database
+ */
+function getData () {
+  const data = db;
+  return data;
 }
 
-function getData (token) {
-  let data = db[token]
-  if (data == null) {
-    data = db[token] = clone(defaultData)
-  }
-  return data
-}
-
-function getByParent (token, parentId) {
+/**
+ * @description Get all comments belonging to a post
+ * @param {string} postId
+ * @returns {array} comment objects with a shared post
+ */
+function getByParent (postId) {
   return new Promise((res) => {
-    let comments = getData(token)
-    let keys = Object.keys(comments)
-    filtered_keys = keys.filter(key => comments[key].parentId === parentId && !comments[key].deleted)
+    const comments = getData()
+    const keys = Object.keys(comments)
+    filtered_keys = keys.filter(key => comments[key].postId === postId && !comments[key].deleted)
     res(filtered_keys.map(key => comments[key]))
-  })
+  });
 }
 
-function get (token, id) {
+/**
+ * @description Get a specific comment by id
+ * @param {string} 
+ * @returns {object} comment details
+ */
+function get (commentId) {
   return new Promise((res) => {
-    const comments = getData(token)
+    const comments = getData();
     res(
-      comments[id].deleted || comments[id].parentDeleted
+      comments[commentId].deleted || comments[commentId].postDeleted
         ? {}
-        : comments[id]      
-      )
-  })
+        : comments[commentId]      
+      );
+  });
 }
 
-function add (token, comment) {
+/**
+ * @description Get posts by array of ids
+ * @param {array} postIds
+ * @returns {array} batch of posts by ids
+ */
+function getByIds (commentIds) {
+  const comments = getData();
   return new Promise((res) => {
-    let comments = getData(token)
-
-    comments[comment.id] = {
-      id: comment.id,
-      timestamp: comment.timestamp,
-      body: comment.body,
-      author: comment.author,
-      parentId: comment.parentId,
-      voteScore: 1,
-      deleted: false,
-      parentDeleted: false
-    }
-     
-    res(comments[comment.id])
-  })
+    res(commentIds.map(id => comments[id]));
+  });
 }
 
-function vote (token, id, option) {
-  return new Promise((res) => {
-    let comments = getData(token)
-    comment = comments[id]
-    switch(option) {
-        case "upVote":
-            comment.voteScore = comment.voteScore + 1
-            break
-        case "downVote":
-            comment.voteScore = comment.voteScore - 1
-            break
-        default:
-            console.log(`comments.vote received incorrect parameter: ${option}`)
-    }
-    res(comment)
-  })
+/**
+ * @description Add a new comment object
+ * @param {string} sessionToken - action validation
+ * @param {object} comment - contains comment details 
+ */
+function add (sessionToken, comment) {
+  return new Promise((res, reject) => {
+    verifySessionToken(sessionToken, userId)
+      .then(data => {
+        const comments = getData();
+
+        comments[comment.id] = {
+          id: comment.id,
+          timestamp: comment.timestamp,
+          body: comment.body,
+          author: comment.author,
+          postId: comment.postId,
+          parentId: comment.parentId || null,
+          ancestorId: comment.ancestorId || null,
+          voteScore: 1,
+          deleted: false,
+          postDeleted: false,
+        };
+         
+        res(comments[comment.id]);
+    }).catch(err => reject(err));
+  });
 }
 
-function disableByParent (token, post) {
-    return new Promise((res) => {
-        let comments = getData(token)
-        keys = Object.keys(comments)
-        filtered_keys = keys.filter(key => comments[key].parentId === post.id)
-        filtered_keys.forEach(key => comments[key].parentDeleted = true)
-        res(post)
-    })
-}
-
-function disable (token, id) {
-    return new Promise((res) => {
-      let comments = getData(token)
-      comments[id].deleted = true
-      res(comments[id])
-    })
-}
-
-function edit (token, id, comment) {
-    return new Promise((res) => {
-        let comments = getData(token)
-        for (prop in comment) {
-            comments[id][prop] = comment[prop]
+/**
+ * @description Vote on a comment
+ * @param {string} sessionToken
+ * @param {string} commentId
+ * @param {string} option, i.e. 'upVote'/'downVote'
+ */
+function vote (sessionToken, commentId, option, userId) {
+  return new Promise((res, reject) => {
+    verifySessionToken(sessionToken, userId)
+      .then(data => {
+        const comments = getData();
+        comment = comments[commentId];
+        switch(option) {
+            case "upVote":
+                comment.voteScore = comment.voteScore + 1;
+                break;
+            case "downVote":
+                comment.voteScore = comment.voteScore - 1;
+                break;
+            default:
+                console.log(`comments.vote received incorrect parameter: ${option}`);
         }
-        res(comments[id])
-    })
+        res(comment);
+      }).catch(err => reject(err));
+  });
+}
+
+/**
+ * @description Disable a comment if its post is disabled
+ * @param {string} sessionToken
+ * @param {object} disabled post object
+ */
+function disableByPost (post) {
+  return new Promise((res, reject) => {
+    const comments = getData();
+    keys = Object.keys(comments);
+    filtered_keys = keys.filter(key => comments[key].postId === post.id);
+    filtered_keys.forEach(key => comments[key].postDeleted = true);
+    res(post);
+  });
+}
+
+/**
+ * @description Disable a specific comment
+ * @param {string} sessionToken
+ * @param {string} commentId
+ */
+function disable (sessionToken, commentId) {
+  return new Promise((res, reject) => {
+    verifySessionToken(sessionToken, comments[commentId].author)
+      .then(data => {
+        const comments = getData();
+        comments[id].deleted = true;
+        res(comments[id]);
+      }).catch(err => reject(err));
+    });
+}
+
+/**
+ * @description Edit a specific comment
+ * @param {string} sessionToken
+ * @param {string} commentId - updated comment id
+ * @param {object} updatedComment - updated comment details
+ */
+function edit (sessionToken, commentId, updatedComment) {
+  return new Promise((res, reject) => {
+    verifySessionToken(sessionToken, comments[updatedComment.id].author)
+      .then(data => {
+        const comments = getData();
+        Object.keys(updatedComment).forEach((prop) => {
+          comments[commentId][prop] = updatedComment[prop];
+        });
+        res(comments[commentId]);
+      }).catch(err => reject(err))
+  });
 }
 
 module.exports = {
   get,
+  getByIds,
   getByParent,
   add,
   vote,
-  disableByParent,
+  disableByPost,
   disable,
-  edit
-}
+  edit,
+};
