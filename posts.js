@@ -6,22 +6,22 @@ const db = {
     timestamp: 1467166872634,
     title: 'Udacity is the best place to learn React',
     body: 'Everyone says so after all.',
-    author: 'thingtwo',
+    author: 'user',
     category: 'react',
-    comments: [],
+    comments: ['894tuq4ut84ut8v4t8wun89g', '8tu4bsun805n8un48ve89'],
     voteScore: 6,
-    deleted: false 
+    deleted: false, 
   },
   "6ni6ok3ym7mf1p33lnez": {
     id: '6ni6ok3ym7mf1p33lnez',
     timestamp: 1468479767190,
     title: 'Learn Redux in 10 minutes!',
     body: 'Just kidding. It takes more than 10 minutes to learn technology.',
-    author: 'thingone',
+    author: 'user',
     category: 'redux',
     comments: [],
     voteScore: -5,
-    deleted: false
+    deleted: false,
   }
 }
 
@@ -110,7 +110,6 @@ function add (sessionToken, post) {
             voteScore: 1,
             deleted: false,
           };
-           
           res(posts[post.id]);
         })
         .catch(err => reject(err));
@@ -123,26 +122,25 @@ function add (sessionToken, post) {
  * @param {string} postId
  * @param {string} option, i.e. 'upVote'/'downVote'
  */
-function vote (sessionToken, postId, option, userId) {
+function vote (postId, option) {
   return new Promise((res, reject) => {
-    verifySessionToken(sessionToken, userId)
-        .then(data => {
-          const posts = getData();
-          post = posts[postId];
-          let delta;
-          switch(option) {
-            case "upVote":
-              delta = 1;
-              break;
-            case "downVote":
-              delta = -1;
-              break;
-            default:
-              console.log(`posts.vote received incorrect parameter: ${option}`);
-          }
-          post.voteScore += delta;
-          res(post);
-        }).catch(err => reject(err));
+    const posts = getData();
+    post = posts[postId];
+    let delta = 0;
+    console.log(option);
+    switch(option) {
+      case "upVote":
+        delta = 1;
+        break;
+      case "downVote":
+        delta = -1;
+        break;
+      default:
+        console.log(`Duplicated vote on post: ${postId}.`);
+        reject(403);
+    }
+    post.voteScore += delta;
+    res(post);
   });
 }
 
@@ -169,10 +167,10 @@ function disable (sessionToken, postId, userId) {
  * @param {string} post - updated details
  */
 function edit (sessionToken, postId, editedPost) {
+  const posts = getData();
   return new Promise((res, reject) => {
     verifySessionToken(sessionToken, posts[postId].author)
       .then(data => {
-        const posts = getData();
         Object.keys(editedPost).forEach((prop) => {
           posts[postId][prop] = editedPost[prop];
         });

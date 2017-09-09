@@ -42,10 +42,15 @@ function getData () {
  * @param {string} userId
  */
 function getProfile (userId) {
-  return new Promise((res) => {
+  return new Promise((res, reject) => {
     const users = getData();
-    const { profile } = users[userId];
-    res(profile);
+    const user = users[userId];
+    if (!user) {
+      reject(403);
+    } else {
+      const { profile } = users[userId];
+      res(profile);
+    }
   });
 }
 
@@ -86,7 +91,7 @@ function checkUserExists (userId) {
   return new Promise((res, reject) => {
     const users = getData();
     if (users[userId]) {
-      reject('User already exists.');
+      reject(403);
     } else {
       res({ success: 'Username is available.' });
     }
@@ -102,7 +107,8 @@ function checkUserExists (userId) {
 function login (userId, password) {
   return new Promise((res, reject) => {
     const users = getData();
-    const { password: dbPassword, profile } = users[userId];
+    const user = users[userId];
+    const { password: dbPassword, profile } = user;
     if (password === dbPassword) {
       const sessionToken = generateSessionToken(userId);
       users[userId].sessionToken = sessionToken;
@@ -155,11 +161,12 @@ function update (sessionToken, userId, updatedData) {
     const { sessionToken: dbSessionToken, userId: dbUserId } = users[userId];
     verifySessionToken(sessionToken, dbUserId)
       .then(data => {
-        const { email, password } = updatedData;
+        const { email, password, profile } = updatedData;
         if (password) users[userId].password = password;
         if (email) users[userId].email = email;
-        res(profile);
-      }).catch(err => reject(err));
+        res({});
+      })
+      .catch(err => reject(err));
   });
 }
 
@@ -170,7 +177,8 @@ function update (sessionToken, userId, updatedData) {
  */
 function addPost (userId, postId) {
   const users = getData();
-  users[userId].posts.push(postId);
+  const user = users[userId];
+  user.profile.posts.push(postId);
 }
 
 /**
@@ -180,8 +188,8 @@ function addPost (userId, postId) {
  */
 function removePost (userId, postId) {
   const users = getData();
-  const { posts } = users[userId];
-  posts.splice(posts.indexOf(postId));
+  const { profile } = users[userId];
+  profile.posts.splice(profile.posts.indexOf(postId));
 }
 
 
@@ -192,7 +200,8 @@ function removePost (userId, postId) {
  */
 function addComment (userId, commentId) {
   const users = getData();
-  users[userId].comments.push(commentId);
+  const user = users[userId];
+  user.profile.comments.push(commentId);
 }
 
 /**
@@ -202,8 +211,8 @@ function addComment (userId, commentId) {
  */
 function removeComment (userId, commentId) {
   const users = getData();
-  const { comments } = users[userId];
-  comments.splice(comments.indexOf(commentId));
+  const { profile } = users[userId];
+  profile.comments.splice(profile.comments.indexOf(commentId));
 }
 
 /**
@@ -229,22 +238,35 @@ function updateCommentScore (userId, option) {
 }
 
 /**
+ * @description Initial vote for created post or comment
+ */
+function writeUserVote (userId, voteId, option = 'upVote') {
+  const users = getData();
+  const user = users[userId];
+  user.profile.votes[voteId] = option;
+}
+
+/**
  * @description Add post to user votes
  * @param {string} userId
  * @param {string} vote option
  */
-function updateUserVote (userId, { voteId, option }) {
-  return new Promise((res) => {
-    const users = getData();
-    // query old vote record
-    const oldOption = users[userId].profile.votes[voteId];
-    // overwrite old option if one existed
-    users[userId].profile.votes[voteId] = option;
-    let newOption = option;
-    if (oldOption && !option) {
-      newOption = oldOption === 'upVote' ? 'downVote' : 'upVote';
-    }
-    res(newOption);
+function updateUserVote (sessionToken, userId, voteId, option) {
+  return new Promise((res, reject) => {
+    verifySessionToken(sessionToken, userId)
+      .then((data) => {
+        // overwrite old option if one existed
+        writeUserVote(userId, voteId, option);
+        // query old vote record
+        const oldOption = user.profile.votes[voteId];
+        let newOption = option;
+        if (oldOption === option) {
+          newOption = null;
+        } else if (oldOption && !option) {
+          newOption = oldOption === 'upVote' ? 'downVote' : 'upVote';
+        }
+        res(newOption);
+      }).catch(err => reject(err));
   });
 }
 
@@ -262,5 +284,6 @@ module.exports = {
   removeComment,
   updatePostScore,
   updateCommentScore,
+  writeUserVote,
   updateUserVote,
 };

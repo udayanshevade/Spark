@@ -7,7 +7,6 @@ const config = require('./config');
  */
 const generateSessionToken = (userId, expiresIn = 3600) => jwt.sign({ userId }, config.JWT_SECRET);
 
-
 /**
  * @description Breaks down token to ensure session is authenticated
  * @param {sessionToken}

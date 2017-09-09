@@ -3,6 +3,7 @@ import { Route } from 'react-router-dom';
 import './App.css';
 import Main from './components/Main';
 import Navbar from './components/Navbar';
+import Requests from './requests';
 
 class App extends Component {
   render() {

@@ -84,7 +84,7 @@ function getByIds (commentIds) {
  */
 function add (sessionToken, comment) {
   return new Promise((res, reject) => {
-    verifySessionToken(sessionToken, userId)
+    verifySessionToken(sessionToken, comment.author)
       .then(data => {
         const comments = getData();
 
@@ -112,24 +112,25 @@ function add (sessionToken, comment) {
  * @param {string} commentId
  * @param {string} option, i.e. 'upVote'/'downVote'
  */
-function vote (sessionToken, commentId, option, userId) {
+function vote (commentId, option) {
   return new Promise((res, reject) => {
-    verifySessionToken(sessionToken, userId)
-      .then(data => {
-        const comments = getData();
-        comment = comments[commentId];
-        switch(option) {
-            case "upVote":
-                comment.voteScore = comment.voteScore + 1;
-                break;
-            case "downVote":
-                comment.voteScore = comment.voteScore - 1;
-                break;
-            default:
-                console.log(`comments.vote received incorrect parameter: ${option}`);
-        }
-        res(comment);
-      }).catch(err => reject(err));
+    const comments = getData();
+    comment = comments[commentId];
+    let delta = 0;
+    console.log(option);
+    switch(option) {
+      case 'upVote':
+        delta = 1;
+        break;
+      case 'downVote':
+        delta = -1;
+        break;
+      default:
+        console.log(`Duplicated vote on comment: ${commentId}.`);
+        reject(403);
+    }
+    comment.voteScore += delta;
+    res(comment);
   });
 }
 
@@ -154,12 +155,12 @@ function disableByPost (post) {
  * @param {string} commentId
  */
 function disable (sessionToken, commentId) {
+  const comments = getData();
   return new Promise((res, reject) => {
     verifySessionToken(sessionToken, comments[commentId].author)
       .then(data => {
-        const comments = getData();
-        comments[id].deleted = true;
-        res(comments[id]);
+        comments[commentId].deleted = true;
+        res(comments[commentId]);
       }).catch(err => reject(err));
     });
 }
@@ -171,10 +172,10 @@ function disable (sessionToken, commentId) {
  * @param {object} updatedComment - updated comment details
  */
 function edit (sessionToken, commentId, updatedComment) {
+  const comments = getData();
   return new Promise((res, reject) => {
-    verifySessionToken(sessionToken, comments[updatedComment.id].author)
+    verifySessionToken(sessionToken, comments[commentId].author)
       .then(data => {
-        const comments = getData();
         Object.keys(updatedComment).forEach((prop) => {
           comments[commentId][prop] = updatedComment[prop];
         });

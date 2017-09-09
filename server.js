@@ -35,7 +35,7 @@ app.get('/', (req, res) => {
         Get all of the categories available for the app. List is found in categories.js.
         Feel free to extend this list as you desire.
     
-    GET /:category/posts
+    GET /categories/:category/posts
       USAGE:
         Get all of the posts for a particular category
 
@@ -59,13 +59,13 @@ app.get('/', (req, res) => {
       USAGE:
         Get the details of a single post
 
-    POST /posts/:id
+    PUT /posts/:id/vote
       USAGE:
         Used for voting on a post
       PARAMS:
         option - String: Either "upVote" or "downVote"
         
-    PUT /posts/:id
+    PUT /posts/:id/edit
       USAGE:
         Edit the details of an existing post
       PARAMS:
@@ -76,7 +76,7 @@ app.get('/', (req, res) => {
       USAGE:
         Sets the deleted flag for a post to 'true'. 
         Sets the parentDeleted flag for all child comments to 'true'.
-      
+
     GET /posts/:id/comments
       USAGE:
         Get all the comments for a single post
@@ -98,7 +98,7 @@ app.get('/', (req, res) => {
       USAGE:
         Get the details for a single comment
 
-    POST /comments/:id
+    PUT /comments/:id/vote
       USAGE:
         Used for voting on a comment.
 
@@ -170,7 +170,7 @@ app.get('/categories', (req, res) => {
 /**
  * @description Get posts for a category
  */
-app.get('/:category/posts', (req, res) => {
+app.get('/categories/:category/posts', (req, res) => {
   const errors = { 500: serverErrorMsg };
   posts.getByCategory(req.params.category)
     .then(
@@ -214,7 +214,10 @@ app.post('/posts', (req, res) => {
       posts.add(req.sessionToken, req.body)
         .then(
           (data) => {
+            // record new post in user profile
             user.addPost(data.author, data.id);
+            // add default upvote from author
+            user.writeUserVote(data.author, data.id);
             res.send(data);
           },
           handleErrorFn(res, errors)
@@ -232,9 +235,9 @@ app.delete('/posts/:id', (req, res) => {
       const errors = { 500: serverErrorMsg, 401: authErrorMsg };
       const { userId } = req.body;
       posts.disable(req.sessionToken, req.params.id, userId)
-        .then((post) => {
-          comments.disableByPost(post);
-        }).then(
+        .then((post) =>
+          comments.disableByPost(post)
+        ).then(
           (data) => {
             user.removePost(data.author, data.id);
             res.send(data)
@@ -247,17 +250,17 @@ app.delete('/posts/:id', (req, res) => {
 /**
  * @description Vote on a post
  */
-app.post('/posts/:id', (req, res) => {
+app.put('/posts/:id/vote', (req, res) => {
   if (!req.sessionToken) {
     res.status(401).send({ error: authErrorMsg });
   } else {
-    const errors = { 500: serverErrorMsg, 401: authErrorMsg };
+    const errors = { 500: serverErrorMsg, 401: authErrorMsg, 403: 'Duplicated vote.' };
     const { option, voterId } = req.body;
     const voteId = req.params.id;
     // update record of voter
-    user.updateUserVote(voterId, { voteId, option })
+    user.updateUserVote(req.sessionToken, voterId, voteId, option)
       .then((updatedOption) => {
-        posts.vote(req.sessionToken, voteId, updatedOption, voterId)
+        posts.vote(voteId, updatedOption)
           .then(
             (data) => {
               // update post score of post author
@@ -266,14 +269,14 @@ app.post('/posts/:id', (req, res) => {
             },
             handleErrorFn(res, errors)
           );
-      });
+      }, handleErrorFn(res, errors));
   }
 });
 
 /**
  * @description Edit a post
  */
-app.put('/posts/:id', (req, res) => {
+app.put('/posts/:id/edit', (req, res) => {
   if (!req.sessionToken) {
     res.status(401).send({ error: authErrorMsg });
   } else {
@@ -310,10 +313,32 @@ app.get('/comments/:id', (req, res) => {
     );
 });
 
+/*
+ * @description Add a new comment
+ */
+app.post('/comments', (req, res) => {
+  if (!req.sessionToken) {
+    res.status(401).send({ error: authErrorMsg });
+  } else {
+    const errors = { 500: serverErrorMsg, 401: authErrorMsg }
+    comments.add(req.sessionToken, req.body)
+      .then(
+        (data) => {
+          // record new post in user profile
+          user.addComment(data.author, data.id);
+          // add default upvote from author
+          user.writeUserVote(data.author, data.id);
+          res.send(data);
+        },
+        handleErrorFn(res, errors)
+      );
+  }
+});
+
 /**
  * @description Edit a specific comment
  */
-app.put('/comments/:id', (req, res) => {
+app.put('/comments/:id/edit', (req, res) => {
   if (!req.sessionToken) {
     res.status(401).send({ error: authErrorMsg });
   } else {
@@ -326,40 +351,21 @@ app.put('/comments/:id', (req, res) => {
   }
 });
 
-/*
- * @description Add a new comment
- */
-app.post('/comments', (req, res) => {
-  if (!req.sessionToken) {
-    res.status(401).send({ error: authErrorMsg });
-  } else {
-    const errors = { 500: serverErrorMsg, 401: authErrorMsg }
-    comments.add(req.sessionToken, req.body)
-      .then(
-        (data) => {
-          user.addComment(data.author, data.id);
-          res.send(data);
-        },
-        handleErrorFn(res, errors)
-      );
-  }
-});
-
 /**
  * @description Vote on a comment
  */
-app.post('/comments/:id', (req, res) => {
+app.put('/comments/:id/vote', (req, res) => {
   if (!req.sessionToken) {
     res.status(401).send({ error: authErrorMsg });
   } else {
-    const errors = { 500: serverErrorMsg, 401: authErrorMsg };
+    const errors = { 500: serverErrorMsg, 401: authErrorMsg, 403: 'Duplicated vote.' };
     const voteId = req.params.id;
     const { option, voterId } = req.body;
     // update record of voter
-    user.updateUserVote(voterId, { voteId, option })
+    user.updateUserVote(req.sessionToken, voterId, voteId, option)
       .then((updatedOption) => {
         // use the resulting vote option
-        comments.vote(req.sessionToken, voteId, option, voterId)
+        comments.vote(voteId, updatedOption)
           .then(
             (data) => {
               // update comment score of author
@@ -368,7 +374,7 @@ app.post('/comments/:id', (req, res) => {
             },
             handleErrorFn(res, errors)
           );
-      });
+      }, handleErrorFn(res, errors));
   }
 });
 
@@ -395,7 +401,7 @@ app.delete('/comments/:id', (req, res) => {
  * @description Get a user profile
  */
 app.get('/user/:userId/profile', (req, res) => {
-  const errors = { 500: serverErrorMsg };
+  const errors = { 500: serverErrorMsg, 403: 'User does not exist.' };
   user.getProfile(req.params.userId)
     .then(
       (data) => res.send(data),
@@ -407,7 +413,7 @@ app.get('/user/:userId/profile', (req, res) => {
  * @description Check if a username is available
  */
 app.get('/user/:userId/check', (req, res) => {
-  const errors = { 500: serverErrorMsg };
+  const errors = { 403: 'User already exists.', 500: serverErrorMsg };
   user.checkUserExists(req.params.userId)
     .then(
       (data) => res.send(data),
@@ -420,8 +426,7 @@ app.get('/user/:userId/check', (req, res) => {
  */
 app.post('/user/:userId/login', (req, res) => {
   const errors = { 403: 'Incorrect password.', 500: serverErrorMsg };
-  const { password } = req.body;
-  user.login(req.params.userId, password)
+  user.login(req.params.userId, req.body.password)
     .then(
       (data) => res.send(data),
       handleErrorFn(res, errors));
