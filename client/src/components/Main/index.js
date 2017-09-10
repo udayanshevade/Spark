@@ -11,7 +11,7 @@ const components = {
 };
 
 export const Main = ({ filters, activeFilter }) => (
-  <Box pad={{ vertical: 'medium' }} className="main-container">
+  <Box pad={{ vertical: 'none' }} className="main-container">
     {components[filters[activeFilter]]}
   </Box>
 );

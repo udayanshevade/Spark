@@ -41,3 +41,24 @@ export const searchFilterUpdate = activeFilter => ({
   type: types.SEARCH_FILTER_UPDATE,
   activeFilter,
 });
+
+export const searchSelectSortCriterion = ({ value, direction }) => (dispatch, getState) => {
+  const { search } = getState();
+  const { selectedCriterion, sortDirection } = search;
+  if (selectedCriterion !== value) {
+    dispatch(searchUpdateSortCriterion(value));
+  }
+  if (sortDirection !== direction) {
+    dispatch(searchUpdateSortDirection(direction));
+  }
+};
+
+export const searchUpdateSortCriterion = selectedCriterion => ({
+  type: types.SEARCH_UPDATE_SORT_CRITERION,
+  selectedCriterion,
+});
+
+export const searchUpdateSortDirection = sortDirection => ({
+  type: types.SEARCH_UPDATE_SORT_DIRECTION,
+  sortDirection,
+});

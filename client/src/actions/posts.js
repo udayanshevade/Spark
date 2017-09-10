@@ -21,7 +21,6 @@ export const postsUpdate = posts => ({
 export const postsLoadData = query => async(dispatch) => {
   dispatch(postsSetLoading(true));
   const posts = await Requests.get(`${postsURL}${query}`);
-  console.log(posts);
   dispatch(postsSetLoading(false));
   dispatch(postsUpdate(posts));
 };

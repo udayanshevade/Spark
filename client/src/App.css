@@ -13,3 +13,18 @@
 .grommet.grommetux-drop {
   z-index: 51;
 }
+
+.vote-box {
+  text-align: center;
+  margin-bottom: 3.25em;
+}
+
+@media screen and (min-width: 500px) {
+  .post-timestamp {
+    text-align: right;
+  }
+
+  .vote-box {
+    margin-bottom: 2em;
+  }
+}
