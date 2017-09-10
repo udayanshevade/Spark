@@ -156,11 +156,11 @@ const serverErrorMsg = 'An error occurred on our part.';
 const authErrorMsg = 'Log in to perform this action.';
 
 /**
- * @description Get all categories
+ * @description Get all (matching) categories
  */
-app.get('/categories', (req, res) => {
+app.get('/categories/:query', (req, res) => {
   const errors = { 500: serverErrorMsg };
-  categories.getAll()
+  categories.getAll(req.params.query)
   .then(
     (data) => res.send(data),
     handleErrorFn(res, errors)
@@ -182,9 +182,9 @@ app.get('/categories/:category/posts', (req, res) => {
 /**
  * @description Get all posts
  */
-app.get('/posts', (req, res) => {
+app.get('/posts/:query', (req, res) => {
   const errors = { 500: serverErrorMsg };
-  posts.getAll()
+  posts.getAll(req.params.query)
     .then(
       (data) => res.send(data),
       handleErrorFn(res, errors)

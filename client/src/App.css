@@ -1,3 +1,15 @@
 .app-header {
   padding-right: 0;
 }
+
+.loading-spinner {
+  margin: 1em auto; 
+}
+
+.anchor-text-padded {
+  padding: 0 0.5em;
+}
+
+.grommet.grommetux-drop {
+  z-index: 51;
+}

@@ -1,4 +1,5 @@
-const config = require('./config')
+const Fuse = require('fuse.js');
+const config = require('./config');
 
 const db = {
   'react': {
@@ -16,7 +17,7 @@ const db = {
     path: 'udacity',
     private: false
   }
-}
+};
 
 /**
  * @description Access database
@@ -26,12 +27,24 @@ function getData () {
   return data;
 }
 
+const fuseOptions = {
+  keys: ['name'],
+};
+
+const fuse = new Fuse(Object.values(getData()), fuseOptions);
+
 /**
- * @description Gets all categories
+ * @description Gets all (matching) categories
  */
-function getAll () {
+function getAll (query) {
   return new Promise((res) => {
-    res(getData()); 
+    const db = getData();
+    let categories = Object.values(db);
+    if (query) {
+      // return matching
+      categories = fuse.search(query);
+    }
+    res(categories);
   });
 }
 

@@ -2,27 +2,27 @@ import * as types from '../actions/types';
 
 export const initialState = {
   query: '',
-  categories: [],
+  posts: [],
   loading: false,
   active: '',
 };
 
-const categories = (state = initialState, action) => {
+const posts = (state = initialState, action) => {
   switch(action.type) {
-    case types.CATEGORIES_QUERY_UPDATE: {
+    case types.POSTS_QUERY_UPDATE: {
       const { query } = action;
       return {
         ...state,
         query,
       };
     }
-    case types.CATEGORIES_SET_LOADING:
+    case types.POSTS_SET_LOADING:
       const { loading } = action; 
       return { ...state, loading };
-    case types.CATEGORIES_UPDATE:
-      const { categories } = action;
-      return { ...state, categories };
-    case types.CATEGORIES_SET_ACTIVE:
+    case types.POSTS_UPDATE:
+      const { posts } = action;
+      return { ...state, posts };
+    case types.POSTS_SET_ACTIVE:
       const { active } = action;
       return { ...state, active };
     default:
@@ -30,4 +30,4 @@ const categories = (state = initialState, action) => {
   }
 };
 
-export default categories;
+export default posts;

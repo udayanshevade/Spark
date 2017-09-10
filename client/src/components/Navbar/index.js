@@ -11,12 +11,15 @@ import { searchQueryChange, searchFilterUpdate } from '../../actions/search';
 
 const NavbarComponent = ({
   title,
-  query,
+  categoriesQuery,
+  postsQuery,
   actions,
   filters,
   activeFilter,
-}) => (
-  <Box className="app-header-container">
+}) => {
+  const filter = filters[activeFilter];
+  const value = filter === 'categories' ? categoriesQuery : postsQuery;
+  return (
     <Header
       size="large"
       pad={{ horizontal: 'medium' }}
@@ -37,9 +40,9 @@ const NavbarComponent = ({
           fill
           size="medium"
           dropAlign={{ right: 'right' }}
-          placeHolder={`Search ${filters[activeFilter]}`}
+          placeHolder={`Search ${filter}`}
           onDOMChange={actions.searchQueryChange}
-          value={query || ''}
+          value={value}
         />
         <FilterSelect
           filters={filters}
@@ -48,12 +51,13 @@ const NavbarComponent = ({
         />
       </Box>
     </Header>
-  </Box>
-);
+  );
+}
 
 NavbarComponent.propTypes = {
   title: PropTypes.string,
-  query: PropTypes.string,
+  categoriesQuery: PropTypes.string,
+  postsQuery: PropTypes.string,
   filters: PropTypes.arrayOf(
     PropTypes.string,
   ),
@@ -64,9 +68,10 @@ NavbarComponent.propTypes = {
   }),
 };
 
-const mapStateToProps = ({ navbar, search }) => ({
+const mapStateToProps = ({ navbar, search, categories, posts }) => ({
   title: navbar.title,
-  query: search.query,
+  categoriesQuery: categories.query,
+  postsQuery: posts.query,
   filters: search.filters,
   activeFilter: search.activeFilter,
 });

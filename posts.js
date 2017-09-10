@@ -1,3 +1,4 @@
+const Fuse = require('fuse.js');
 const { verifySessionToken } = require('./utils');
 
 const db = {
@@ -22,7 +23,18 @@ const db = {
     comments: [],
     voteScore: -5,
     deleted: false,
-  }
+  },
+  "llgj1kasd78f1ptk1nz1": {
+    id: 'llgj1kasd78f1ptk1nz1',
+    timestamp: 1498439787190,
+    title: 'Redux is easy!',
+    body: 'But practice makes perfect.',
+    author: 'user',
+    category: 'redux',
+    comments: [],
+    voteScore: 15,
+    deleted: false,
+  },
 }
 
 /**
@@ -31,6 +43,35 @@ const db = {
 function getData () {
   const data = db;
   return data;
+}
+
+const fuseOptions = {
+  keys: [{
+    name: 'title',
+    weight: 0.6,
+  }, {
+    name: 'body',
+    weight: 0.3,
+  }, {
+    name: 'category',
+    weight: 0.1,
+  }],
+};
+
+/**
+ * @description Get all posts
+ * @returns {array} all post data
+ */
+function getAll (query) {
+  return new Promise((res) => {
+    let posts = Object.values(getData()).filter(post => !post.deleted);
+    const fuse = new Fuse(posts, fuseOptions);
+    if (query) {
+      // return matching
+      posts = fuse.search(query);
+    }
+    res(posts);
+  });
 }
 
 /**
@@ -72,19 +113,6 @@ function getByIds (postIds) {
   return new Promise((res) => {
     const posts = getData();
     res(postIds.map(id => posts[id]));
-  });
-}
-
-/**
- * @description Get all posts
- * @returns {array} all post data
- */
-function getAll () {
-  return new Promise((res) => {
-    const posts = getData();
-    const keys = Object.keys(posts);
-    const filtered_keys = keys.filter(key => !posts.deleted);
-    res(filtered_keys.map(key => posts[key]));
   });
 }
 

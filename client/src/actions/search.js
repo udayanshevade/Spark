@@ -1,14 +1,41 @@
 import * as types from './types';
+import { categoriesLoadData, categoriesQueryUpdate } from './categories';
+import { postsLoadData, postsQueryUpdate } from './posts';
 
-export const searchQueryChange = e => dispatch => {
-  const { value } = e.target;
-  dispatch(searchQueryUpdate(value));
+export const searchQueryChange = e => (dispatch, getState) => {
+  const query = e.target.value;
+  const { search } = getState();
+  const { filters, activeFilter, timeoutId, timeoutLength } = search;
+  const filter = filters[activeFilter];
+  // update query string
+  dispatch(searchQueryUpdate(filter, query));
+  // clear prior timeout if still typing
+  clearTimeout(timeoutId);
+  // assign a new timeout
+  if (!query) return;
+  const newTimeoutId = setTimeout(() => {
+    // load appropriate data
+    if (filter === 'categories') {
+      dispatch(categoriesLoadData(query));
+    } else {
+      dispatch(postsLoadData(query));
+    }
+  }, timeoutLength);
+  dispatch(searchSetTimeout(newTimeoutId));
 };
 
-export const searchQueryUpdate = query => ({
-  type: types.SEARCH_QUERY_UPDATE,
-  query,
+export const searchSetTimeout = timeoutId => ({
+  type: types.SEARCH_SET_TIMEOUT,
+  timeoutId,
 });
+
+export const searchQueryUpdate = (filter, query) => (dispatch) => {
+  if (filter === 'categories') {
+    dispatch(categoriesQueryUpdate(query));
+  } else {
+    dispatch(postsQueryUpdate(query));
+  }
+};
 
 export const searchFilterUpdate = activeFilter => ({
   type: types.SEARCH_FILTER_UPDATE,
