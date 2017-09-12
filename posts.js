@@ -32,7 +32,7 @@ const db = {
     author: 'user',
     category: 'redux',
     comments: [],
-    voteScore: -15,
+    voteScore: 15,
     deleted: false,
   },
 }

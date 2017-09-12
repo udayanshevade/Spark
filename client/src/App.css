@@ -13,10 +13,6 @@
   border-radius: 3px;
 }
 
-.main-header {
-  padding-right: 0;
-}
-
 .loading-spinner {
   margin: 1em auto; 
 }
@@ -40,8 +36,13 @@
 }
 
 .main-header {
+  padding-right: 0;
   top: 0;
   z-index: 2;
+}
+
+.filter-header {
+  padding-top: 0;
 }
 
 .main-footer {
@@ -58,6 +59,35 @@
 
 .categories-list-items-container {
   height: calc(100vh - 124px);
+}
+
+.profile-layer:not(.grommetux-layer--hidden) .profile-username-heading {
+  position: relative;
+}
+
+.profile-layer .profile-username-heading:before,
+.profile-layer .profile-username-heading:after {
+  content: "";
+  display: block;
+  position: absolute;
+  height: 2px;
+  top: 50%;
+  background: #000;
+  transition: width 0.2s ease-in-out;
+  width: 0;
+}
+
+.profile-layer:not(.grommetux-layer--hidden) .profile-username-heading:before,
+.profile-layer:not(.grommetux-layer--hidden) .profile-username-heading:after {
+  width: 35%;
+}
+
+.profile-layer:not(.grommetux-layer--hidden) .profile-username-heading:before {
+  left: -50%;
+}
+
+.profile-layer:not(.grommetux-layer--hidden) .profile-username-heading:after {
+  right: -50%;
 }
 
 @media screen and (min-width: 500px) {

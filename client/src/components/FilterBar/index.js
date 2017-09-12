@@ -11,14 +11,15 @@ const FilterBarComponent = ({
   sortDirection,
   selectedCriterion,
   actions,
+  width,
 }) => {
   return (
     <Header
       responsive={false}
       flex
       size="small"
-      justify="end"
-      pad={{ horizontal: 'small' }}
+      justify={width < 500 ? 'end' : 'center'}
+      pad="small"
       className="filter-header"
     >
       <Sort
@@ -42,12 +43,14 @@ FilterBarComponent.propTypes = {
   actions: PropTypes.shape({
     searchSelectSortCriterion: PropTypes.func,
   }),
+  width: PropTypes.number,
 };
 
-const mapStateToProps = ({ search }) => ({
+const mapStateToProps = ({ search, responsive }) => ({
   sortCriteria: search.criteria,
   sortDirection: search.sortDirection,
   selectedCriterion: search.selectedCriterion,
+  width: responsive.width,
 });
 
 const mapDispatchToProps = dispatch => ({

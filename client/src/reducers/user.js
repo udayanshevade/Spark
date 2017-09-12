@@ -6,6 +6,7 @@ export const initialState = {
   loginActive: false,
   loginForm: 'login',
   loading: false,
+  profilePreviewActive: false,
 };
 
 const user = (state = initialState, action) => {
@@ -29,6 +30,10 @@ const user = (state = initialState, action) => {
     case types.USER_SET_LOADING: {
       const { loading } = action;
       return { ...state, loading };
+    }
+    case types.USER_SET_PROFILE_PREVIEW_ACTIVE: {
+      const { profilePreviewActive } = action;
+      return { ...state, profilePreviewActive };
     }
     case types.RESET:
       return initialState;

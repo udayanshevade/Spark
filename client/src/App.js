@@ -9,6 +9,7 @@ import Main from './components/Main';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Login from './components/Login';
+import Profile from './components/Profile';
 import { responsiveResizeListener } from './actions/responsive';
 import { categoriesLoadData } from './actions/categories';
 import { postsLoadData } from './actions/posts';
@@ -32,6 +33,7 @@ class AppComponent extends Component {
         <Route path="/" component={Navbar} />
         <Route exact path="/" component={Main} />
         <Route path="/" component={Login} />
+        <Route path="/" component={Profile} />
         <Route path="/" component={Footer} />
       </div>
     );

@@ -10,9 +10,11 @@ export const userLogin = ({ username, password }) => async(dispatch, getState) =
       url: `${APIbaseURL}/${username}/${loginForm}`,
       body: { password }
     });
-    dispatch(userUpdateData(userData));
-    dispatch(userSetLoggedIn(true));
-    dispatch(userSetLoginActive(false));
+    if (userData.sessionToken) {
+      dispatch(userUpdateData(userData));
+      dispatch(userSetLoggedIn(true));
+      dispatch(userSetLoginActive(false));
+    }
   }
 };
 
@@ -44,4 +46,9 @@ export const userSelectLoginForm = loginForm => ({
 export const userSetLoading = loading => ({
   type: types.USER_SET_LOADING,
   loading,
+});
+
+export const userSetProfilePreviewActive = profilePreviewActive => ({
+  type: types.USER_SET_PROFILE_PREVIEW_ACTIVE,
+  profilePreviewActive,
 });

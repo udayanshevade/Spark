@@ -26,7 +26,7 @@ export const PostsComponent = ({ width, loading, posts, actions, active }) => {
     postsEl = (
       <Section pad={{ vertical: 'none' }}>
         <FilterBar />
-        <Box pad={{ vertical: 'medium' }} className="list-items-container">
+        <Box pad={{ vertical: 'none' }} className="list-items-container">
           <List>
             {
               posts.map((post, i) => <PostPreview key={`post-list-item-${i}`} width={width} {...post} />)

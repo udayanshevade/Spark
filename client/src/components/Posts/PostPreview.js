@@ -11,7 +11,6 @@ import VoteBox from '../VoteBox';
 
 const PostPreview = ({ width, title, author, body, timestamp, voteScore, id }) => (
   <ListItem
-    separator="horizontal"
     pad={{ horizontal: 'medium' }}
     direction="row"
     responsive={false}

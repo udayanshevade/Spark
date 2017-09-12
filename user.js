@@ -11,22 +11,33 @@ const db = {
       created: 1468166872634,
       comments: ['894tuq4ut84ut8v4t8wun89g', '8tu4bsun805n8un48ve89'],
       posts: ['8xf0y6ziyjabvozdd253nd', '6ni6ok3ym7mf1p33lnez'],
-      commentScore: 0,
-      postScore: 0,
       categories: [],
-      votes: {},
+      votesGiven: {},
+      commentVotesReceived: {
+        upVote: 6,
+        downVote: -5,
+      },
+      postVotesReceived: {
+        upVote: 21,
+        downVote: -5,
+      },
     },
   },
+};
+
+const newVotesReceived = {
+  upVote: 0,
+  downVote: 0,
 };
 
 // Default profile data object for a new user
 const newUserProfileData = {
   comments: [],
   posts: [],
-  commentScore: 0,
-  postScore: 0,
   categories: [],
-  votes: {},
+  votesGiven: {},
+  commentVotesReceived: clone(newVotesReceived),
+  postVotesReceived: clone(newVotesReceived),
 };
 
 /**
@@ -222,8 +233,9 @@ function removeComment (userId, commentId) {
  */
 function updatePostScore (userId, option) {
   const users = getData();
+  const user = users[userId];
   const delta = option === 'upVote' ? 1 : -1;
-  users[userId].profile.postScore += delta;
+  user.profile.postVotesReceived[option] += delta;
 }
 
 /**
@@ -233,8 +245,9 @@ function updatePostScore (userId, option) {
  */
 function updateCommentScore (userId, option) {
   const users = getData();
+  const user = users[userId];
   const delta = option === 'upVote' ? 1 : -1;
-  users[userId].profile.commentScore += delta;
+  user.profile.commentVotesReceived[option] += delta;
 }
 
 /**
@@ -243,7 +256,7 @@ function updateCommentScore (userId, option) {
 function writeUserVote (userId, voteId, option = 'upVote') {
   const users = getData();
   const user = users[userId];
-  user.profile.votes[voteId] = option;
+  user.profile.votesGiven[voteId] = option;
 }
 
 /**
@@ -258,7 +271,7 @@ function updateUserVote (sessionToken, userId, voteId, option) {
         // overwrite old option if one existed
         writeUserVote(userId, voteId, option);
         // query old vote record
-        const oldOption = user.profile.votes[voteId];
+        const oldOption = user.profile.votesGiven[voteId];
         let newOption = option;
         if (oldOption === option) {
           newOption = null;
