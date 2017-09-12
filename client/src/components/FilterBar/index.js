@@ -2,7 +2,6 @@ import React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import Box from 'grommet/components/Box';
 import Header from 'grommet/components/Header';
 import Sort from 'grommet-addons/components/Sort';
 import { searchSelectSortCriterion } from '../../actions/search';
@@ -15,23 +14,19 @@ const FilterBarComponent = ({
 }) => {
   return (
     <Header
+      responsive={false}
+      flex
       size="small"
+      justify="end"
       pad={{ horizontal: 'small' }}
       className="filter-header"
     >
-      <Box
-        responsive={false}
-        flex
-        direction="row"
-        justify="end"
-      >
-        <Sort
-          options={sortCriteria}
-          direction={sortDirection}
-          value={selectedCriterion}
-          onChange={actions.searchSelectSortCriterion}
-        />
-      </Box>
+      <Sort
+        options={sortCriteria}
+        direction={sortDirection}
+        value={selectedCriterion}
+        onChange={actions.searchSelectSortCriterion}
+      />
     </Header>
   );
 }

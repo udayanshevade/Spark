@@ -21,9 +21,9 @@ const NavbarComponent = ({
   const value = filter === 'categories' ? categoriesQuery : postsQuery;
   return (
     <Header
-      size="large"
+      size="medium"
       pad={{ horizontal: 'medium' }}
-      className="app-header"
+      className="main-header"
     >
       <Title className="app-header__title" responsive={false}>
         <span>{title}</span>

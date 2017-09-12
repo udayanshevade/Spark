@@ -118,14 +118,14 @@ app.get('/', (req, res) => {
       USAGE:
         Gets the details for a user profile
 
-    GET /user/:userId/login
+    POST /user/:userId/login
       USAGE:
         Logs in a user and sends back a sessionToken
 
       PARAMS:
         password: String
 
-    POST /user/:userId/create
+    POST /user/:userId/signup
       USAGE:
         Creates a new user account
 
@@ -435,7 +435,7 @@ app.post('/user/:userId/login', (req, res) => {
 /**
  * @description Create a new user
  */
-app.post('/user/:userId/create', (req, res) => {
+app.post('/user/:userId/signup', (req, res) => {
   const errors = { 403: 'User already exists.', 500: 'An error occurred on our part.' };
   user.create(req.params.userId, req.body)
     .then(

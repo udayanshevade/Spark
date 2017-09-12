@@ -7,6 +7,8 @@ import '../node_modules/grommet-css';
 import './App.css';
 import Main from './components/Main';
 import Navbar from './components/Navbar';
+import Footer from './components/Footer';
+import Login from './components/Login';
 import { responsiveResizeListener } from './actions/responsive';
 import { categoriesLoadData } from './actions/categories';
 import { postsLoadData } from './actions/posts';
@@ -29,6 +31,8 @@ class AppComponent extends Component {
       <div className="grommet grommetux-app">
         <Route path="/" component={Navbar} />
         <Route exact path="/" component={Main} />
+        <Route path="/" component={Login} />
+        <Route path="/" component={Footer} />
       </div>
     );
   }

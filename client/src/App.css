@@ -1,4 +1,19 @@
-.app-header {
+::-webkit-scrollbar-track {
+  box-shadow: inset 0 0 6px rgba(248, 248, 248, 0.3);
+  background-color: #f5f5f5;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  background-color: #f5f5f5;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+.main-header {
   padding-right: 0;
 }
 
@@ -17,6 +32,32 @@
 .vote-box {
   text-align: center;
   margin-bottom: 3.25em;
+}
+
+.main-header, .main-footer {
+  position: fixed;
+  background: #fefefe;
+}
+
+.main-header {
+  top: 0;
+  z-index: 2;
+}
+
+.main-footer {
+  bottom: 0;
+}
+
+.main-container {
+  margin-top: 72px;
+}
+
+.list-items-container {
+  height: calc(100vh - 176px);
+}
+
+.categories-list-items-container {
+  height: calc(100vh - 124px);
 }
 
 @media screen and (min-width: 500px) {

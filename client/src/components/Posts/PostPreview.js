@@ -38,6 +38,7 @@ const PostPreview = ({ width, title, author, body, timestamp, voteScore, id }) =
           />
         </Box>
       }
+      textSize="small"
     />
   </ListItem>
 );

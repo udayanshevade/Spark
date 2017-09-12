@@ -22,7 +22,7 @@ export const CategoriesComponent = ({ loading, categories, actions, active }) =>
     );
   } else {
     categoriesEl = (
-      <List>
+      <List className="categories-list-items-container">
         {categories.map(({ name, path }, i) => (
           <ListItem
             separator="horizontal"
