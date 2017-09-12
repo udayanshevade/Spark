@@ -17,7 +17,7 @@ export const initialState = {
   }],
   sortDirection: 'desc',
   selectedCriterion: 'relevance',
-  activeFilter: 0,
+  activeFilter: 1,
   timeoutId: null,
   timeoutLength: 750,
 };

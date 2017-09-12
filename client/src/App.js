@@ -8,13 +8,21 @@ import './App.css';
 import Main from './components/Main';
 import Navbar from './components/Navbar';
 import { responsiveResizeListener } from './actions/responsive';
+import { categoriesLoadData } from './actions/categories';
+import { postsLoadData } from './actions/posts';
 
 class AppComponent extends Component {
   componentDidMount() {
     this.unlistenResize = this.props.actions.responsiveResizeListener();
+    this.loadData();
   }
   componentWillUnmount() {
     this.unlistenResize();
+  }
+  loadData() {
+    const { actions } = this.props;
+    actions.categoriesLoadData();
+    actions.postsLoadData();
   }
   render() {
     return (
@@ -37,6 +45,8 @@ const mapStateToProps = state => ({});
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     responsiveResizeListener,
+    categoriesLoadData,
+    postsLoadData,
   }, dispatch),
 });
 

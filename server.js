@@ -158,7 +158,7 @@ const authErrorMsg = 'Log in to perform this action.';
 /**
  * @description Get all (matching) categories
  */
-app.get('/categories/:query', (req, res) => {
+app.get('/categories/get/:query?*', (req, res) => {
   const errors = { 500: serverErrorMsg };
   categories.getAll(req.params.query)
   .then(
@@ -170,7 +170,7 @@ app.get('/categories/:query', (req, res) => {
 /**
  * @description Get posts for a category
  */
-app.get('/categories/:category/posts', (req, res) => {
+app.get('/categories/posts/:category', (req, res) => {
   const errors = { 500: serverErrorMsg };
   posts.getByCategory(req.params.category)
     .then(
@@ -182,7 +182,7 @@ app.get('/categories/:category/posts', (req, res) => {
 /**
  * @description Get all posts
  */
-app.get('/posts/:query', (req, res) => {
+app.get('/posts/get/:query?*', (req, res) => {
   const errors = { 500: serverErrorMsg };
   posts.getAll(req.params.query)
     .then(
@@ -194,7 +194,7 @@ app.get('/posts/:query', (req, res) => {
 /**
  * @description Get a specific post
  */
-app.get('/posts/:id', (req, res) => {
+app.get('/posts/single/:id', (req, res) => {
   const errors = { 500: serverErrorMsg };
   posts.get(req.params.id)
     .then(
@@ -228,7 +228,7 @@ app.post('/posts', (req, res) => {
 /**
  * @description Delete a post
  */
-app.delete('/posts/:id', (req, res) => {
+app.delete('/posts/delete/:id', (req, res) => {
     if (!req.sessionToken) {
       res.status(401).send({ error: authErrorMsg });
     } else {
@@ -250,7 +250,7 @@ app.delete('/posts/:id', (req, res) => {
 /**
  * @description Vote on a post
  */
-app.put('/posts/:id/vote', (req, res) => {
+app.put('/posts/vote/:id', (req, res) => {
   if (!req.sessionToken) {
     res.status(401).send({ error: authErrorMsg });
   } else {
@@ -276,7 +276,7 @@ app.put('/posts/:id/vote', (req, res) => {
 /**
  * @description Edit a post
  */
-app.put('/posts/:id/edit', (req, res) => {
+app.put('/posts/edit/:id', (req, res) => {
   if (!req.sessionToken) {
     res.status(401).send({ error: authErrorMsg });
   } else {
@@ -292,7 +292,7 @@ app.put('/posts/:id/edit', (req, res) => {
 /**
  * @description Get all post comments
  */
-app.get('/posts/:id/comments', (req, res) => {
+app.get('/posts/single/:id/comments', (req, res) => {
   const errors = { 500: serverErrorMsg };
   comments.getByParent(req.params.id)
     .then(

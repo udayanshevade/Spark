@@ -1,7 +1,7 @@
 import * as types from './types';
 import Requests from '../requests';
 
-const categoriesURL = './categories/';
+const categoriesURL = './categories';
 
 export const categoriesQueryUpdate = query => ({
   type: types.CATEGORIES_QUERY_UPDATE,
@@ -18,9 +18,9 @@ export const categoriesUpdate = categories => ({
   categories,
 });
 
-export const categoriesLoadData = query => async(dispatch) => {
+export const categoriesLoadData = (query = '') => async(dispatch) => {
   dispatch(categoriesSetLoading(true));
-  const categories = await Requests.get(`${categoriesURL}${query}`);
+  const categories = await Requests.get(`${categoriesURL}/get/${query}`);
   dispatch(categoriesSetLoading(false));
   dispatch(categoriesUpdate(categories));
 };

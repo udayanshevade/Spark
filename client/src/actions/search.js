@@ -12,7 +12,6 @@ export const searchQueryChange = e => (dispatch, getState) => {
   // clear prior timeout if still typing
   clearTimeout(timeoutId);
   // assign a new timeout
-  if (!query) return;
   const newTimeoutId = setTimeout(() => {
     // load appropriate data
     if (filter === 'categories') {
