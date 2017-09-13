@@ -6,10 +6,10 @@ import Paragraph from 'grommet/components/Paragraph';
 import Timestamp from 'grommet/components/Timestamp';
 import Box from 'grommet/components/Box';
 import Anchor from 'grommet/components/Anchor';
-import NewIcon from 'grommet/components/icons/base/New';
+import AnnounceIcon from 'grommet/components/icons/base/Announce';
 import VoteBox from '../VoteBox';
 
-const PostPreview = ({ width, title, author, body, timestamp, voteScore, id }) => (
+const CommentPreview = ({ width, author, body, timestamp, voteScore, id }) => (
   <ListItem
     pad={{ horizontal: 'medium' }}
     direction="row"
@@ -22,18 +22,17 @@ const PostPreview = ({ width, title, author, body, timestamp, voteScore, id }) =
       flex
       label={
         <div>
-          <Anchor icon={<NewIcon size="xsmall" />}>{author}</Anchor>
-          <span className="anchor-text-padded">shared:</span>
+          <Anchor icon={<AnnounceIcon size="xsmall" />}>{author}</Anchor>
+          <span className="anchor-text-padded">said:</span>
         </div>
       }
-      heading={title}
       description={
         <Box direction="row" justify="between" align="center" wrap={true}>
           <Paragraph>{body || null}</Paragraph>
           <Timestamp
             value={(new Date(timestamp)).toISOString()}
             fields="date"
-            className="post-timestamp"
+            className="comment-timestamp"
           />
         </Box>
       }
@@ -42,8 +41,7 @@ const PostPreview = ({ width, title, author, body, timestamp, voteScore, id }) =
   </ListItem>
 );
 
-PostPreview.propTypes = {
-  title: PropTypes.string,
+CommentPreview.propTypes = {
   id: PropTypes.string,
   body: PropTypes.string,
   timestamp: PropTypes.number,
@@ -51,4 +49,4 @@ PostPreview.propTypes = {
   voteScore: PropTypes.number,
 };
 
-export default PostPreview;
+export default CommentPreview;

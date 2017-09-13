@@ -4,7 +4,7 @@ const getPostsData = ({ posts }) => posts.posts;
 const getSelectedCriterion = ({ search }) => search.selectedCriterion;
 const getSortDirection = ({ search }) => search.sortDirection;
 
-export const selectSortedPosts = createSelector(
+export const getSortedPosts = createSelector(
   [getPostsData, getSelectedCriterion, getSortDirection],
   (posts, criterion, direction) => {
     let sortedPosts = posts;

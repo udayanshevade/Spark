@@ -10,9 +10,17 @@ import Spinning from 'grommet/components/icons/Spinning';
 import PostPreview from './PostPreview';
 import FilterBar from '../FilterBar';
 import * as postsActions from '../../actions/posts';
-import { selectSortedPosts } from '../../selectors/posts';
+import { searchSelectSortCriterion } from '../../actions/search';
+import { getSortedPosts } from '../../selectors/posts';
 
-export const PostsComponent = ({ width, loading, posts, actions, active }) => {
+export const PostsComponent = ({
+  width,
+  loading,
+  posts,
+  actions,
+  active,
+  ...filterProps,
+}) => {
   let postsEl;
   if (loading) {
     postsEl = <Spinning className="loading-spinner" />
@@ -25,7 +33,11 @@ export const PostsComponent = ({ width, loading, posts, actions, active }) => {
   } else {
     postsEl = (
       <Section pad={{ vertical: 'none' }}>
-        <FilterBar />
+        <FilterBar
+          width={width}
+          {...filterProps}
+          selectSortCriterion={actions.searchSelectSortCriterion}
+        />
         <Box pad={{ vertical: 'none' }} className="list-items-container">
           <List>
             {
@@ -52,16 +64,20 @@ PostsComponent.propTypes = {
   width: PropTypes.number,
 };
 
-const mapStateToProps = (state) => ({
-  loading: state.posts.loading,
-  posts: selectSortedPosts(state),
-  active: state.posts.active,
-  width: state.responsive.width,
+const mapStateToProps = ({ posts, search, responsive }) => ({
+  loading: posts.loading,
+  posts: getSortedPosts({ posts, search }),
+  active: posts.active,
+  sortCriteria: search.criteria,
+  sortDirection: search.sortDirection,
+  selectedCriterion: search.selectedCriterion,
+  width: responsive.width,
 });
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     ...postsActions,
+    searchSelectSortCriterion,
   }, dispatch),
 });
 

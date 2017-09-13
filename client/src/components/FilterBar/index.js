@@ -1,16 +1,13 @@
 import React from 'react';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Header from 'grommet/components/Header';
 import Sort from 'grommet-addons/components/Sort';
-import { searchSelectSortCriterion } from '../../actions/search';
 
 const FilterBarComponent = ({
   sortCriteria,
   sortDirection,
   selectedCriterion,
-  actions,
+  selectSortCriterion,
   width,
 }) => {
   return (
@@ -26,7 +23,7 @@ const FilterBarComponent = ({
         options={sortCriteria}
         direction={sortDirection}
         value={selectedCriterion}
-        onChange={actions.searchSelectSortCriterion}
+        onChange={selectSortCriterion}
       />
     </Header>
   );
@@ -41,22 +38,9 @@ FilterBarComponent.propTypes = {
   sortDirection: PropTypes.string,
   selectedCriterion: PropTypes.string,
   actions: PropTypes.shape({
-    searchSelectSortCriterion: PropTypes.func,
+    selectSortCriterion: PropTypes.func,
   }),
   width: PropTypes.number,
 };
 
-const mapStateToProps = ({ search, responsive }) => ({
-  sortCriteria: search.criteria,
-  sortDirection: search.sortDirection,
-  selectedCriterion: search.selectedCriterion,
-  width: responsive.width,
-});
-
-const mapDispatchToProps = dispatch => ({
-  actions: bindActionCreators({
-    searchSelectSortCriterion,
-  }, dispatch),
-})
-
-export default connect(mapStateToProps, mapDispatchToProps)(FilterBarComponent);
+export default FilterBarComponent;

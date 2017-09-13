@@ -90,6 +90,10 @@
   right: -50%;
 }
 
+.profile-layer .grommetux-layer__container {
+  width: 100%;
+}
+
 @media screen and (min-width: 500px) {
   .post-timestamp {
     text-align: right;

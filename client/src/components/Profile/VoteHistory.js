@@ -15,7 +15,6 @@ const VoteHistory = ({
   height,
 }) => (
   <Section direction="column" align="center" pad="small">
-    <Heading tag="h4">Votes:</Heading>
     <Heading tag="h5" strong>Received</Heading>
     <Box direction="row" justify="between" responsive>
       <VotesMeter

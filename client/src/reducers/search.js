@@ -5,7 +5,7 @@ export const initialState = {
   criteria: [{
     label: 'Relevance',
     value: 'relevance',
-    direction: 'asc',
+    direction: 'desc',
   }, {
     label: 'New',
     value: 'timestamp',

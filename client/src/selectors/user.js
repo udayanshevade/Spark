@@ -2,6 +2,29 @@ import { createSelector } from 'reselect';
 
 export const getUserData = user => user ? user.user : null;
 
+export const getUserPosts = user => user.posts;
+export const getUserPostsSortCriterion = user => user.postsSelectedCriterion;
+export const getUserPostsSortDirection = user => user.postsSortDirection;
+export const getUserComments = user => user.comments;
+export const getUserCommentsSortCriterion = user => user.commentsSelectedCriterion;
+export const getUserCommentsSortDirection = user => user.commentsSortDirection;
+
+export const getUserSortedPosts = createSelector(
+  [getUserPosts, getUserPostsSortDirection, getUserPostsSortCriterion],
+  (posts, direction, criterion) => (
+    direction === 'asc'
+      ? [...posts].sort((a, b) => a[criterion] - b[criterion])
+      : [...posts].sort((a, b) => b[criterion] - a[criterion])
+));
+
+export const getUserSortedComments = createSelector(
+  [getUserComments, getUserCommentsSortDirection, getUserCommentsSortCriterion],
+  (comments, direction, criterion) => (
+    direction === 'asc'
+      ? [...comments].sort((a, b) => a[criterion] - b[criterion])
+      : [...comments].sort((a, b) => b[criterion] - a[criterion])
+));
+
 export const getUserProfile = createSelector(
   getUserData,
   data => (data ? data.profile : null)

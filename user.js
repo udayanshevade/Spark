@@ -10,7 +10,7 @@ const db = {
       id: 'user',
       created: 1468166872634,
       comments: ['894tuq4ut84ut8v4t8wun89g', '8tu4bsun805n8un48ve89'],
-      posts: ['8xf0y6ziyjabvozdd253nd', '6ni6ok3ym7mf1p33lnez'],
+      posts: ['8xf0y6ziyjabvozdd253nd', '6ni6ok3ym7mf1p33lnez', 'llgj1kasd78f1ptk1nz1'],
       categories: [],
       votesGiven: {},
       commentVotesReceived: {
