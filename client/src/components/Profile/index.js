@@ -4,21 +4,21 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Layer from 'grommet/components/Layer';
 import ProfileDetails from './ProfileDetails';
-import { userSetProfilePreviewActive } from '../../actions/user';
-import { getUserName } from '../../selectors/user';
+import { profileReset } from '../../actions/profile';
+import { getProfileName } from '../../selectors/profile';
 
 const Profile = ({
   username,
   actions,
-  profilePreviewActive,
+  previewActive,
 }) => {
   if (!username) return null;
   return (
     <Layer
       closer
-      hidden={!profilePreviewActive}
+      hidden={!previewActive}
       onClose={() => {
-        actions.userSetProfilePreviewActive(false);
+        actions.profileReset();
       }}
       className="profile-layer"
     >
@@ -31,7 +31,7 @@ Profile.propTypes = {
   actions: PropTypes.shape({
     userSetProfilePreviewActive: PropTypes.func,
   }),
-  profilePreviewActive: PropTypes.bool,
+  previewActive: PropTypes.bool,
   userVotesGivenMax: PropTypes.number,
   userVotesGivenSeries: PropTypes.arrayOf(
     PropTypes.shape({
@@ -43,14 +43,14 @@ Profile.propTypes = {
   height: PropTypes.number,
 };
 
-const mapStateToProps = ({ user }) => ({
-  profilePreviewActive: user.profilePreviewActive,
-  username: getUserName(user),
+const mapStateToProps = ({ profile }) => ({
+  previewActive: profile.previewActive,
+  username: getProfileName(profile),
 });
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    userSetProfilePreviewActive,
+    profileReset,
   }, dispatch),
 });
 

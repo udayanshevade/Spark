@@ -5,16 +5,19 @@ import VotesMeter from '../VotesMeter';
 import Section from 'grommet/components/Section';
 import Box from 'grommet/components/Box';
 import List from 'grommet/components/List';
+import Value from 'grommet/components/Value';
 import FilterBar from '../FilterBar';
 import PostPreview from '../Posts/PostPreview';
 import {
-  getUserSortedPosts,
-  getUserPostsSortCriterion,
-  getUserPostsSortDirection,
-} from '../../selectors/user';
+  getProfileSortedPosts,
+  getProfilePostsSortCriterion,
+  getProfilePostsSortDirection,
+  getProfilePostsNetScore,
+} from '../../selectors/profile';
 import {
-  userPostsSelectSortCriterion,
-} from '../../actions/user';
+  profileSetUser,
+  profilePostsSelectSortCriterion,
+} from '../../actions/profile';
 
 const PostHistory = ({
   width,
@@ -22,13 +25,22 @@ const PostHistory = ({
   postVotesReceivedMax,
   postVotesReceivedSeries,
   selectSortCriterion,
+  netScore,
+  setUser,
   ...sortProps,
 }) => (
   <Section responsive align="center" pad="small">
-    <VotesMeter
-      maxCount={postVotesReceivedMax}
-      votesSeries={postVotesReceivedSeries}
-    />
+    <Box
+      direction="row"
+      responsive
+      align="center"
+    >
+      <Value value={netScore} label="score" className="user-vote-score-value" />
+      <VotesMeter
+        maxCount={postVotesReceivedMax}
+        votesSeries={postVotesReceivedSeries}
+      />
+    </Box>
     <Box pad={{ vertical: 'none' }} className="user-details-list-container">
       <FilterBar
         width={width}
@@ -37,7 +49,14 @@ const PostHistory = ({
       />
       <List>
         {
-          posts.map((post, i) => <PostPreview key={`user-post-${i}`} width={width} {...post} />)
+          posts.map((post, i) => (
+            <PostPreview
+              key={`user-post-${i}`}
+              width={width}
+              profileSetUser={setUser}
+              {...post}
+            />
+          ))
         }
       </List>
     </Box>
@@ -62,15 +81,18 @@ PostHistory.propTypes = {
   postVotesReceivedSeries: seriesProps,
   postVotesReceivedMax: PropTypes.number,
   posts: postProps,
+  netScore: PropTypes.string,
 };
 
-const mapStateToProps = ({ user }) => ({
-  sortCriteria: user.sortCriteria,
-  selectedCriterion: getUserPostsSortCriterion(user),
-  sortDirection: getUserPostsSortDirection(user),
-  posts: getUserSortedPosts(user),
+const mapStateToProps = ({ profile }) => ({
+  sortCriteria: profile.sortCriteria,
+  selectedCriterion: getProfilePostsSortCriterion(profile),
+  sortDirection: getProfilePostsSortDirection(profile),
+  posts: getProfileSortedPosts(profile),
+  netScore: getProfilePostsNetScore(profile),
 });
 
 export default connect(mapStateToProps, {
-  selectSortCriterion: userPostsSelectSortCriterion,
+  selectSortCriterion: profilePostsSelectSortCriterion,
+  setUser: profileSetUser,
 })(PostHistory);

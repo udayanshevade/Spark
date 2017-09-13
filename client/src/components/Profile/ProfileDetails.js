@@ -1,5 +1,4 @@
-import React, { Component } from 'react';
-import { bindActionCreators } from 'redux';
+import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Box from 'grommet/components/Box';
@@ -8,40 +7,39 @@ import Label from 'grommet/components/Label';
 import Timestamp from 'grommet/components/Timestamp';
 import Tabs from 'grommet/components/Tabs';
 import Tab from 'grommet/components/Tab';
+import Spinning from 'grommet/components/icons/Spinning';
 import VoteHistory from './VoteHistory';
 import PostHistory from './PostHistory';
 import CommentHistory from './CommentHistory';
 import {
-  getUserName,
-  getUserTimeSinceCreation,
-  getUserVotesGivenHistory,
-  getUserVotesGivenCount,
-  getUserPostVotesReceived,
-  getUserPostVotesReceivedCount,
-  getUserCommentVotesReceived,
-  getUserCommentVotesReceivedCount,
-} from '../../selectors/user';
-import { userGetActivity } from '../../actions/user';
+  getProfileData,
+  getProfileName,
+  getProfileTimeSinceCreation,
+  getProfileVotesGivenHistory,
+  getProfileVotesGivenCount,
+  getProfilePostVotesReceived,
+  getProfilePostVotesReceivedCount,
+  getProfileCommentVotesReceived,
+  getProfileCommentVotesReceivedCount,
+} from '../../selectors/profile';
 
-class ProfileDetails extends Component {
-  componentDidMount() {
-    this.props.actions.userGetActivity(this.props.username);
-  }
-  render () {
-    const {
-      width,
-      height,
-      username,
-      userPosts,
-      timeSinceCreation,
-      postVotesReceivedMax,
-      postVotesReceivedSeries,
-      commentVotesReceivedMax,
-      commentVotesReceivedSeries,
-      votesGivenMax,
-      votesGivenSeries,
-    } = this.props;
-    return (
+const ProfileDetails = ({
+  data,
+  loading,
+  width,
+  height,
+  username,
+  timeSinceCreation,
+  postVotesReceivedMax,
+  postVotesReceivedSeries,
+  commentVotesReceivedMax,
+  commentVotesReceivedSeries,
+  votesGivenMax,
+  votesGivenSeries,
+}) => (
+  !data || loading
+  ? <Box pad="large" justify="center" align="center" className="loading-container"><Spinning /></Box>
+  : (
       <Box
         pad={{ vertical: 'large', horizontal: 'none' }}
         direction="column"
@@ -64,7 +62,6 @@ class ProfileDetails extends Component {
           <Tab title="Posts">
             <PostHistory
               width={width}
-              userPosts={userPosts}
               postVotesReceivedMax={postVotesReceivedMax}
               postVotesReceivedSeries={postVotesReceivedSeries}
             />
@@ -72,39 +69,33 @@ class ProfileDetails extends Component {
           <Tab title="Comments">
             <CommentHistory
               width={width}
-              userComments={userPosts}
               commentVotesReceivedMax={commentVotesReceivedMax}
               commentVotesReceivedSeries={commentVotesReceivedSeries}
             />
           </Tab>
         </Tabs>
       </Box>
-    );
-  }
-}
+    )
+);
 
 ProfileDetails.propTypes = {
   username: PropTypes.string,
   timeSinceCreation: PropTypes.string,
 };
 
-const mapStateToProps = ({ user, responsive }) => ({
-  username: getUserName(user),
-  timeSinceCreation: getUserTimeSinceCreation(user),
-  votesGivenMax: getUserVotesGivenCount(user),
-  votesGivenSeries: getUserVotesGivenHistory(user),
-  postVotesReceivedMax: getUserPostVotesReceivedCount(user),
-  postVotesReceivedSeries: getUserPostVotesReceived(user),
-  commentVotesReceivedMax: getUserCommentVotesReceivedCount(user),
-  commentVotesReceivedSeries: getUserCommentVotesReceived(user),
+const mapStateToProps = ({ profile, responsive }) => ({
+  loading: profile.loading,
+  data: getProfileData(profile),
+  username: getProfileName(profile),
+  timeSinceCreation: getProfileTimeSinceCreation(profile),
+  votesGivenMax: getProfileVotesGivenCount(profile),
+  votesGivenSeries: getProfileVotesGivenHistory(profile),
+  postVotesReceivedMax: getProfilePostVotesReceivedCount(profile),
+  postVotesReceivedSeries: getProfilePostVotesReceived(profile),
+  commentVotesReceivedMax: getProfileCommentVotesReceivedCount(profile),
+  commentVotesReceivedSeries: getProfileCommentVotesReceived(profile),
   height: responsive.height,
   width: responsive.width,
 });
 
-const mapDispatchToProps = dispatch => ({
-  actions: bindActionCreators({
-    userGetActivity,
-  }, dispatch),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(ProfileDetails);
+export default connect(mapStateToProps)(ProfileDetails);

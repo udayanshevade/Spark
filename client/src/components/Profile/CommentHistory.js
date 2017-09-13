@@ -5,16 +5,19 @@ import VotesMeter from '../VotesMeter';
 import Section from 'grommet/components/Section';
 import Box from 'grommet/components/Box';
 import List from 'grommet/components/List';
+import Value from 'grommet/components/Value';
 import FilterBar from '../FilterBar';
 import CommentPreview from '../Comments/CommentPreview';
 import {
-  getUserSortedComments,
-  getUserCommentsSortCriterion,
-  getUserCommentsSortDirection,
-} from '../../selectors/user';
+  getProfileSortedComments,
+  getProfileCommentsSortCriterion,
+  getProfileCommentsSortDirection,
+  getProfileCommentsNetScore,
+} from '../../selectors/profile';
 import {
-  userCommentsSelectSortCriterion,
-} from '../../actions/user';
+  profileSetUser,
+  profileCommentsSelectSortCriterion,
+} from '../../actions/profile';
 
 const CommentHistory = ({
   width,
@@ -22,14 +25,23 @@ const CommentHistory = ({
   commentVotesReceivedMax,
   commentVotesReceivedSeries,
   selectSortCriterion,
+  netScore,
+  setUser,
   ...sortProps,
 }) => (
   <Section responsive align="center" pad="small">
-    <VotesMeter
-      maxCount={commentVotesReceivedMax}
-      votesSeries={commentVotesReceivedSeries}
-    />
-    <Box pad={{ vertical: 'none' }} className="user-details-list-container">
+    <Box
+      direction="row"
+      responsive
+      align="center"
+    >
+      <Value value={netScore} label="score" className="user-vote-score-value" />
+      <VotesMeter
+        maxCount={commentVotesReceivedMax}
+        votesSeries={commentVotesReceivedSeries}
+      />
+    </Box>
+    <Box pad={{ vertical: 'none' }} className="profile-details-list-container">
       <FilterBar
         width={width}
         selectSortCriterion={selectSortCriterion}
@@ -37,7 +49,14 @@ const CommentHistory = ({
       />
       <List>
         {
-          comments.map((post, i) => <CommentPreview key={`user-post-${i}`} width={width} {...post} />)
+          comments.map((post, i) => (
+            <CommentPreview
+              key={`profile-post-${i}`}
+              width={width}
+              profileSetUser={setUser}
+              {...post}
+            />
+          ))
         }
       </List>
     </Box>
@@ -62,15 +81,18 @@ CommentHistory.propTypes = {
   commentVotesReceivedSeries: seriesProps,
   commentVotesReceivedMax: PropTypes.number,
   comments: commentProps,
+  netScore: PropTypes.string,
 };
 
-const mapStateToProps = ({ user }) => ({
-  sortCriteria: user.sortCriteria,
-  selectedCriterion: getUserCommentsSortCriterion(user),
-  sortDirection: getUserCommentsSortDirection(user),
-  comments: getUserSortedComments(user),
+const mapStateToProps = ({ profile }) => ({
+  sortCriteria: profile.sortCriteria,
+  selectedCriterion: getProfileCommentsSortCriterion(profile),
+  sortDirection: getProfileCommentsSortDirection(profile),
+  comments: getProfileSortedComments(profile),
+  netScore: getProfileCommentsNetScore(profile),
 });
 
 export default connect(mapStateToProps, {
-  selectSortCriterion: userCommentsSelectSortCriterion,
+  selectSortCriterion: profileCommentsSelectSortCriterion,
+  setUser: profileSetUser,
 })(CommentHistory);

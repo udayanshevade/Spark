@@ -11,6 +11,7 @@ import PostPreview from './PostPreview';
 import FilterBar from '../FilterBar';
 import * as postsActions from '../../actions/posts';
 import { searchSelectSortCriterion } from '../../actions/search';
+import { profileSetUser, profileSetPreviewActive } from '../../actions/profile';
 import { getSortedPosts } from '../../selectors/posts';
 
 export const PostsComponent = ({
@@ -41,7 +42,15 @@ export const PostsComponent = ({
         <Box pad={{ vertical: 'none' }} className="list-items-container">
           <List>
             {
-              posts.map((post, i) => <PostPreview key={`post-list-item-${i}`} width={width} {...post} />)
+              posts.map((post, i) => (
+                <PostPreview
+                  key={`post-list-item-${i}`}
+                  width={width}
+                  profileSetUser={actions.profileSetUser}
+                  profileSetPreviewActive={actions.profileSetPreviewActive}
+                  {...post}
+                />
+              ))
             }
           </List>
         </Box>
@@ -78,6 +87,8 @@ const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     ...postsActions,
     searchSelectSortCriterion,
+    profileSetUser,
+    profileSetPreviewActive,
   }, dispatch),
 });
 

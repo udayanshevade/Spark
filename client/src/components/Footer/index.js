@@ -7,9 +7,11 @@ import Button from 'grommet/components/Button';
 import LoginIcon from 'grommet/components/icons/base/Login';
 import LogoutIcon from 'grommet/components/icons/base/Logout';
 import UserIcon from 'grommet/components/icons/base/User';
-import { userLogout, userSetLoginActive, userSetProfilePreviewActive } from '../../actions/user';
+import { userLogout, userSetLoginActive } from '../../actions/user';
+import { profileSetUsername, profileSetPreviewActive } from '../../actions/profile';
+import { getUsername } from '../../selectors/user';
 
-const AppFooter = ({ width, loggedIn, actions }) =>  {
+const AppFooter = ({ width, loggedIn, actions, username }) =>  {
   const isMobile = width < 500;
   return (
     <Footer primary justify={isMobile ? 'center' : 'end'} className="main-footer">
@@ -32,7 +34,7 @@ const AppFooter = ({ width, loggedIn, actions }) =>  {
             label={isMobile ? null : 'Profile'}
             icon={<UserIcon />}
             onClick={() => {
-              actions.userSetProfilePreviewActive(true);
+              actions.profileSetUser(username);
             }}
           />
       }
@@ -43,18 +45,21 @@ const AppFooter = ({ width, loggedIn, actions }) =>  {
 AppFooter.propTypes = {
   loggedIn: PropTypes.bool,
   width: PropTypes.number,
+  username: PropTypes.string,
 };
 
 const mapStateToProps = ({ user, responsive }) => ({
   loggedIn: user.loggedIn,
   width: responsive.width,
+  username: getUsername(user),
 });
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     userLogout,
     userSetLoginActive,
-    userSetProfilePreviewActive,
+    profileSetUsername,
+    profileSetPreviewActive,
   }, dispatch),
 });
 

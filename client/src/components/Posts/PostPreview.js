@@ -5,11 +5,20 @@ import Card from 'grommet/components/Card';
 import Paragraph from 'grommet/components/Paragraph';
 import Timestamp from 'grommet/components/Timestamp';
 import Box from 'grommet/components/Box';
-import Anchor from 'grommet/components/Anchor';
 import NewIcon from 'grommet/components/icons/base/New';
+import Button from 'grommet/components/Button';
 import VoteBox from '../VoteBox';
 
-const PostPreview = ({ width, title, author, body, timestamp, voteScore, id }) => (
+const PostPreview = ({
+  width,
+  title,
+  author,
+  body,
+  timestamp,
+  voteScore,
+  id,
+  profileSetUser,
+}) => (
   <ListItem
     pad={{ horizontal: 'medium' }}
     direction="row"
@@ -22,7 +31,14 @@ const PostPreview = ({ width, title, author, body, timestamp, voteScore, id }) =
       flex
       label={
         <div>
-          <Anchor icon={<NewIcon size="xsmall" />}>{author}</Anchor>
+          <Button
+            plain
+            label={author}
+            icon={<NewIcon size="xsmall" className="user-button-icon" />}
+            onClick={() => {
+              profileSetUser(author);
+            }}
+          />
           <span className="anchor-text-padded">shared:</span>
         </div>
       }
@@ -49,6 +65,7 @@ PostPreview.propTypes = {
   timestamp: PropTypes.number,
   author: PropTypes.string,
   voteScore: PropTypes.number,
+  profileSetUser: PropTypes.func,
 };
 
 export default PostPreview;
