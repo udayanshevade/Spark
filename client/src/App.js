@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Route } from 'react-router-dom';
+import { Route, withRouter } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import '../node_modules/grommet-css';
 import './App.css';
@@ -10,22 +10,15 @@ import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Login from './components/Login';
 import Profile from './components/Profile';
+import Post from './components/Post';
 import { responsiveResizeListener } from './actions/responsive';
-import { categoriesLoadData } from './actions/categories';
-import { postsLoadData } from './actions/posts';
 
 class AppComponent extends Component {
   componentDidMount() {
     this.unlistenResize = this.props.actions.responsiveResizeListener();
-    this.loadData();
   }
   componentWillUnmount() {
     this.unlistenResize();
-  }
-  loadData() {
-    const { actions } = this.props;
-    actions.categoriesLoadData();
-    actions.postsLoadData();
   }
   render() {
     return (
@@ -35,6 +28,7 @@ class AppComponent extends Component {
         <Route path="/" component={Login} />
         <Route path="/" component={Profile} />
         <Route path="/" component={Footer} />
+        <Route path="/posts/:id" component={Post} />
       </div>
     );
   }
@@ -51,11 +45,9 @@ const mapStateToProps = state => ({});
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     responsiveResizeListener,
-    categoriesLoadData,
-    postsLoadData,
   }, dispatch),
 });
 
 const App = connect(mapStateToProps, mapDispatchToProps)(AppComponent);
 
-export default App;
+export default withRouter(App);

@@ -27,7 +27,6 @@
 
 .vote-box {
   text-align: center;
-  margin-bottom: 3.25em;
 }
 
 .main-header, .main-footer {
@@ -95,7 +94,7 @@
 }
 
 .loading-container {
-  margin: 5em;
+  width: 100%;
 }
 
 .grommetux-button__icon .grommetux-control-icon.user-button-icon {
@@ -106,12 +105,41 @@
   padding: 1em;
 }
 
+.list-item-link-container,
+.list-item-link-container:hover,
+.list-item-link-container:visited {
+  color: initial;
+  text-decoration: initial;
+  width: fit-content;
+}
+
+.grommetux-heading.post-preview-title {
+  display: inline-block;
+  font-size: 1.5em;
+}
+
+.profile-preview-button .grommetux-button__icon {
+  padding-left: 0;  
+}
+
+.preview-item__inner {
+  width: 100%;
+}
+
+.post-header {
+  background: #f6f6f6;
+}
+
+.comment-list-item-container {
+  width: 100%;
+}
+
+.comment-list-item {
+  padding-right: 0;
+}
+
 @media screen and (min-width: 500px) {
   .post-timestamp {
     text-align: right;
-  }
-
-  .vote-box {
-    margin-bottom: 2em;
   }
 }

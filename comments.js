@@ -6,6 +6,7 @@ const db = {
     postId: "8xf0y6ziyjabvozdd253nd",
     parentId: null,
     ancestorId: null,
+    children: ['8tu4bsun805n8un48ve89'],
     timestamp: 1468166872634,
     body: 'Hi there! I am a COMMENT.',
     author: 'user',
@@ -18,6 +19,7 @@ const db = {
     postId: "8xf0y6ziyjabvozdd253nd",
     parentId: '894tuq4ut84ut8v4t8wun89g',
     ancestorId: '894tuq4ut84ut8v4t8wun89g',
+    children: [],
     timestamp: 1469479767190,
     body: 'Comments. Are. Cool.',
     author: 'user',
@@ -100,7 +102,9 @@ function add (sessionToken, comment) {
           deleted: false,
           postDeleted: false,
         };
-         
+
+        comments[comment.parentId].children.push(comment.id);
+
         res(comments[comment.id]);
     }).catch(err => reject(err));
   });
@@ -159,7 +163,8 @@ function disable (sessionToken, commentId) {
   return new Promise((res, reject) => {
     verifySessionToken(sessionToken, comments[commentId].author)
       .then(data => {
-        comments[commentId].deleted = true;
+        const commentToDisable = comments[commentId];
+        commentToDisable.deleted = true;
         res(comments[commentId]);
       }).catch(err => reject(err));
     });

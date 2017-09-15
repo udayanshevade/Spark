@@ -194,7 +194,7 @@ app.get('/posts/get/:query?*', (req, res) => {
 /**
  * @description Get a specific post
  */
-app.get('/posts/single/:id', (req, res) => {
+app.get('/posts/thread/:id', (req, res) => {
   const errors = { 500: serverErrorMsg };
   posts.get(req.params.id)
     .then(
@@ -228,7 +228,7 @@ app.post('/posts', (req, res) => {
 /**
  * @description Delete a post
  */
-app.delete('/posts/delete/:id', (req, res) => {
+app.delete('/posts/thread/:id/delete', (req, res) => {
     if (!req.sessionToken) {
       res.status(401).send({ error: authErrorMsg });
     } else {
@@ -250,7 +250,7 @@ app.delete('/posts/delete/:id', (req, res) => {
 /**
  * @description Vote on a post
  */
-app.put('/posts/vote/:id', (req, res) => {
+app.put('/posts/thread/:id/vote', (req, res) => {
   if (!req.sessionToken) {
     res.status(401).send({ error: authErrorMsg });
   } else {
@@ -276,7 +276,7 @@ app.put('/posts/vote/:id', (req, res) => {
 /**
  * @description Edit a post
  */
-app.put('/posts/edit/:id', (req, res) => {
+app.put('/posts/thread/:id/edit', (req, res) => {
   if (!req.sessionToken) {
     res.status(401).send({ error: authErrorMsg });
   } else {
@@ -292,7 +292,7 @@ app.put('/posts/edit/:id', (req, res) => {
 /**
  * @description Get all post comments
  */
-app.get('/posts/single/:id/comments', (req, res) => {
+app.get('/posts/thread/:id/comments', (req, res) => {
   const errors = { 500: serverErrorMsg };
   comments.getByParent(req.params.id)
     .then(

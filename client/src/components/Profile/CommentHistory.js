@@ -5,6 +5,7 @@ import VotesMeter from '../VotesMeter';
 import Section from 'grommet/components/Section';
 import Box from 'grommet/components/Box';
 import List from 'grommet/components/List';
+import ListItem from 'grommet/components/ListItem';
 import Value from 'grommet/components/Value';
 import FilterBar from '../FilterBar';
 import CommentPreview from '../Comments/CommentPreview';
@@ -50,12 +51,13 @@ const CommentHistory = ({
       <List>
         {
           comments.map((post, i) => (
-            <CommentPreview
-              key={`profile-post-${i}`}
-              width={width}
-              profileSetUser={setUser}
-              {...post}
-            />
+            <ListItem key={`profile-post-${i}`}>
+              <CommentPreview
+                width={width}
+                profileSetUser={setUser}
+                {...post}
+              />
+            </ListItem>
           ))
         }
       </List>

@@ -8,7 +8,7 @@ import LoginIcon from 'grommet/components/icons/base/Login';
 import LogoutIcon from 'grommet/components/icons/base/Logout';
 import UserIcon from 'grommet/components/icons/base/User';
 import { userLogout, userSetLoginActive } from '../../actions/user';
-import { profileSetUsername, profileSetPreviewActive } from '../../actions/profile';
+import { profileSetUser } from '../../actions/profile';
 import { getUsername } from '../../selectors/user';
 
 const AppFooter = ({ width, loggedIn, actions, username }) =>  {
@@ -58,8 +58,7 @@ const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     userLogout,
     userSetLoginActive,
-    profileSetUsername,
-    profileSetPreviewActive,
+    profileSetUser,
   }, dispatch),
 });
 

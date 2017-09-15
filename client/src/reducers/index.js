@@ -6,6 +6,7 @@ import posts, { initialState as postsState } from './posts';
 import user, { initialState as userState } from './user';
 import search, { initialState as searchState } from './search';
 import profile, { initialState as profileState } from './profile';
+import post, { initialState as postState } from './post';
 
 export const initialState = {
   responsive: responsiveState,
@@ -15,6 +16,7 @@ export const initialState = {
   user: userState,
   search: searchState,
   profile: profileState,
+  post: postState,
 };
 
 export default combineReducers({
@@ -25,4 +27,5 @@ export default combineReducers({
   user,
   search,
   profile,
+  post,
 });

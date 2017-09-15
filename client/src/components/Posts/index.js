@@ -5,13 +5,14 @@ import { connect } from 'react-redux';
 import Section from 'grommet/components/Section';
 import Box from 'grommet/components/Box';
 import List from 'grommet/components/List';
+import ListItem from 'grommet/components/ListItem';
 import ListPlaceHolder from 'grommet-addons/components/ListPlaceholder';
 import Spinning from 'grommet/components/icons/Spinning';
 import PostPreview from './PostPreview';
 import FilterBar from '../FilterBar';
 import * as postsActions from '../../actions/posts';
 import { searchSelectSortCriterion } from '../../actions/search';
-import { profileSetUser, profileSetPreviewActive } from '../../actions/profile';
+import { profileSetUser } from '../../actions/profile';
 import { getSortedPosts } from '../../selectors/posts';
 
 export const PostsComponent = ({
@@ -43,13 +44,16 @@ export const PostsComponent = ({
           <List>
             {
               posts.map((post, i) => (
-                <PostPreview
+                <ListItem
                   key={`post-list-item-${i}`}
-                  width={width}
-                  profileSetUser={actions.profileSetUser}
-                  profileSetPreviewActive={actions.profileSetPreviewActive}
-                  {...post}
-                />
+                  pad={{ horizontal: 'none' }}
+                >
+                  <PostPreview
+                    width={width}
+                    profileSetUser={actions.profileSetUser}
+                    {...post}
+                  />
+                </ListItem>
               ))
             }
           </List>
@@ -88,7 +92,6 @@ const mapDispatchToProps = dispatch => ({
     ...postsActions,
     searchSelectSortCriterion,
     profileSetUser,
-    profileSetPreviewActive,
   }, dispatch),
 });
 

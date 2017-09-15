@@ -1,7 +1,7 @@
 import * as types from './types';
 import Requests from '../requests';
 
-const APIbaseURL = './user';
+const APIbaseURL = '/user';
 
 export const profileSetUser = username => (dispatch) => {
   dispatch(profileSetUsername(username));
@@ -70,8 +70,8 @@ export const profilePostsUpdateSortDirection = postsSortDirection => ({
 });
 
 export const profileCommentsSelectSortCriterion = ({ value, direction }) => (dispatch, getState) => {
-  const { PROFILE } = getState();
-  const { commentsSelectedCriterion, commentsSortDirection } = PROFILE;
+  const { profile } = getState();
+  const { commentsSelectedCriterion, commentsSortDirection } = profile;
   if (commentsSelectedCriterion !== value) {
     dispatch(profileCommentsUpdateSortCriterion(value));
   }
