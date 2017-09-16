@@ -15,10 +15,12 @@ import {
   getProfileCommentsSortDirection,
   getProfileCommentsNetScore,
 } from '../../selectors/profile';
+import { getUserVotesGiven } from '../../selectors/user';
 import {
   profileSetUser,
   profileCommentsSelectSortCriterion,
 } from '../../actions/profile';
+import { userRecordVote } from '../../actions/user';
 
 const CommentHistory = ({
   width,
@@ -28,6 +30,8 @@ const CommentHistory = ({
   selectSortCriterion,
   netScore,
   setUser,
+  applyVote,
+  votesGiven,
   ...sortProps,
 }) => (
   <Section responsive align="center" pad="small">
@@ -55,6 +59,10 @@ const CommentHistory = ({
               <CommentPreview
                 width={width}
                 profileSetUser={setUser}
+                applyVote={(id, vote) => {
+                  applyVote('comment', id, vote);
+                }}
+                votesGiven={votesGiven}
                 {...post}
               />
             </ListItem>
@@ -86,15 +94,17 @@ CommentHistory.propTypes = {
   netScore: PropTypes.string,
 };
 
-const mapStateToProps = ({ profile }) => ({
+const mapStateToProps = ({ user, profile }) => ({
   sortCriteria: profile.sortCriteria,
   selectedCriterion: getProfileCommentsSortCriterion(profile),
   sortDirection: getProfileCommentsSortDirection(profile),
   comments: getProfileSortedComments(profile),
   netScore: getProfileCommentsNetScore(profile),
+  votesGiven: getUserVotesGiven(user),
 });
 
 export default connect(mapStateToProps, {
   selectSortCriterion: profileCommentsSelectSortCriterion,
   setUser: profileSetUser,
+  applyVote: userRecordVote,
 })(CommentHistory);

@@ -27,6 +27,8 @@ const PostPreview = ({
   toggleShowFull,
   profileSetUser,
   bodyCharLim,
+  applyVote,
+  votesGiven,
 }) => (
   <Box
     direction="row"
@@ -36,7 +38,13 @@ const PostPreview = ({
     pad={{ horizontal: 'small' }}
     className={`preview-item__inner ${main ? 'post-header' : ''}`}
   >
-    <VoteBox voteScore={voteScore} />
+    <VoteBox
+      voteScore={voteScore}
+      applyVote={(vote) => {
+        applyVote(id, vote);
+      }}
+      vote={votesGiven ? votesGiven[id] : null}
+    />
     <Card
       flex
       label={
@@ -49,8 +57,9 @@ const PostPreview = ({
           <span>shared</span>
           {
             !threadView &&
-              <span className="anchor-text-padded">in <Anchor path={`/categories/${category}`}>/{category}</Anchor>:</span>
+              <span className="anchor-text-padded">in <Anchor path={`/categories/${category}`}>/{category}</Anchor></span>
           }
+          :
         </div>
       }
       heading={
@@ -101,6 +110,7 @@ PostPreview.propTypes = {
   voteScore: PropTypes.number,
   showFull: PropTypes.bool,
   profileSetUser: PropTypes.func,
+  votesGiven: PropTypes.object,
 };
 
 export default PostPreview;

@@ -4,7 +4,14 @@ import List from 'grommet/components/List';
 import ListItem from 'grommet/components/ListItem';
 import CommentPreview from './CommentPreview';
 
-const Comments = ({ width, comments, profileSetUser, showChildren }) => (
+const Comments = ({
+  width,
+  comments,
+  profileSetUser,
+  showChildren,
+  applyVote,
+  votesGiven,
+}) => (
   <Box pad={{ vertical: 'none' }} className="comments-container">
     <List className="comment-list">
       {
@@ -14,6 +21,8 @@ const Comments = ({ width, comments, profileSetUser, showChildren }) => (
               width={width}
               profileSetUser={profileSetUser}
               showChildren={showChildren}
+              applyVote={applyVote}
+              votesGiven={votesGiven}
               {...comment}
             />
           </ListItem>

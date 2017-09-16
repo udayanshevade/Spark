@@ -172,7 +172,6 @@ app.get('/categories/get/:query*?', (req, res) => {
  */
 app.get('/categories/category/:category/posts/:query*?', (req, res) => {
   const errors = { 500: serverErrorMsg };
-  console.log(req.params.query);
   categories.getCategoryPosts(req.params.category)
     .then(
       postIds => posts.getByIds(postIds, req.params.query).then(
@@ -265,12 +264,12 @@ app.put('/posts/thread/:id/vote', (req, res) => {
     const voteId = req.params.id;
     // update record of voter
     user.updateUserVote(req.sessionToken, voterId, voteId, option)
-      .then((updatedOption) => {
-        posts.vote(voteId, updatedOption)
+      .then((updatedOption, oldOption) => {
+        posts.vote(voteId, updatedOption, oldOption)
           .then(
             (data) => {
               // update post score of post author
-              user.updatePostScore(data.author, updatedOption);
+              user.updatePostScore(data.author, updatedOption, oldOption);
               res.send({});
             },
             handleErrorFn(res, errors)

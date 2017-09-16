@@ -12,6 +12,8 @@ import PostPreview from '../Posts/PostPreview';
 import Comments from '../Comments';
 import { postGetDetails, postToggleShowFull, postEmpty } from '../../actions/post';
 import { profileSetUser } from '../../actions/profile';
+import { userRecordVote } from '../../actions/user';
+import { getUserVotesGiven } from '../../selectors/user';
 
 class Post extends Component {
   componentDidMount() {
@@ -28,6 +30,7 @@ class Post extends Component {
       navbarTitle,
       showFull,
       bodyCharLim,
+      votesGiven,
     } = this.props;
     if (!data) return <Box justify="center" className="loading-container"><Spinning /></Box>
     const { category } = data;
@@ -56,6 +59,10 @@ class Post extends Component {
           threadView
           toggleShowFull={actions.postToggleShowFull}
           showFull={showFull}
+          applyVote={(id, vote) => {
+            actions.userRecordVote('post', id, vote);
+          }}
+          votesGiven={votesGiven}
           {...data}
         />
         <Comments />
@@ -64,12 +71,13 @@ class Post extends Component {
   }
 }
 
-const mapStateToProps = ({ post, responsive, navbar }) => ({
+const mapStateToProps = ({ user, post, responsive, navbar }) => ({
   width: responsive.width,
   data: post.data,
   showFull: post.showFull,
   navbarTitle: navbar.title,
   bodyCharLim: post.bodyCharLim,
+  votesGiven: getUserVotesGiven(user),
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -78,6 +86,7 @@ const mapDispatchToProps = dispatch => ({
     profileSetUser,
     postToggleShowFull,
     postEmpty,
+    userRecordVote,
   }, dispatch),
 });
 

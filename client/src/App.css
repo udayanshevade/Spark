@@ -154,6 +154,14 @@
   margin-right: 0.5em;
 }
 
+.upvote {
+  stroke: #00cceb !important;
+}
+
+.downvote {
+  stroke: #ff7d28 !important;
+}
+
 @media screen and (min-width: 500px) {
   .post-timestamp {
     text-align: right;

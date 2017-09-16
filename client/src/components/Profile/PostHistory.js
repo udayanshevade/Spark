@@ -14,10 +14,12 @@ import {
   getProfilePostsSortDirection,
   getProfilePostsNetScore,
 } from '../../selectors/profile';
+import { getUserVotesGiven } from '../../selectors/user';
 import {
   profileSetUser,
   profilePostsSelectSortCriterion,
 } from '../../actions/profile';
+import { userRecordVote } from '../../actions/user';
 
 const PostHistory = ({
   width,
@@ -27,6 +29,8 @@ const PostHistory = ({
   selectSortCriterion,
   netScore,
   setUser,
+  applyVote,
+  votesGiven,
   ...sortProps,
 }) => (
   <Section responsive align="center" pad="small">
@@ -54,6 +58,10 @@ const PostHistory = ({
               key={`user-post-${i}`}
               width={width}
               profileSetUser={setUser}
+              applyVote={(id, vote) => {
+                applyVote('post', id, vote);
+              }}
+              votesGiven={votesGiven}
               {...post}
             />
           ))
@@ -84,15 +92,17 @@ PostHistory.propTypes = {
   netScore: PropTypes.string,
 };
 
-const mapStateToProps = ({ profile }) => ({
+const mapStateToProps = ({ user, profile }) => ({
   sortCriteria: profile.sortCriteria,
   selectedCriterion: getProfilePostsSortCriterion(profile),
   sortDirection: getProfilePostsSortDirection(profile),
   posts: getProfileSortedPosts(profile),
   netScore: getProfilePostsNetScore(profile),
+  votesGiven: getUserVotesGiven(user),
 });
 
 export default connect(mapStateToProps, {
   selectSortCriterion: profilePostsSelectSortCriterion,
   setUser: profileSetUser,
+  applyVote: userRecordVote,
 })(PostHistory);

@@ -30,6 +30,23 @@ const user = (state = initialState, action) => {
       const { loading } = action;
       return { ...state, loading };
     }
+    case types.USER_UPDATE_VOTES: {
+      const { id, option } = action;
+      const votesGiven = {
+        ...state.user.profile.votesGiven,
+        [id]: option,
+      };
+      return {
+        ...state,
+        user: {
+          ...state.user,
+          profile: {
+            ...state.user.profile,
+            votesGiven,
+          },
+        },
+      };
+    }
     case types.RESET:
       return initialState;
     default:

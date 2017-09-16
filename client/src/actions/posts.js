@@ -34,3 +34,10 @@ export const postsLoadData = (query = '', category) => async(dispatch) => {
   dispatch(postsUpdate(posts));
   dispatch(postsSetLoading(false));
 };
+
+export const postUpdateVote = (id, option, previousVote) => ({
+  type: types.POST_UPDATE_VOTE,
+  id,
+  option,
+  previousVote,
+});

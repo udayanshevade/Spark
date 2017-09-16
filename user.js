@@ -231,10 +231,21 @@ function removeComment (userId, commentId) {
  * @param {string} userId
  * @param {string} vote option, i.e. 'upVote'/'downVote'
  */
-function updatePostScore (userId, option) {
+function updatePostScore (userId, option, previousVote) {
   const users = getData();
   const user = users[userId];
-  const delta = option === 'upVote' ? 1 : -1;
+  let delta = 0;
+  if ((!previousVote && option === 'upVote') ||
+    (!option && previousVote === 'downVote')) {
+    delta = 1;
+  } else if ((!previousVote && option === 'downVote') ||
+    (!option && previousVote === 'upVote')) {
+    delta = -1;
+  } else if (previousVote === 'downVote' && option ==='upVote') {
+    delta = 2;
+  } else if (previousVote === 'upVote' && option === 'downVote') {
+    delta = -2;
+  }
   user.profile.postVotesReceived[option] += delta;
 }
 
@@ -243,10 +254,21 @@ function updatePostScore (userId, option) {
  * @param {string} userId
  * @param {string} vote option
  */
-function updateCommentScore (userId, option) {
+function updateCommentScore (userId, option, previousVote) {
   const users = getData();
   const user = users[userId];
-  const delta = option === 'upVote' ? 1 : -1;
+  let delta = 0;
+  if ((!previousVote && option === 'upVote') ||
+    (!option && previousVote === 'downVote')) {
+    delta = 1;
+  } else if ((!previousVote && option === 'downVote') ||
+    (!option && previousVote === 'upVote')) {
+    delta = -1;
+  } else if (previousVote === 'downVote' && option ==='upVote') {
+    delta = 2;
+  } else if (previousVote === 'upVote' && option === 'downVote') {
+    delta = -2;
+  }
   user.profile.commentVotesReceived[option] += delta;
 }
 
@@ -268,17 +290,19 @@ function updateUserVote (sessionToken, userId, voteId, option) {
   return new Promise((res, reject) => {
     verifySessionToken(sessionToken, userId)
       .then((data) => {
-        // overwrite old option if one existed
-        writeUserVote(userId, voteId, option);
+        const users = getData();
+        const user = users[userId];
         // query old vote record
         const oldOption = user.profile.votesGiven[voteId];
+        // overwrite old option if one existed
+        writeUserVote(userId, voteId, option);
         let newOption = option;
         if (oldOption === option) {
           newOption = null;
-        } else if (oldOption && !option) {
+        } else if (oldOption && option === 'null') {
           newOption = oldOption === 'upVote' ? 'downVote' : 'upVote';
         }
-        res(newOption);
+        res(newOption, oldOption);
       }).catch(err => reject(err));
   });
 }

@@ -141,22 +141,24 @@ function add (sessionToken, post) {
  * @param {string} postId
  * @param {string} option, i.e. 'upVote'/'downVote'
  */
-function vote (postId, option) {
+function vote (postId, option, previousVote) {
   return new Promise((res, reject) => {
     const posts = getData();
     post = posts[postId];
     let delta = 0;
-    console.log(option);
-    switch(option) {
-      case "upVote":
-        delta = 1;
-        break;
-      case "downVote":
-        delta = -1;
-        break;
-      default:
-        console.log(`Duplicated vote on post: ${postId}.`);
-        reject(403);
+    if ((!previousVote && option === 'upVote') ||
+      (!option && previousVote === 'downVote')) {
+      delta = 1;
+    } else if ((!previousVote && option === 'downVote') ||
+      (!option && previousVote === 'upVote')) {
+      delta = -1;
+    } else if (previousVote === 'downVote' && option ==='upVote') {
+      delta = 2;
+    } else if (previousVote === 'upVote' && option === 'downVote') {
+      delta = -2;
+    } else {
+      console.log(`Duplicated vote on post: ${postId}.`);
+      reject(403);
     }
     post.voteScore += delta;
     res(post);

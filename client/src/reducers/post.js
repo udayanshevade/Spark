@@ -45,6 +45,30 @@ const post = (state = initialState, action) => {
       const showFull = !state.showFull;
       return { ...state, showFull };
     }
+    case types.POST_UPDATE_VOTE: {
+      const { option, previousVote } = action;
+      if (!state.data) return state;
+      let delta = 0;
+      if ((!previousVote && option === 'upVote') ||
+        (!option && previousVote === 'downVote')) {
+        delta = 1;
+      } else if ((!previousVote && option === 'downVote') ||
+        (!option && previousVote === 'upVote')) {
+        delta = -1;
+      } else if (previousVote === 'downVote' && option ==='upVote') {
+        delta = 2;
+      } else if (previousVote === 'upVote' && option === 'downVote') {
+        delta = -2;
+      }
+      const voteScore = state.data.voteScore + delta;
+      return {
+        ...state,
+        data: {
+          ...state.data,
+          voteScore,
+        },
+      };
+    }
     case types.POST_EMPTY:
       return initialState;
     default:

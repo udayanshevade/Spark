@@ -11,3 +11,8 @@ export const getUsername = createSelector(
   getUserProfile,
   profile => (profile ? profile.id : null)
 );
+
+export const getUserVotesGiven = createSelector(
+  getUserProfile,
+  profile => (profile ? profile.votesGiven : null)
+);
