@@ -65,26 +65,12 @@ const fuseOptions = {
 function getAll (query) {
   return new Promise((res) => {
     let posts = Object.values(getData()).filter(post => !post.deleted);
-    const fuse = new Fuse(posts, fuseOptions);
     if (query) {
+      const fuse = new Fuse(posts, fuseOptions);
       // return matching
       posts = fuse.search(query);
     }
     res(posts);
-  });
-}
-
-/**
- * @description Get all active posts by a specified category
- * @param {string} category
- * @returns {array} all post objects matching a category
- */
-function getByCategory (category) {
-  return new Promise((res) => {
-    const posts = getData();
-    const keys = Object.keys(posts);
-    const filtered_keys = keys.filter(key => posts[key].category === category && !posts[key].deleted);
-    res(filtered_keys.map(key => posts[key]));
   });
 }
 
@@ -109,10 +95,15 @@ function get (postId) {
  * @param {array} postIds
  * @returns {array} batch of posts by ids
  */
-function getByIds (postIds) {
+function getByIds (postIds, query) {
   return new Promise((res) => {
-    const posts = getData();
-    res(postIds.map(id => posts[id]));
+    const allPosts = getData();
+    let selectedPosts = postIds.map(id => allPosts[id]);
+    if (query) {
+      const fuse = new Fuse(selectedPosts, fuseOptions);
+      selectedPosts = fuse.search(query);
+    }
+    res(selectedPosts);
   });
 }
 
@@ -211,7 +202,6 @@ module.exports = {
   get,
   getByIds,
   getAll,
-  getByCategory,
   add,
   vote,
   disable,

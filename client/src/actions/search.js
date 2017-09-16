@@ -2,7 +2,7 @@ import * as types from './types';
 import { categoriesLoadData, categoriesQueryUpdate } from './categories';
 import { postsLoadData, postsQueryUpdate } from './posts';
 
-export const searchQueryChange = e => (dispatch, getState) => {
+export const searchQueryChange = (e, category) => (dispatch, getState) => {
   const query = e.target.value;
   const { search } = getState();
   const { filters, activeFilter, timeoutId, timeoutLength } = search;
@@ -17,7 +17,7 @@ export const searchQueryChange = e => (dispatch, getState) => {
     if (filter === 'categories') {
       dispatch(categoriesLoadData(query));
     } else {
-      dispatch(postsLoadData(query));
+      dispatch(postsLoadData(query, category));
     }
   }, timeoutLength);
   dispatch(searchSetTimeout(newTimeoutId));

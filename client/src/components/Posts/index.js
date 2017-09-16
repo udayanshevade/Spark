@@ -8,6 +8,7 @@ import List from 'grommet/components/List';
 import ListItem from 'grommet/components/ListItem';
 import ListPlaceHolder from 'grommet-addons/components/ListPlaceholder';
 import Spinning from 'grommet/components/icons/Spinning';
+import Navbar from '../Navbar';
 import PostPreview from './PostPreview';
 import FilterBar from '../FilterBar';
 import * as postsActions from '../../actions/posts';
@@ -21,15 +22,27 @@ export const PostsComponent = ({
   posts,
   actions,
   active,
+  bodyCharLim,
+  category,
   ...filterProps,
 }) => {
   let postsEl;
   if (loading) {
-    postsEl = <Spinning className="loading-spinner" />
+    postsEl = (
+      <Box
+        pad="large"
+        align="center"
+        className="loading-container"
+      >
+        <Spinning className="loading-spinner" />
+      </Box>
+    );
   } else if (!posts.length) {
     postsEl = (
       <ListPlaceHolder
+        emptyMessage="No posts available."
         filteredTotal={posts.length}
+        unfilteredTotal={posts.length}
       />
     );
   } else {
@@ -51,6 +64,7 @@ export const PostsComponent = ({
                   <PostPreview
                     width={width}
                     profileSetUser={actions.profileSetUser}
+                    bodyCharLim={bodyCharLim}
                     {...post}
                   />
                 </ListItem>
@@ -61,7 +75,12 @@ export const PostsComponent = ({
       </Section>
     );
   }
-  return postsEl;
+  return (
+    <div>
+      <Navbar category={category}/>
+      {postsEl}
+    </div>
+  );
 }
 
 PostsComponent.propTypes = {
@@ -75,9 +94,10 @@ PostsComponent.propTypes = {
   }),
   activePost: PropTypes.string,
   width: PropTypes.number,
+  bodyCharLim: PropTypes.number,
 };
 
-const mapStateToProps = ({ posts, search, responsive }) => ({
+const mapStateToProps = ({ posts, post, search, responsive }) => ({
   loading: posts.loading,
   posts: getSortedPosts({ posts, search }),
   active: posts.active,
@@ -85,6 +105,7 @@ const mapStateToProps = ({ posts, search, responsive }) => ({
   sortDirection: search.sortDirection,
   selectedCriterion: search.selectedCriterion,
   width: responsive.width,
+  bodyCharLim: post.bodyCharLim,
 });
 
 const mapDispatchToProps = dispatch => ({

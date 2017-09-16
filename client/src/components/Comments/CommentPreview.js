@@ -27,7 +27,7 @@ const CommentPreview = ({
       responsive={false}
       align="center"
       reverse={width < 500}
-      pad={{ horizontal: 'small' }}
+      pad={{ horizontal: 'small', vertical: 'none' }}
       className="preview-list-item__inner"
     >
       <VoteBox voteScore={voteScore} />
@@ -40,7 +40,7 @@ const CommentPreview = ({
               icon={<AnnounceIcon size="xsmall" className="user-button-icon" />}
               profileSetUser={profileSetUser}
             />
-            <span className="anchor-text-padded">said:</span>
+            <span>said:</span>
           </div>
         }
         description={

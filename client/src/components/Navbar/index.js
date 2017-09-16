@@ -2,6 +2,7 @@ import React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
+import Anchor from 'grommet/components/Anchor';
 import Box from 'grommet/components/Box';
 import Header from 'grommet/components/Header';
 import Search from 'grommet/components/Search';
@@ -16,6 +17,7 @@ const NavbarComponent = ({
   actions,
   filters,
   activeFilter,
+  category,
 }) => {
   const filter = filters[activeFilter];
   const value = filter === 'categories' ? categoriesQuery : postsQuery;
@@ -26,7 +28,7 @@ const NavbarComponent = ({
       className="main-header"
     >
       <Title className="app-header__title" responsive={false}>
-        <span>{title}</span>
+        <Anchor path="/"><span>{title}</span></Anchor>
       </Title>
       <Box
         responsive={false}
@@ -40,15 +42,20 @@ const NavbarComponent = ({
           fill
           size="medium"
           dropAlign={{ right: 'right' }}
-          placeHolder={`Search ${filter}`}
-          onDOMChange={actions.searchQueryChange}
+          placeHolder={`Search ${!category ? filter : `/${category}`}`}
+          onDOMChange={(e) => {
+            actions.searchQueryChange(e, category);
+          }}
           value={value}
         />
-        <FilterSelect
-          filters={filters}
-          activeFilter={activeFilter}
-          searchFilterUpdate={actions.searchFilterUpdate}
-        />
+        {
+          !category &&
+            <FilterSelect
+              filters={filters}
+              activeFilter={activeFilter}
+              searchFilterUpdate={actions.searchFilterUpdate}
+            />
+        }
       </Box>
     </Header>
   );
@@ -66,6 +73,7 @@ NavbarComponent.propTypes = {
     searchQueryChange: PropTypes.func,
     searchFilterChange: PropTypes.func,
   }),
+  category: PropTypes.string,
 };
 
 const mapStateToProps = ({ navbar, search, categories, posts }) => ({

@@ -21,12 +21,21 @@ export const CommentsContainer = ({
 }) => {
   let commentsEl;
   if (loading) {
-    commentsEl = <Box justify="center" className="loading-container"><Spinning className="loading-spinner" /></Box>
+    commentsEl = (
+      <Box
+        align="center"
+        pad="large"
+        className="loading-container"
+      >
+        <Spinning className="loading-spinner" />
+      </Box>
+    );
   } else if (!comments.length) {
     commentsEl = (
       <ListPlaceHolder
         emptyMessage="No comments yet."
         filteredTotal={comments.length}
+        unfilteredTotal={comments.length}
       />
     );
   } else {

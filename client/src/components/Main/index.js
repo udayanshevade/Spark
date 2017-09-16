@@ -25,9 +25,11 @@ export class Main extends Component {
   render() {
     const { filters, activeFilter } = this.props;
     return (
-      <Box pad={{ vertical: 'none' }} className="main-container">
-        {components[filters[activeFilter]]}
-      </Box>
+      <div>
+        <Box pad={{ vertical: 'none' }} className="main-container">
+          {components[filters[activeFilter]]}
+        </Box>
+      </div>
     );
   }
 }

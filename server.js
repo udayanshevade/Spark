@@ -158,7 +158,7 @@ const authErrorMsg = 'Log in to perform this action.';
 /**
  * @description Get all (matching) categories
  */
-app.get('/categories/get/:query?*', (req, res) => {
+app.get('/categories/get/:query*?', (req, res) => {
   const errors = { 500: serverErrorMsg };
   categories.getAll(req.params.query)
   .then(
@@ -170,11 +170,15 @@ app.get('/categories/get/:query?*', (req, res) => {
 /**
  * @description Get posts for a category
  */
-app.get('/categories/posts/:category', (req, res) => {
+app.get('/categories/category/:category/posts/:query*?', (req, res) => {
   const errors = { 500: serverErrorMsg };
-  posts.getByCategory(req.params.category)
+  console.log(req.params.query);
+  categories.getCategoryPosts(req.params.category)
     .then(
-      (data) => res.send(data),
+      postIds => posts.getByIds(postIds, req.params.query).then(
+        (data) => res.send(data),
+        handleErrorFn(res, errors)
+      ),
       handleErrorFn(res, errors)
     );
 });
@@ -182,7 +186,7 @@ app.get('/categories/posts/:category', (req, res) => {
 /**
  * @description Get all posts
  */
-app.get('/posts/get/:query?*', (req, res) => {
+app.get('/posts/get/:query*?', (req, res) => {
   const errors = { 500: serverErrorMsg };
   posts.getAll(req.params.query)
     .then(
@@ -216,6 +220,8 @@ app.post('/posts', (req, res) => {
           (data) => {
             // record new post in user profile
             user.addPost(data.author, data.id);
+            // add post to category
+            categories.addPost(data.id);
             // add default upvote from author
             user.writeUserVote(data.author, data.id);
             res.send(data);

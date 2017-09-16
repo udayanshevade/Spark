@@ -8,6 +8,7 @@ import ListPlaceHolder from 'grommet-addons/components/ListPlaceholder';
 import Anchor from 'grommet/components/Anchor';
 import Spinning from 'grommet/components/icons/Spinning';
 import CaretDownIcon from 'grommet/components/icons/base/CaretDown';
+import Navbar from '../Navbar';
 import * as categoriesActions from '../../actions/categories';
 
 export const CategoriesComponent = ({ loading, categories, actions, active }) => {
@@ -38,7 +39,12 @@ export const CategoriesComponent = ({ loading, categories, actions, active }) =>
       </List>
     );
   }
-  return categoriesEl;
+  return (
+    <div>
+      <Navbar />
+      {categoriesEl}
+    </div>
+  );
 }
 
 CategoriesComponent.propTypes = {

@@ -4,7 +4,9 @@ import Card from 'grommet/components/Card';
 import Paragraph from 'grommet/components/Paragraph';
 import Timestamp from 'grommet/components/Timestamp';
 import Box from 'grommet/components/Box';
+import DownIcon from 'grommet/components/icons/base/CaretDown';
 import NewIcon from 'grommet/components/icons/base/New';
+import Button from 'grommet/components/Button';
 import Anchor from 'grommet/components/Anchor';
 import Heading from 'grommet/components/Heading';
 import VoteBox from '../VoteBox';
@@ -18,8 +20,13 @@ const PostPreview = ({
   timestamp,
   voteScore,
   id,
+  category,
   main,
+  threadView,
+  showFull,
+  toggleShowFull,
   profileSetUser,
+  bodyCharLim,
 }) => (
   <Box
     direction="row"
@@ -39,22 +46,45 @@ const PostPreview = ({
             icon={<NewIcon size="xsmall" className="user-button-icon" />}
             profileSetUser={profileSetUser}
           />
-          <span className="anchor-text-padded">shared:</span>
+          <span>shared</span>
+          {
+            !threadView &&
+              <span className="anchor-text-padded">in <Anchor path={`/categories/${category}`}>/{category}</Anchor>:</span>
+          }
         </div>
       }
       heading={
-        <Anchor path={`/posts/${id}`} className="list-item-link-container">
+        <Anchor path={`/posts/${id}/${title.toLowerCase().split(' ').join('-')}`} className="list-item-link-container">
           <Heading tag="h4" className="post-preview-title">{title}</Heading>
         </Anchor>
       }
       description={
-        <Box direction="row" justify="between" align="center" wrap={true}>
-          <Paragraph>{`${body.slice(0, 90)}${body.length > 90 ? '...' : ''}` || null}</Paragraph>
+        <Box
+          direction="column"
+          responsive
+          justify="center"
+          align="start"
+        >
           <Timestamp
             value={(new Date(timestamp)).toISOString()}
             fields="date"
             className="post-timestamp"
           />
+          <Paragraph>
+            {`${body.slice(0, (showFull ? body.length : bodyCharLim))}${body.length > bodyCharLim ? '...' : ''}` || null}
+          </Paragraph>
+          {
+            threadView && body.length > bodyCharLim &&
+              <Button
+                plain
+                icon={
+                  <DownIcon
+                    size="xsmall"
+                    onClick={toggleShowFull}
+                  />
+                }
+              />
+          }
         </Box>
       }
       textSize="small"
@@ -69,6 +99,7 @@ PostPreview.propTypes = {
   timestamp: PropTypes.number,
   author: PropTypes.string,
   voteScore: PropTypes.number,
+  showFull: PropTypes.bool,
   profileSetUser: PropTypes.func,
 };
 

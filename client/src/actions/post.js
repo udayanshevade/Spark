@@ -1,6 +1,8 @@
 import * as types from './types';
 import Requests from '../requests';
 
+const APIbaseURL = '/posts';
+
 export const postSetLoading = loading => ({
   type: types.POST_SET_LOADING,
   loading,
@@ -17,12 +19,12 @@ export const postUpdateComments = comments => ({
 });
 
 export const postGetData = postId => async(dispatch) => {
-  const data = await Requests.get(`./thread/${postId}`);
+  const data = await Requests.get(`${APIbaseURL}/thread/${postId}`);
   dispatch(postUpdateData(data));
 };
 
 export const postGetComments = postId => async(dispatch) => {
-  const comments = await Requests.get(`./thread/${postId}/comments`);
+  const comments = await Requests.get(`${APIbaseURL}/thread/${postId}/comments`);
   dispatch(postUpdateComments(comments));
   dispatch(postSetLoading(false));
 };
@@ -53,6 +55,10 @@ export const postSelectSortCriterion = ({ value, direction }) => (dispatch, getS
     dispatch(postUpdateSortDirection(direction));
   }
 };
+
+export const postToggleShowFull = () => ({
+  type: types.POST_TOGGLE_SHOW_FULL,
+});
 
 export const postEmpty = () => ({
   type: types.POST_EMPTY,

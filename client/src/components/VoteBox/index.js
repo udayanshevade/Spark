@@ -16,7 +16,7 @@ const VoteBox = ({ voteScore }) => (
       icon={<CaretUp size="xsmall" />}
       onClick={() => console.log('Up Vote!')}
     />
-    <Value value={voteScore} />
+    <Value value={voteScore} size="small" />
     <Button
       icon={<CaretDown size="xsmall" />}
       onClick={() => console.log('Down Vote!')}

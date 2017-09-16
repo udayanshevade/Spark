@@ -15,6 +15,8 @@ export const initialState = {
   }],
   selectedCriterion: 'timestamp',
   sortDirection: 'desc',
+  showFull: false,
+  bodyCharLimt: 90,
 };
 
 const post = (state = initialState, action) => {
@@ -38,6 +40,10 @@ const post = (state = initialState, action) => {
     case types.POST_COMMENTS_UPDATE_SORT_DIRECTION: {
       const { sortDirection } = action;
       return { ...state, sortDirection };
+    }
+    case types.POST_TOGGLE_SHOW_FULL: {
+      const showFull = !state.showFull;
+      return { ...state, showFull };
     }
     case types.POST_EMPTY:
       return initialState;
