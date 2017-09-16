@@ -70,7 +70,7 @@ export const PostsComponent = ({
                     profileSetUser={actions.profileSetUser}
                     bodyCharLim={bodyCharLim}
                     applyVote={(id, vote) => {
-                      actions.userRecordVote('post', id, vote);
+                      actions.userRecordVote('posts', id, vote);
                     }}
                     votesGiven={votesGiven}
                     {...post}

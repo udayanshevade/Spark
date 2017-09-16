@@ -1,4 +1,5 @@
 import * as types from '../actions/types';
+import { determineVoteDelta } from '../utils';
 
 export const initialState = {
   query: '',
@@ -28,28 +29,18 @@ const posts = (state = initialState, action) => {
       const { active } = action;
       return { ...state, active };
     }
-    case types.POST_UPDATE_VOTE: {
-      const { id, option, previousVote } = action;
-      const posts = [...state.posts];
-      const oldPostIndex = posts.findIndex((post) => (post.id === id));
-      if (oldPostIndex < 0) return state;
-      const oldPost = posts[oldPostIndex];
-      let delta = 0;
-      if ((!previousVote && option === 'upVote') ||
-        (!option && previousVote === 'downVote')) {
-        delta = 1;
-      } else if ((!previousVote && option === 'downVote') ||
-        (!option && previousVote === 'upVote')) {
-        delta = -1;
-      } else if (previousVote === 'downVote' && option ==='upVote') {
-        delta = 2;
-      } else if (previousVote === 'upVote' && option === 'downVote') {
-        delta = -2;
-      }
-      const voteScore = oldPost.voteScore + delta;
-      const newPost = { ...oldPost, voteScore };
-      posts.splice(oldPostIndex, 1, newPost);
-      return { ...state, posts };
+    case types.USER_UPDATE_VOTES: {
+      const { id, option, previousVote, target } = action;
+      if (target === 'comments') return state;
+      const items = [...state[target]];
+      const oldIndex = items.findIndex(item => item.id === id);
+      if (oldIndex < 0) return state;
+      const oldItem = items[oldIndex];
+      const delta = determineVoteDelta(option, previousVote);
+      const voteScore = oldItem.voteScore + delta;
+      const newItem = { ...oldItem, voteScore };
+      items.splice(oldIndex, 1, newItem);
+      return { ...state, [target]: items };
     }
     default:
       return state;

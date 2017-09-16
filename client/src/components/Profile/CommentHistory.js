@@ -60,7 +60,7 @@ const CommentHistory = ({
                 width={width}
                 profileSetUser={setUser}
                 applyVote={(id, vote) => {
-                  applyVote('comment', id, vote);
+                  applyVote('comments', id, vote);
                 }}
                 votesGiven={votesGiven}
                 {...post}

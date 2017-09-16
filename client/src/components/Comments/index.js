@@ -54,7 +54,7 @@ export const CommentsContainer = ({
           comments={comments}
           profileSetUser={actions.profileSetUser}
           applyVote={(id, vote) => {
-            actions.userRecordVote('comment', id, vote);
+            actions.userRecordVote('comments', id, vote);
           }}
           showChildren
           votesGiven={votesGiven}

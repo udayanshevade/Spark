@@ -60,7 +60,7 @@ class Post extends Component {
           toggleShowFull={actions.postToggleShowFull}
           showFull={showFull}
           applyVote={(id, vote) => {
-            actions.userRecordVote('post', id, vote);
+            actions.userRecordVote('posts', id, vote);
           }}
           votesGiven={votesGiven}
           {...data}

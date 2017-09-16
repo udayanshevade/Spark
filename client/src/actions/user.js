@@ -1,15 +1,13 @@
 import * as types from './types';
 import Requests from '../requests';
-import { postUpdateVote } from './posts';
-// import { commentUpdateVote } from './comments';
 
 const userBaseURL = '/user';
 const commentBaseURL = '/comments';
 const postBaseURL = '/posts/thread';
 
 const votePaths = {
-  comment: commentBaseURL,
-  post: postBaseURL,
+  comments: commentBaseURL,
+  posts: postBaseURL,
 };
 
 export const userLogin = ({ username, password }) => async(dispatch, getState) => {
@@ -27,8 +25,8 @@ export const userLogin = ({ username, password }) => async(dispatch, getState) =
   }
 };
 
-export const userRecordVote = (type, id, voted) => async(dispatch, getState) => {
-  const url = `${votePaths[type]}/${id}/vote`;
+export const userRecordVote = (target, id, voted) => async(dispatch, getState) => {
+  const url = `${votePaths[target]}/${id}/vote`;
   const { user } = getState();
   if (!user.user) return;
   const { sessionToken, profile } = user.user;
@@ -41,17 +39,16 @@ export const userRecordVote = (type, id, voted) => async(dispatch, getState) => 
     body: { option, voterId },
   });
   if (!res.error) {
-    dispatch(userUpdateVotes(id, option));
-    if (type === 'post') {
-      dispatch(postUpdateVote(id, option, previousVote));
-    }
+    dispatch(userUpdateVotes(id, option, previousVote, target));
   }
 };
 
-export const userUpdateVotes = (id, option) => ({
+export const userUpdateVotes = (id, option, previousVote, target) => ({
   type: types.USER_UPDATE_VOTES,
   id,
   option,
+  previousVote,
+  target,
 });
 
 export const userUpdateData = user => ({

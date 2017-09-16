@@ -1,4 +1,5 @@
 import * as types from '../actions/types';
+import { determineVoteDelta } from '../utils';
 
 export const initialState = {
   data: null,
@@ -45,29 +46,31 @@ const post = (state = initialState, action) => {
       const showFull = !state.showFull;
       return { ...state, showFull };
     }
-    case types.POST_UPDATE_VOTE: {
-      const { option, previousVote } = action;
-      if (!state.data) return state;
-      let delta = 0;
-      if ((!previousVote && option === 'upVote') ||
-        (!option && previousVote === 'downVote')) {
-        delta = 1;
-      } else if ((!previousVote && option === 'downVote') ||
-        (!option && previousVote === 'upVote')) {
-        delta = -1;
-      } else if (previousVote === 'downVote' && option ==='upVote') {
-        delta = 2;
-      } else if (previousVote === 'upVote' && option === 'downVote') {
-        delta = -2;
+    case types.USER_UPDATE_VOTES: {
+      const { id, option, previousVote, target } = action;
+      const delta = determineVoteDelta(option, previousVote);
+      if (target === 'posts') {
+        if (!state.data) return state;
+        const voteScore = state.data.voteScore + delta;
+        return {
+          ...state,
+          data: {
+            ...state.data,
+            voteScore,
+          },
+        };
+      } else if (target === 'comments') {
+        if (!state.comments.length) return state;
+        const items = [...state.comments];
+        const oldIndex = items.findIndex(item => item.id === id);
+        if (oldIndex < 0) return state;
+        const oldItem = items[oldIndex];
+        const voteScore = oldItem.voteScore + delta;
+        const newItem = { ...oldItem, voteScore };
+        items.splice(oldIndex, 1, newItem);
+        return { ...state, [target]: items };
       }
-      const voteScore = state.data.voteScore + delta;
-      return {
-        ...state,
-        data: {
-          ...state.data,
-          voteScore,
-        },
-      };
+      return state;
     }
     case types.POST_EMPTY:
       return initialState;

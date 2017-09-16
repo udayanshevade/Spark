@@ -222,7 +222,7 @@ app.post('/posts', (req, res) => {
             // add post to category
             categories.addPost(data.id);
             // add default upvote from author
-            user.writeUserVote(data.author, data.id);
+            user.writeUserVote(data.author, data.id, 'upVote');
             res.send(data);
           },
           handleErrorFn(res, errors)
@@ -332,7 +332,7 @@ app.post('/comments', (req, res) => {
           // record new post in user profile
           user.addComment(data.author, data.id);
           // add default upvote from author
-          user.writeUserVote(data.author, data.id);
+          user.writeUserVote(data.author, data.id, 'upVote');
           res.send(data);
         },
         handleErrorFn(res, errors)
@@ -368,7 +368,7 @@ app.put('/comments/:id/vote', (req, res) => {
     const { option, voterId } = req.body;
     // update record of voter
     user.updateUserVote(req.sessionToken, voterId, voteId, option)
-      .then((updatedOption) => {
+      .then((updatedOption, oldOption) => {
         // use the resulting vote option
         comments.vote(voteId, updatedOption)
           .then(

@@ -35,7 +35,7 @@ const structureComments = (ancestorIds, rawComments) => {
   return comments;
 };
 
-export const getNestedComments = createSelector(
+const getNestedComments = createSelector(
   [getAncestorComments, getRawComments],
   (ancestors, rawComments) => {
     const nestedComments = structureComments(ancestors, rawComments);

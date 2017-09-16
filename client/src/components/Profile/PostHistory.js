@@ -59,7 +59,7 @@ const PostHistory = ({
               width={width}
               profileSetUser={setUser}
               applyVote={(id, vote) => {
-                applyVote('post', id, vote);
+                applyVote('posts', id, vote);
               }}
               votesGiven={votesGiven}
               {...post}

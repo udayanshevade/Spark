@@ -275,7 +275,8 @@ function updateCommentScore (userId, option, previousVote) {
 /**
  * @description Initial vote for created post or comment
  */
-function writeUserVote (userId, voteId, option = 'upVote') {
+function writeUserVote (userId, voteId, opt) {
+  const option = opt === 'null' ? null : opt;
   const users = getData();
   const user = users[userId];
   user.profile.votesGiven[voteId] = option;
