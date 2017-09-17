@@ -29,7 +29,7 @@ class AppComponent extends Component {
         <Route exact path="/" component={Main} />
         <Route path="/" component={Login} />
         <Route path="/" component={Profile} />
-        <Route path="/posts/:id" component={Post} />
+        <Route path="/posts/thread/:id" component={Post} />
         <Route path="/categories/:category" component={Category} />
         <Footer />
         {

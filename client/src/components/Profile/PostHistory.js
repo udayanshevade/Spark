@@ -39,13 +39,13 @@ const PostHistory = ({
       responsive
       align="center"
     >
-      <Value value={netScore} label="score" className="user-vote-score-value" />
+      <Value value={netScore} label="score" className="profile-vote-score-value" />
       <VotesMeter
         maxCount={postVotesReceivedMax}
         votesSeries={postVotesReceivedSeries}
       />
     </Box>
-    <Box pad={{ vertical: 'none' }} className="user-details-list-container">
+    <Box pad={{ vertical: 'none' }} className="profile-details-list-container">
       <FilterBar
         width={width}
         selectSortCriterion={selectSortCriterion}
@@ -55,7 +55,7 @@ const PostHistory = ({
         {
           posts.map((post, i) => (
             <PostPreview
-              key={`user-post-${i}`}
+              key={`profile-post-${i}`}
               width={width}
               profileSetUser={setUser}
               applyVote={(id, vote) => {

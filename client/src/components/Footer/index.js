@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Footer from 'grommet/components/Footer';
 import Button from 'grommet/components/Button';
+import AddIcon from 'grommet/components/icons/base/Add';
 import LoginIcon from 'grommet/components/icons/base/Login';
 import LogoutIcon from 'grommet/components/icons/base/Logout';
 import UserIcon from 'grommet/components/icons/base/User';
@@ -14,7 +15,27 @@ import { getUsername } from '../../selectors/user';
 const AppFooter = ({ width, loggedIn, actions, username }) =>  {
   const isMobile = width < 500;
   return (
-    <Footer primary justify={isMobile ? 'center' : 'end'} className="main-footer">
+    <Footer primary justify={isMobile ? 'between' : 'end'} className="main-footer">
+      {
+        loggedIn &&
+          <Button
+            plain
+            label="Post"
+            path="/posts/new"
+            icon={<AddIcon />}
+          />
+      }
+      {
+        loggedIn &&
+          <Button
+            plain
+            label="Profile"
+            icon={<UserIcon />}
+            onClick={() => {
+              actions.profileSetUser(username);
+            }}
+          />
+      }
       <Button
         plain
         label={`Log ${loggedIn ? 'out' : 'in'}`}
@@ -28,17 +49,6 @@ const AppFooter = ({ width, loggedIn, actions, username }) =>  {
         }}
         id="footer-login-button"
       />
-      {
-        loggedIn &&
-          <Button
-            plain
-            label={isMobile ? null : 'Profile'}
-            icon={<UserIcon />}
-            onClick={() => {
-              actions.profileSetUser(username);
-            }}
-          />
-      }
     </Footer>
   );
 };

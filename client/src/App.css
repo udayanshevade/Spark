@@ -32,7 +32,7 @@
 .main-header,
 .main-footer {
   position: fixed;
-  background: #fefefe;
+  background: rgba(245, 245, 245, 0.2);
   z-index: 2;
 }
 
@@ -44,6 +44,11 @@
 
 .filter-header {
   padding-top: 0;
+}
+
+.profile-details-list-container .filter-header {
+  background: #fff;
+  justify-content: center;
 }
 
 .main-footer {
@@ -146,7 +151,7 @@
 }
 
 .grommetux-card .grommetux-card__content {
-  padding: 1em;
+  padding: 0.5em;
 }
 
 .comment-list-item-container {

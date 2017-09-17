@@ -21,7 +21,7 @@ const db = {
     author: 'user',
     category: 'redux',
     comments: [],
-    voteScore: -5,
+    voteScore: 5,
     deleted: false,
   },
   "llgj1kasd78f1ptk1nz1": {

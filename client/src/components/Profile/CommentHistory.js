@@ -40,7 +40,7 @@ const CommentHistory = ({
       responsive
       align="center"
     >
-      <Value value={netScore} label="score" className="user-vote-score-value" />
+      <Value value={netScore} label="score" className="profile-vote-score-value" />
       <VotesMeter
         maxCount={commentVotesReceivedMax}
         votesSeries={commentVotesReceivedSeries}
@@ -55,7 +55,7 @@ const CommentHistory = ({
       <List>
         {
           comments.map((post, i) => (
-            <ListItem key={`profile-post-${i}`}>
+            <ListItem key={`profile-comment-${i}`}>
               <CommentPreview
                 width={width}
                 profileSetUser={setUser}

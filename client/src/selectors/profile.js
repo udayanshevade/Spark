@@ -40,12 +40,12 @@ export const getProfileVotesGivenHistory = createSelector(
       upVote: {
         label: 'Upvotes',
         value: 0,
-        colorIndex: 'ok',
+        colorIndex: 'accent-1',
       },
       downVote: {
         label: 'Downvotes',
         value: 0,
-        colorIndex: 'critical',
+        colorIndex: 'accent-2',
       },
     };
     if (voteIds.length) {
@@ -72,11 +72,11 @@ export const getProfileCommentVotesReceived = createSelector(
     const series = [{
         label: 'Upvotes',
         value: Math.abs(votes.upVote),
-        colorIndex: 'ok',
+        colorIndex: 'accent-1',
       }, {
         label: 'Downvotes',
         value: Math.abs(votes.downVote),
-        colorIndex: 'critical',
+        colorIndex: 'accent-2',
     }];
     return series;
   }
@@ -115,11 +115,11 @@ export const getProfilePostVotesReceived = createSelector(
     const series = [{
         label: 'Upvotes',
         value: Math.abs(votes.upVote),
-        colorIndex: 'ok',
+        colorIndex: 'accent-1',
       }, {
         label: 'Downvotes',
         value: Math.abs(votes.downVote),
-        colorIndex: 'critical',
+        colorIndex: 'accent-2',
     }];
     return series;
   }
