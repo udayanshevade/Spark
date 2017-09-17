@@ -30,7 +30,7 @@ export const userRecordVote = (target, id, voted) => async(dispatch, getState) =
   const url = `${votePaths[target]}/${id}/vote`;
   const { user } = getState();
   if (!user.user) {
-    const tipText = 'Please login to join the discussion.';
+    const tipText = 'Login to vote, share or comment.';
     dispatch(appShowTipWithText(tipText, 'footer-login-button'));
     return;
   }

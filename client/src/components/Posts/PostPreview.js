@@ -79,7 +79,7 @@ const PostPreview = ({
             fields="date"
             className="post-timestamp"
           />
-          <Paragraph>
+          <Paragraph className="post-description">
             {`${body.slice(0, (showFull ? body.length : bodyCharLim))}${body.length > bodyCharLim ? '...' : ''}` || null}
           </Paragraph>
           {
@@ -97,6 +97,7 @@ const PostPreview = ({
         </Box>
       }
       textSize="small"
+      pad={{ horizontal: 'none', vertical: 'small' }}
     />
   </Box>
 );

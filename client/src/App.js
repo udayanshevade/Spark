@@ -35,6 +35,7 @@ class AppComponent extends Component {
         {
           tipTarget &&
             <Tip
+              fill
               onClose={() => {
                 actions.appCloseTip();
               }}

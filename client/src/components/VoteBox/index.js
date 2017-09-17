@@ -8,7 +8,7 @@ import Value from 'grommet/components/Value';
 
 const VoteBox = ({ voteScore, applyVote, vote, showScore }) => (
   <Box
-    pad={{ horizontal: 'medium' }}
+    pad={{ horizontal: 'small' }}
     justify="center"
     className="vote-box"
   >

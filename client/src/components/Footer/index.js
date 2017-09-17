@@ -17,7 +17,7 @@ const AppFooter = ({ width, loggedIn, actions, username }) =>  {
     <Footer primary justify={isMobile ? 'center' : 'end'} className="main-footer">
       <Button
         plain
-        label={isMobile ? null : `Log ${loggedIn ? 'out' : 'in'}`}
+        label={`Log ${loggedIn ? 'out' : 'in'}`}
         icon={loggedIn ? <LogoutIcon /> : <LoginIcon />}
         onClick={() => {
           if (loggedIn) {

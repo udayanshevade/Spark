@@ -122,7 +122,7 @@
 
 .grommetux-heading.post-preview-title {
   display: inline-block;
-  font-size: 1.5em;
+  font-size: 1.35em;
 }
 
 .profile-preview-button .grommetux-button__icon {
@@ -139,6 +139,14 @@
 
 .post-heading {
   margin-bottom: 0;
+}
+
+.card-description {
+  margin: 0.75em 0 1.5em;
+}
+
+.grommetux-card .grommetux-card__content {
+  padding: 1em;
 }
 
 .comment-list-item-container {

@@ -54,7 +54,7 @@ const CommentPreview = ({
         description={
           <Box direction="row" justify="between" align="center" wrap={true}>
             <Anchor path={`/comments/${id}`} className="list-item-link-container">
-              <Paragraph>{`${body.slice(0, 90)}${body.length > 90 ? '...' : ''}` || null}</Paragraph>
+              <Paragraph className="card-description">{`${body.slice(0, 90)}${body.length > 90 ? '...' : ''}` || null}</Paragraph>
             </Anchor>
             <Timestamp
               value={(new Date(timestamp)).toISOString()}
