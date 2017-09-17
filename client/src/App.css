@@ -154,16 +154,30 @@
   margin-right: 0.5em;
 }
 
-.upvote {
+.grommetux-button__icon .upvote {
+  vertical-align: top;
+}
+
+.upvote--active {
   stroke: #00cceb !important;
 }
 
-.downvote {
+.downvote--active {
   stroke: #ff7d28 !important;
+}
+
+.grommetux-tip {
+  color: #fff;
 }
 
 @media screen and (min-width: 500px) {
   .post-timestamp {
     text-align: right;
+  }
+  .grommetux-button__icon .upvote {
+    vertical-align: bottom;
+  }
+  .grommetux-button__icon .downvote {
+    vertical-align: top;
   }
 }

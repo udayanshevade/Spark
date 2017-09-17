@@ -6,7 +6,7 @@ import UpIcon from 'grommet/components/icons/base/Up';
 import DownIcon from 'grommet/components/icons/base/Down';
 import Value from 'grommet/components/Value';
 
-const VoteBox = ({ voteScore, applyVote, vote }) => (
+const VoteBox = ({ voteScore, applyVote, vote, showScore }) => (
   <Box
     pad={{ horizontal: 'medium' }}
     justify="center"
@@ -15,8 +15,8 @@ const VoteBox = ({ voteScore, applyVote, vote }) => (
     <Button
       icon={
         <UpIcon
-          size="small"
-          className={vote === 'upVote' ? 'upvote' : ''}
+          size="xsmall"
+          className={`upvote ${vote === 'upVote' ? 'upvote--active' : ''}`}
         />
       }
       onClick={() => {
@@ -24,12 +24,12 @@ const VoteBox = ({ voteScore, applyVote, vote }) => (
         applyVote(newVote);
       }}
     />
-    <Value value={voteScore} size="small" />
+    {showScore && <Value value={voteScore} size="xsmall" />}
     <Button
       icon={
         <DownIcon
-          size="small"
-          className={vote === 'downVote' ? 'downvote' : ''}
+          size="xsmall"
+          className={`downvote ${vote === 'downVote' ? 'downvote--active' : ''}`}
         />}
       onClick={() => {
         const newVote = vote === 'downVote' ? null : 'downVote';

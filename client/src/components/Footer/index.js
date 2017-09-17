@@ -26,6 +26,7 @@ const AppFooter = ({ width, loggedIn, actions, username }) =>  {
             actions.userSetLoginActive(true);
           }
         }}
+        id="footer-login-button"
       />
       {
         loggedIn &&

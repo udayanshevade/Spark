@@ -16,7 +16,7 @@ const Comments = ({
     <List className="comment-list">
       {
         comments.map((comment, i) => (
-          <ListItem key={`comment-list-item-${i}`} className="comment-list-item">
+          <ListItem key={`comment-list-item-${i}`} pad={{ horizontal: 'small' }} className="comment-list-item">
             <CommentPreview
               width={width}
               profileSetUser={profileSetUser}

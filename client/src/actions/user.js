@@ -1,5 +1,6 @@
 import * as types from './types';
 import Requests from '../requests';
+import { appShowTipWithText } from './app';
 
 const userBaseURL = '/user';
 const commentBaseURL = '/comments';
@@ -28,7 +29,11 @@ export const userLogin = ({ username, password }) => async(dispatch, getState) =
 export const userRecordVote = (target, id, voted) => async(dispatch, getState) => {
   const url = `${votePaths[target]}/${id}/vote`;
   const { user } = getState();
-  if (!user.user) return;
+  if (!user.user) {
+    const tipText = 'Please login to join the discussion.';
+    dispatch(appShowTipWithText(tipText, 'footer-login-button'));
+    return;
+  }
   const { sessionToken, profile } = user.user;
   const { id: voterId, votesGiven } = profile;
   const previousVote = votesGiven[id];
