@@ -63,7 +63,7 @@ const PostPreview = ({
         </div>
       }
       heading={
-        <Anchor path={`/posts/${id}/${title.toLowerCase().split(' ').join('-')}`} className="list-item-link-container">
+        <Anchor path={`/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}`} className="list-item-link-container">
           <Heading tag="h4" className="post-preview-title">{title}</Heading>
         </Anchor>
       }
