@@ -17,6 +17,10 @@
   margin: 1em auto; 
 }
 
+.switch-type-icon {
+  stroke: #888;
+}
+
 .anchor-text-padded {
   padding: 0 0.5em;
 }
@@ -120,9 +124,19 @@
 .list-item-link-container,
 .list-item-link-container:hover,
 .list-item-link-container:visited {
-  color: initial;
+  color: #501eb4;
   text-decoration: initial;
   width: fit-content;
+}
+
+.list-item--link-out,
+.list-item--link-out:hover,
+.list-item--link-out:visited {
+  color: #0a64a0;
+}
+
+.comments-link-container {
+  font-size: 0.85em;
 }
 
 .grommetux-heading.post-preview-title {
@@ -183,6 +197,14 @@
   color: #fff;
 }
 
+.search-input-container {
+  padding: 0 0.5em;
+}
+
+.search-input-container .grommetux-input {
+  text-align: right;
+}
+
 @media screen and (min-width: 500px) {
   .post-timestamp {
     text-align: right;
@@ -192,5 +214,8 @@
   }
   .grommetux-button__icon .downvote {
     vertical-align: top;
+  }
+  .search-input-container .grommetux-input {
+    text-align: initial;
   }
 }

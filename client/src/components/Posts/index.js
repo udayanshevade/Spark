@@ -16,7 +16,7 @@ import { searchSelectSortCriterion } from '../../actions/search';
 import { profileSetUser } from '../../actions/profile';
 import { getSortedPosts } from '../../selectors/posts';
 import { userRecordVote } from '../../actions/user';
-import { getUserVotesGiven } from '../../selectors/user';
+import { getUsername, getUserVotesGiven } from '../../selectors/user';
 
 export const PostsComponent = ({
   width,
@@ -28,6 +28,7 @@ export const PostsComponent = ({
   category,
   userRecordVote,
   votesGiven,
+  username,
   ...filterProps,
 }) => {
   let postsEl;
@@ -73,6 +74,7 @@ export const PostsComponent = ({
                       actions.userRecordVote('posts', id, vote);
                     }}
                     votesGiven={votesGiven}
+                    username={username}
                     {...post}
                   />
                 </ListItem>
@@ -115,6 +117,7 @@ const mapStateToProps = ({ user, posts, post, search, responsive }) => ({
   width: responsive.width,
   bodyCharLim: post.bodyCharLim,
   votesGiven: getUserVotesGiven(user),
+  username: getUsername(user),
 });
 
 const mapDispatchToProps = dispatch => ({

@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Menu from 'grommet/components/Menu';
-import FilterIcon from 'grommet/components/icons/base/Filter';
+import SwitchIcon from 'grommet/components/icons/base/Compare';
 import Button from 'grommet/components/Button';
 
 const FilterSelect = ({ filters, activeFilter, searchFilterUpdate }) => (
   <Menu
-    icon={<FilterIcon />}
+    icon={<SwitchIcon className="switch-type-icon" />}
     dropAlign={{ right: 'right' }}
   >
     {

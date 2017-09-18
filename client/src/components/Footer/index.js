@@ -7,7 +7,7 @@ import Button from 'grommet/components/Button';
 import AddIcon from 'grommet/components/icons/base/Add';
 import LoginIcon from 'grommet/components/icons/base/Login';
 import LogoutIcon from 'grommet/components/icons/base/Logout';
-import UserIcon from 'grommet/components/icons/base/User';
+import UserIcon from 'grommet/components/icons/base/ContactInfo';
 import { userLogout, userSetLoginActive } from '../../actions/user';
 import { profileSetUser } from '../../actions/profile';
 import { getUsername } from '../../selectors/user';
@@ -15,12 +15,12 @@ import { getUsername } from '../../selectors/user';
 const AppFooter = ({ width, loggedIn, actions, username }) =>  {
   const isMobile = width < 500;
   return (
-    <Footer primary justify={isMobile ? 'between' : 'end'} className="main-footer">
+    <Footer primary justify="end" className="main-footer">
       {
         loggedIn &&
           <Button
             plain
-            label="Post"
+            label={!isMobile ? 'Post' : null}
             path="/posts/new"
             icon={<AddIcon />}
           />
@@ -29,7 +29,7 @@ const AppFooter = ({ width, loggedIn, actions, username }) =>  {
         loggedIn &&
           <Button
             plain
-            label="Profile"
+            label={!isMobile ? 'Profile' : null}
             icon={<UserIcon />}
             onClick={() => {
               actions.profileSetUser(username);
@@ -38,7 +38,7 @@ const AppFooter = ({ width, loggedIn, actions, username }) =>  {
       }
       <Button
         plain
-        label={`Log ${loggedIn ? 'out' : 'in'}`}
+        label={!isMobile ? `Log ${loggedIn ? 'out' : 'in'}` : null}
         icon={loggedIn ? <LogoutIcon /> : <LoginIcon />}
         onClick={() => {
           if (loggedIn) {

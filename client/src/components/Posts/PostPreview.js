@@ -15,11 +15,13 @@ import ProfileButton from '../Profile/ProfileButton';
 const PostPreview = ({
   width,
   title,
+  url,
   author,
   body,
   timestamp,
   voteScore,
   id,
+  comments,
   category,
   main,
   threadView,
@@ -29,6 +31,7 @@ const PostPreview = ({
   bodyCharLim,
   applyVote,
   votesGiven,
+  username,
 }) => (
   <Box
     direction="row"
@@ -44,6 +47,7 @@ const PostPreview = ({
         applyVote(id, vote);
       }}
       vote={votesGiven ? votesGiven[id] : null}
+      showScore={author === username}
     />
     <Card
       flex
@@ -63,7 +67,11 @@ const PostPreview = ({
         </div>
       }
       heading={
-        <Anchor path={`/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}`} className="list-item-link-container">
+        <Anchor
+          href={url}
+          path={!url ? `/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}` : null}
+          className={`list-item-link-container${url ? ' list-item--link-out' : ''}`}
+        >
           <Heading tag="h4" className="post-preview-title">{title}</Heading>
         </Anchor>
       }
@@ -94,6 +102,12 @@ const PostPreview = ({
                 }
               />
           }
+          {
+            !threadView &&
+              <Anchor path={`/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}`} className="comments-link-container">
+                <span>{comments.length} comments</span>
+              </Anchor>
+          }
         </Box>
       }
       textSize="small"
@@ -104,14 +118,17 @@ const PostPreview = ({
 
 PostPreview.propTypes = {
   title: PropTypes.string,
+  url: PropTypes.string,
   id: PropTypes.string,
   body: PropTypes.string,
+  comments: PropTypes.arrayOf(PropTypes.string),
   timestamp: PropTypes.number,
   author: PropTypes.string,
   voteScore: PropTypes.number,
   showFull: PropTypes.bool,
   profileSetUser: PropTypes.func,
   votesGiven: PropTypes.object,
+  username: PropTypes.string,
 };
 
 export default PostPreview;

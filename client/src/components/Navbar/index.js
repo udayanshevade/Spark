@@ -5,12 +5,15 @@ import PropTypes from 'prop-types';
 import Anchor from 'grommet/components/Anchor';
 import Box from 'grommet/components/Box';
 import Header from 'grommet/components/Header';
+import Heading from 'grommet/components/Heading';
 import Search from 'grommet/components/Search';
 import Title from 'grommet/components/Title';
+import MoreIcon from 'grommet/components/icons/base/More';
 import FilterSelect from './FilterSelect';
 import { searchQueryChange, searchFilterUpdate } from '../../actions/search';
 
 const NavbarComponent = ({
+  width,
   title,
   categoriesQuery,
   postsQuery,
@@ -19,6 +22,7 @@ const NavbarComponent = ({
   activeFilter,
   category,
 }) => {
+  const isMobile = width < 500;
   const filter = filters[activeFilter];
   const value = filter === 'categories' ? categoriesQuery : postsQuery;
   return (
@@ -30,6 +34,17 @@ const NavbarComponent = ({
       <Title className="app-header__title" responsive={false}>
         <Anchor path="/"><span>{title}</span></Anchor>
       </Title>
+      {
+        category &&
+          <Box direction="row" responsive={false} pad="none" align="center">
+            <MoreIcon size="small" className="header-arrow-icon" />
+            <Heading tag="h3" className="post-heading">
+              <Anchor path={`/categories/${category}`}>
+                /{category}
+              </Anchor>
+            </Heading>
+          </Box>
+      }
       <Box
         responsive={false}
         flex
@@ -39,14 +54,15 @@ const NavbarComponent = ({
         <Search
           responsive={false}
           inline
-          fill
+          fill={isMobile}
           size="medium"
           dropAlign={{ right: 'right' }}
-          placeHolder={`Search ${!category ? filter : `/${category}`}`}
+          placeHolder={`${isMobile ? '' : 'Search'} ${!category ? filter : `/${category}`}`}
           onDOMChange={(e) => {
             actions.searchQueryChange(e, category);
           }}
           value={value}
+          className="search-input-container"
         />
         {
           !category &&
@@ -62,6 +78,7 @@ const NavbarComponent = ({
 }
 
 NavbarComponent.propTypes = {
+  width: PropTypes.number,
   title: PropTypes.string,
   categoriesQuery: PropTypes.string,
   postsQuery: PropTypes.string,
@@ -76,7 +93,8 @@ NavbarComponent.propTypes = {
   category: PropTypes.string,
 };
 
-const mapStateToProps = ({ navbar, search, categories, posts }) => ({
+const mapStateToProps = ({ responsive, navbar, search, categories, posts }) => ({
+  width: responsive.width,
   title: navbar.title,
   categoriesQuery: categories.query,
   postsQuery: posts.query,

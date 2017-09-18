@@ -22,6 +22,7 @@ const CommentPreview = ({
   showChildren,
   applyVote,
   votesGiven,
+  username,
 }) => (
   <Box direction="column" className="comment-list-item-container">
     <Box
@@ -38,6 +39,7 @@ const CommentPreview = ({
           applyVote(id, vote);
         }}
         vote={votesGiven ? votesGiven[id] : null}
+        showScore={author === username}
       />
       <Card
         flex
@@ -77,6 +79,7 @@ const CommentPreview = ({
             applyVote(id, vote);
           }}
           votesGiven={votesGiven}
+          username={username}
         />
     }
   </Box>
@@ -92,6 +95,7 @@ CommentPreview.propTypes = {
   profileSetUser: PropTypes.func,
   applyVote: PropTypes.func,
   votesGiven: PropTypes.object,
+  username: PropTypes.string,
 };
 
 export default CommentPreview;

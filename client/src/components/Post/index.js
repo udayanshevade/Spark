@@ -13,7 +13,7 @@ import Comments from '../Comments';
 import { postGetDetails, postToggleShowFull, postEmpty } from '../../actions/post';
 import { profileSetUser } from '../../actions/profile';
 import { userRecordVote } from '../../actions/user';
-import { getUserVotesGiven } from '../../selectors/user';
+import { getUsername, getUserVotesGiven } from '../../selectors/user';
 
 class Post extends Component {
   componentDidMount() {
@@ -31,6 +31,7 @@ class Post extends Component {
       showFull,
       bodyCharLim,
       votesGiven,
+      username,
     } = this.props;
     if (!data) return <Box justify="center" className="loading-container"><Spinning /></Box>
     const { category } = data;
@@ -63,6 +64,7 @@ class Post extends Component {
             actions.userRecordVote('posts', id, vote);
           }}
           votesGiven={votesGiven}
+          username={username}
           {...data}
         />
         <Comments />
@@ -78,6 +80,7 @@ const mapStateToProps = ({ user, post, responsive, navbar }) => ({
   navbarTitle: navbar.title,
   bodyCharLim: post.bodyCharLim,
   votesGiven: getUserVotesGiven(user),
+  username: getUsername(user),
 });
 
 const mapDispatchToProps = dispatch => ({

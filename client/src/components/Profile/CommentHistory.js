@@ -15,7 +15,7 @@ import {
   getProfileCommentsSortDirection,
   getProfileCommentsNetScore,
 } from '../../selectors/profile';
-import { getUserVotesGiven } from '../../selectors/user';
+import { getUsername, getUserVotesGiven } from '../../selectors/user';
 import {
   profileSetUser,
   profileCommentsSelectSortCriterion,
@@ -32,6 +32,7 @@ const CommentHistory = ({
   setUser,
   applyVote,
   votesGiven,
+  username,
   ...sortProps,
 }) => (
   <Section responsive align="center" pad="small">
@@ -63,6 +64,7 @@ const CommentHistory = ({
                   applyVote('comments', id, vote);
                 }}
                 votesGiven={votesGiven}
+                username={username}
                 {...post}
               />
             </ListItem>
@@ -92,6 +94,7 @@ CommentHistory.propTypes = {
   commentVotesReceivedMax: PropTypes.number,
   comments: commentProps,
   netScore: PropTypes.string,
+  username: PropTypes.string,
 };
 
 const mapStateToProps = ({ user, profile }) => ({
@@ -101,6 +104,7 @@ const mapStateToProps = ({ user, profile }) => ({
   comments: getProfileSortedComments(profile),
   netScore: getProfileCommentsNetScore(profile),
   votesGiven: getUserVotesGiven(user),
+  username: getUsername(user),
 });
 
 export default connect(mapStateToProps, {

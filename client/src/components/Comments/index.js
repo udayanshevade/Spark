@@ -12,7 +12,7 @@ import { userRecordVote } from '../../actions/user';
 import { postSelectSortCriterion } from '../../actions/post';
 import { profileSetUser } from '../../actions/profile';
 import { getSortedComments } from '../../selectors/post';
-import { getUserVotesGiven } from '../../selectors/user';
+import { getUsername, getUserVotesGiven } from '../../selectors/user';
 
 export const CommentsContainer = ({
   width,
@@ -20,6 +20,7 @@ export const CommentsContainer = ({
   comments,
   actions,
   votesGiven,
+  username,
   ...filterProps,
 }) => {
   let commentsEl;
@@ -58,6 +59,7 @@ export const CommentsContainer = ({
           }}
           showChildren
           votesGiven={votesGiven}
+          username={username}
         />
       </Section>
     );
@@ -75,6 +77,7 @@ CommentsContainer.propTypes = {
     profileSetUser: PropTypes.func,
   }),
   width: PropTypes.number,
+  username: PropTypes.string,
 };
 
 const mapStateToProps = ({ user, post, responsive }) => ({
@@ -85,6 +88,7 @@ const mapStateToProps = ({ user, post, responsive }) => ({
   selectedCriterion: post.selectedCriterion,
   width: responsive.width,
   votesGiven: getUserVotesGiven(user),
+  username: getUsername(user),
 });
 
 const mapDispatchToProps = dispatch => ({
