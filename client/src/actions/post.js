@@ -4,6 +4,7 @@ import { appShowTipWithText } from './app';
 import { userUpdateVotes, userAddPost } from './user';
 
 const APIbaseURL = '/posts';
+const categoriesURL = '/categories';
 
 export const postSetLoading = loading => ({
   type: types.POST_SET_LOADING,
@@ -96,3 +97,32 @@ export const postCreateNew = rawData => async(dispatch, getState) => {
   }
   dispatch(postSetCreating(false));
 };
+
+export const postUpdateCategorySuggestions = results => ({
+  type: types.POST_UPDATE_CATEGORY_SUGGESTIONS,
+  results,
+});
+
+export const postLoadCategorySuggestions = query => async(dispatch) => {
+  const suggestions = await Requests.get(`${categoriesURL}/suggestions/${query}/suggestions`);
+  dispatch(postUpdateCategorySuggestions(suggestions));
+};
+
+export const postGetCategorySuggestions = (e) => async(dispatch, getState) => {
+  const query = e.target.value;
+  const { post } = getState();
+  const { categorySuggestions } = post;
+  const { timeoutId, timeoutLength } = categorySuggestions;
+  // clear prior timeout if still typing
+  clearTimeout(timeoutId);
+  const newTimeoutId = setTimeout(() => {
+    // load appropriate data
+    dispatch(postLoadCategorySuggestions(query));
+  }, timeoutLength);
+  dispatch(postCategorySuggestionsSetTimeout(newTimeoutId));
+};
+
+export const postCategorySuggestionsSetTimeout = timeoutId => ({
+  type: types.POST_CATEGORIES_SET_TIMEOUT,
+  timeoutId,
+});

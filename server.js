@@ -168,6 +168,21 @@ app.get('/categories/get/:query*?', (req, res) => {
 });
 
 /**
+ * @description Get (matching) categories names
+ */
+app.get('/categories/suggestions/:query*?', (req, res) => {
+  const errors = { 500: serverErrorMsg };
+  categories.getAll(req.params.query)
+  .then(
+    (data) => {
+      const categories = data.map(cat => cat.name);
+      res.send(categories);
+    },
+    handleErrorFn(res, errors)
+  );
+});
+
+/**
  * @description Get posts for a category
  */
 app.get('/categories/category/:category/posts/:query*?', (req, res) => {

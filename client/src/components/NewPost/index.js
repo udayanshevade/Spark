@@ -17,7 +17,11 @@ import Footer from 'grommet/components/Footer';
 import Button from 'grommet/components/Button';
 import NewPostInput from './NewPostInput';
 import NewPostTextArea from './NewPostTextArea';
-import { postCreateNew } from '../../actions/post';
+import NewPostSelect from './NewPostSelect';
+import {
+  postCreateNew,
+  postGetCategorySuggestions,
+} from '../../actions/post';
 import { getIsMobile } from '../../selectors/responsive';
 import { validate, warn } from './validation';
 
@@ -41,7 +45,16 @@ class NewPost extends Component {
       const { id, title } = this.props.postData;
       return <Redirect to={`/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}`} />
     }
-    const { handleSubmit, isCreating, actions, isMobile, navTitle } = this.props;
+    const {
+      handleSubmit,
+      isCreating,
+      actions,
+      isMobile,
+      navTitle,
+      categorySuggestions: {
+        results: categorySuggestions,
+      },
+    } = this.props;
     return isCreating
       ? <Box pad="large" justify="center" align="center" className="loading-container"><Spinning /></Box>
       : (
@@ -89,8 +102,11 @@ class NewPost extends Component {
                 name="category"
                 label="Category"
                 id="create-post-category"
+                onSearch={actions.postGetCategorySuggestions}
+                options={categorySuggestions}
+                help={<Anchor path="/categories/create">Or create one.</Anchor>}
                 placeholder="Where to post, e.g. react"
-                component={NewPostInput}
+                component={NewPostSelect}
               />
             </FormFields>
             <Footer pad={{ vertical: 'medium' }}>
@@ -113,11 +129,17 @@ NewPost.propTypes = {
     postCreateNew: PropTypes.func,
   }),
   isMobile: PropTypes.bool,
+  categorySuggestions: PropTypes.shape({
+    results: PropTypes.arrayOf(
+      PropTypes.string
+    ),
+  }),
 };
 
 const mapStateToProps = ({ post, navbar, responsive }) => ({
   postData: post.data,
   initialValues: post.initialValues,
+  categorySuggestions: post.categorySuggestions,
   isCreating: post.creating,
   navTitle: navbar.title,
   isMobile: getIsMobile(responsive),
@@ -126,6 +148,7 @@ const mapStateToProps = ({ post, navbar, responsive }) => ({
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     postCreateNew,
+    postGetCategorySuggestions,
   }, dispatch),
 });
 

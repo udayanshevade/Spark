@@ -25,6 +25,11 @@ export const initialState = {
     body: '',
     category: '',
   },
+  categorySuggestions: {
+    results: [],
+    timeoutId: null,
+    timeoutLength: 750,
+  },
 };
 
 const post = (state = initialState, action) => {
@@ -82,6 +87,26 @@ const post = (state = initialState, action) => {
         return { ...state, [target]: items };
       }
       return state;
+    }
+    case types.POST_UPDATE_CATEGORY_SUGGESTIONS: {
+      const { results } = action;
+      return {
+        ...state,
+        categorySuggestions: {
+          ...state.categorySuggestions,
+          results,
+        },
+      };
+    }
+    case types.POST_CATEGORIES_SET_TIMEOUT: {
+      const { timeoutId } = action;
+      return {
+        ...state,
+        categorySuggestions: {
+          ...state.categorySuggestions,
+          timeoutId,
+        },
+      };
     }
     case types.POST_EMPTY:
       return initialState;
