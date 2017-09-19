@@ -47,6 +47,14 @@ const user = (state = initialState, action) => {
         },
       };
     }
+    case types.USER_ADD_POST: {
+      const { postId } = action;
+      let newState = { ...state };
+      if (newState.user) {
+        newState.user.profile.posts.unshift(postId);
+      }
+      return newState;
+    }
     case types.RESET:
       return initialState;
     default:

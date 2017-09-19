@@ -1,7 +1,7 @@
 import * as types from './types';
 import Requests from '../requests';
 import { appShowTipWithText } from './app';
-import { userUpdateVotes } from './user';
+import { userUpdateVotes, userAddPost } from './user';
 
 const APIbaseURL = '/posts';
 
@@ -92,6 +92,7 @@ export const postCreateNew = rawData => async(dispatch, getState) => {
   if (!data.error) {
     dispatch(postUpdateData(data));
     dispatch(userUpdateVotes(data.id, 'upVote', null, 'posts'));
+    dispatch(userAddPost(data.id));
   }
   dispatch(postSetCreating(false));
 };

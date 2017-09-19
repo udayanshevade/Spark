@@ -56,6 +56,11 @@ export const userUpdateVotes = (id, option, previousVote, target) => ({
   target,
 });
 
+export const userAddPost = (postId) => ({
+  type: types.USER_ADD_POST,
+  postId,
+});
+
 export const userUpdateData = user => ({
   type: types.USER_UPDATE_DATA,
   user,
