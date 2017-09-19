@@ -1,4 +1,5 @@
 import { combineReducers } from 'redux';
+import { reducer as formReducer } from 'redux-form';
 import responsive, { initialState as responsiveState } from './responsive';
 import app, { initialState as appState } from './app';
 import navbar, { initialState as navbarState } from './navbar';
@@ -31,4 +32,5 @@ export default combineReducers({
   search,
   profile,
   post,
+  form: formReducer,
 });

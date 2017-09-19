@@ -1,4 +1,5 @@
 const { verifySessionToken } = require('./utils');
+const uuidv4 = require('uuid/v4');
 
 const db = {
   "894tuq4ut84ut8v4t8wun89g": {
@@ -89,10 +90,10 @@ function add (sessionToken, comment) {
     verifySessionToken(sessionToken, comment.author)
       .then(data => {
         const comments = getData();
-
-        comments[comment.id] = {
-          id: comment.id,
-          timestamp: comment.timestamp,
+        const id = uuidv4();
+        comments[id] = {
+          id,
+          timestamp: Date.now(),
           body: comment.body,
           author: comment.author,
           postId: comment.postId,
@@ -103,9 +104,9 @@ function add (sessionToken, comment) {
           postDeleted: false,
         };
 
-        comments[comment.parentId].children.push(comment.id);
+        comments[comment.parentId].children.push(id);
 
-        res(comments[comment.id]);
+        res(comments[id]);
     }).catch(err => reject(err));
   });
 }

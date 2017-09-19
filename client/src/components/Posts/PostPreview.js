@@ -83,7 +83,7 @@ const PostPreview = ({
           align="start"
         >
           <Timestamp
-            value={(new Date(timestamp)).toISOString()}
+            value={(new Date(+timestamp)).toISOString()}
             fields="date"
             className="post-timestamp"
           />

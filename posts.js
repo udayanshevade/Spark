@@ -1,5 +1,6 @@
 const Fuse = require('fuse.js');
 const { verifySessionToken } = require('./utils');
+const uuidv4 = require('uuid/v4');
 
 const db = {
   "8xf0y6ziyjabvozdd253nd": {
@@ -120,10 +121,10 @@ function add (sessionToken, post) {
     verifySessionToken(sessionToken, post.author)
         .then(data => {
           const posts = getData();
-          
-          posts[post.id] = {
-            id: post.id,
-            timestamp: post.timestamp,
+          const id = uuidv4();
+          posts[id] = {
+            id,
+            timestamp: Date.now(),
             title: post.title,
             body: post.body,
             author: post.author,
@@ -132,7 +133,7 @@ function add (sessionToken, post) {
             voteScore: 1,
             deleted: false,
           };
-          res(posts[post.id]);
+          res(posts[id]);
         })
         .catch(err => reject(err));
   });

@@ -1,5 +1,7 @@
 import * as types from './types';
 import Requests from '../requests';
+import { appShowTipWithText } from './app';
+import { userUpdateVotes } from './user';
 
 const APIbaseURL = '/posts';
 
@@ -63,3 +65,33 @@ export const postToggleShowFull = () => ({
 export const postEmpty = () => ({
   type: types.POST_EMPTY,
 });
+
+export const postSetCreating = creating => ({
+  type: types.POST_SET_CREATING,
+  creating,
+});
+
+export const postCreateNew = rawData => async(dispatch, getState) => {
+  dispatch(postUpdateData(null));
+  const { user } = getState();
+  if (!user.user) {
+    appShowTipWithText('Login to submit a new post.', 'footer-login-button');
+    return;
+  }
+  const { sessionToken, profile } = user.user;
+  dispatch(postSetCreating(true));
+  const postData = {
+    ...rawData,
+    author: profile.id,
+  };
+  const data = await Requests.post({
+    url: APIbaseURL,
+    headers: { sessionToken },
+    body: { ...postData },
+  });
+  if (!data.error) {
+    dispatch(postUpdateData(data));
+    dispatch(userUpdateVotes(data.id, 'upVote', null, 'posts'));
+  }
+  dispatch(postSetCreating(false));
+};

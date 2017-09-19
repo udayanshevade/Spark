@@ -220,7 +220,7 @@ app.post('/posts', (req, res) => {
             // record new post in user profile
             user.addPost(data.author, data.id);
             // add post to category
-            categories.addPost(data.id);
+            categories.addPost(data.category,   data.id);
             // add default upvote from author
             user.writeUserVote(data.author, data.id, 'upVote');
             res.send(data);

@@ -59,7 +59,7 @@ const CommentPreview = ({
               <Paragraph className="card-description">{`${body.slice(0, 90)}${body.length > 90 ? '...' : ''}` || null}</Paragraph>
             </Anchor>
             <Timestamp
-              value={(new Date(timestamp)).toISOString()}
+              value={(new Date(+timestamp)).toISOString()}
               fields="date"
               className="comment-timestamp"
             />

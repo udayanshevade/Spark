@@ -36,7 +36,7 @@
 .main-header,
 .main-footer {
   position: fixed;
-  background: rgba(245, 245, 245, 0.2);
+  background: #fefefe;
   z-index: 2;
 }
 
@@ -124,7 +124,7 @@
 .list-item-link-container,
 .list-item-link-container:hover,
 .list-item-link-container:visited {
-  color: #501eb4;
+  color: #3b3b3b;
   text-decoration: initial;
   width: fit-content;
 }
@@ -203,6 +203,14 @@
 
 .search-input-container .grommetux-input {
   text-align: right;
+}
+
+.create-post-form {
+  margin: 0 auto;
+}
+
+.grommetux-form-field__help {
+  color: #acacac;
 }
 
 @media screen and (min-width: 500px) {

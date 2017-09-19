@@ -11,9 +11,10 @@ import Title from 'grommet/components/Title';
 import MoreIcon from 'grommet/components/icons/base/More';
 import FilterSelect from './FilterSelect';
 import { searchQueryChange, searchFilterUpdate } from '../../actions/search';
+import { getIsMobile } from '../../selectors/responsive';
 
 const NavbarComponent = ({
-  width,
+  isMobile,
   title,
   categoriesQuery,
   postsQuery,
@@ -22,7 +23,6 @@ const NavbarComponent = ({
   activeFilter,
   category,
 }) => {
-  const isMobile = width < 500;
   const filter = filters[activeFilter];
   const value = filter === 'categories' ? categoriesQuery : postsQuery;
   return (
@@ -54,10 +54,10 @@ const NavbarComponent = ({
         <Search
           responsive={false}
           inline
-          fill={isMobile}
+          fill
           size="medium"
           dropAlign={{ right: 'right' }}
-          placeHolder={`${isMobile ? '' : 'Search'} ${!category ? filter : `/${category}`}`}
+          placeHolder={`Search ${isMobile ? '' : (!category ? filter : `/${category}`)}`}
           onDOMChange={(e) => {
             actions.searchQueryChange(e, category);
           }}
@@ -78,7 +78,6 @@ const NavbarComponent = ({
 }
 
 NavbarComponent.propTypes = {
-  width: PropTypes.number,
   title: PropTypes.string,
   categoriesQuery: PropTypes.string,
   postsQuery: PropTypes.string,
@@ -91,10 +90,11 @@ NavbarComponent.propTypes = {
     searchFilterChange: PropTypes.func,
   }),
   category: PropTypes.string,
+  isMobile: PropTypes.bool,
 };
 
 const mapStateToProps = ({ responsive, navbar, search, categories, posts }) => ({
-  width: responsive.width,
+  isMobile: getIsMobile(responsive),
   title: navbar.title,
   categoriesQuery: categories.query,
   postsQuery: posts.query,

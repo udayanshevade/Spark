@@ -5,6 +5,7 @@ export const initialState = {
   data: null,
   comments: [],
   loading: false,
+  creating: false,
   criteria: [{
     label: 'New',
     value: 'timestamp',
@@ -18,6 +19,12 @@ export const initialState = {
   sortDirection: 'desc',
   showFull: false,
   bodyCharLimt: 90,
+  initialValues: {
+    title: '',
+    link: '',
+    body: '',
+    category: '',
+  },
 };
 
 const post = (state = initialState, action) => {
@@ -25,6 +32,10 @@ const post = (state = initialState, action) => {
     case types.POST_SET_LOADING: {
       const { loading } = action;
       return { ...state, loading };
+    }
+    case types.POST_SET_CREATING: {
+      const { creating } = action;
+      return { ...state, creating };
     }
     case types.POST_UPDATE_DATA: {
       const { data } = action;
