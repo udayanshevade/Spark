@@ -32,6 +32,8 @@ const PostPreview = ({
   applyVote,
   votesGiven,
   username,
+  deleted,
+  postDelete,
 }) => (
   <Box
     direction="row"
@@ -87,9 +89,12 @@ const PostPreview = ({
             fields="date"
             className="post-timestamp"
           />
-          <Paragraph className="post-description">
-            {`${body.slice(0, (showFull ? body.length : bodyCharLim))}${body.length > bodyCharLim ? '...' : ''}` || null}
-          </Paragraph>
+          {
+            body &&
+              <Paragraph className="post-description">
+                {`${body.slice(0, (showFull ? body.length : bodyCharLim))}${body.length > bodyCharLim ? '...' : ''}` || null}
+              </Paragraph>
+          }
           {
             threadView && body.length > bodyCharLim &&
               <Button
@@ -102,12 +107,37 @@ const PostPreview = ({
                 }
               />
           }
-          {
-            !threadView &&
-              <Anchor path={`/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}`} className="comments-link-container">
-                <span>{comments.length} comments</span>
-              </Anchor>
-          }
+          <Box
+            direction="row"
+            className="options-tray"
+            pad={{ vertical: 'small' }}
+            responsive={false}
+          >
+            {
+              !threadView &&
+                <Button
+                  plain
+                  path={`/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}`}
+                  className="options-tray__button"
+                  label={`${comments.length} comments`}
+                />
+            }
+            {
+              username === author &&
+                <Button
+                  plain
+                  className="options-tray__button"
+                  label={deleted ? 'deleted' : 'delete'}
+                  onClick={
+                    deleted
+                      ? null
+                      : () => {
+                          postDelete(id);
+                        }
+                  }
+                />
+            }
+          </Box>
         </Box>
       }
       textSize="small"
@@ -129,6 +159,7 @@ PostPreview.propTypes = {
   profileSetUser: PropTypes.func,
   votesGiven: PropTypes.object,
   username: PropTypes.string,
+  postDelete: PropTypes.func,
 };
 
 export default PostPreview;

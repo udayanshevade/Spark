@@ -2,7 +2,21 @@ import React from 'react';
 import FormField from 'grommet/components/FormField';
 import TextInput from 'grommet/components/TextInput';
 
-const NewPostInput = ({ placeholder, input: { onChange, ...input }, id, label, meta: { active, touched, error, warning } }) => (
+const NewPostInput = ({
+  placeholder,
+  input: {
+    onChange,
+    ...input,
+  },
+  id,
+  label,
+  meta: {
+    active,
+    touched,
+    error,
+    warning,
+  },
+}) => (
   <FormField
     label={label}
     error={touched && error ? error : null}

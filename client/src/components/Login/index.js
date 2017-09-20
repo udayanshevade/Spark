@@ -5,7 +5,12 @@ import PropTypes from 'prop-types';
 import Layer from 'grommet/components/Layer';
 import LoginForm from 'grommet/components/LoginForm';
 import Button from 'grommet/components/Button';
-import { userLogin, userSetLoginActive, userSelectLoginForm } from '../../actions/user';
+import {
+  userLogin,
+  userSetLoginActive,
+  userSelectLoginForm,
+  userResetLoginForm,
+} from '../../actions/user';
 
 const Login = ({ actions, loginActive, loginForm }) => {
   const isLogin = loginForm === 'login';
@@ -15,6 +20,7 @@ const Login = ({ actions, loginActive, loginForm }) => {
       hidden={!loginActive}
       onClose={() => {
         actions.userSetLoginActive(false);
+        actions.userResetLoginForm();
       }}
     >
       <LoginForm
@@ -59,6 +65,7 @@ const mapDispatchToProps = dispatch => ({
     userLogin,
     userSetLoginActive,
     userSelectLoginForm,
+    userResetLoginForm,
   }, dispatch),
 });
 

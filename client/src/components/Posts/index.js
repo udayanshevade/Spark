@@ -7,14 +7,15 @@ import Box from 'grommet/components/Box';
 import List from 'grommet/components/List';
 import ListItem from 'grommet/components/ListItem';
 import ListPlaceHolder from 'grommet-addons/components/ListPlaceholder';
-import Spinning from 'grommet/components/icons/Spinning';
 import Navbar from '../Navbar';
 import PostPreview from './PostPreview';
 import FilterBar from '../FilterBar';
+import Loading from '../Loading';
 import * as postsActions from '../../actions/posts';
 import { searchSelectSortCriterion } from '../../actions/search';
 import { profileSetUser } from '../../actions/profile';
 import { getSortedPosts } from '../../selectors/posts';
+import { postDelete } from '../../actions/post';
 import { userRecordVote } from '../../actions/user';
 import { getUsername, getUserVotesGiven } from '../../selectors/user';
 
@@ -33,15 +34,7 @@ export const PostsComponent = ({
 }) => {
   let postsEl;
   if (loading) {
-    postsEl = (
-      <Box
-        pad="large"
-        align="center"
-        className="loading-container"
-      >
-        <Spinning className="loading-spinner" />
-      </Box>
-    );
+    postsEl = <Loading />;
   } else if (!posts.length) {
     postsEl = (
       <ListPlaceHolder
@@ -75,6 +68,7 @@ export const PostsComponent = ({
                     }}
                     votesGiven={votesGiven}
                     username={username}
+                    postDelete={actions.postDelete}
                     {...post}
                   />
                 </ListItem>
@@ -126,6 +120,7 @@ const mapDispatchToProps = dispatch => ({
     searchSelectSortCriterion,
     profileSetUser,
     userRecordVote,
+    postDelete,
   }, dispatch),
 });
 

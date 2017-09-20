@@ -4,7 +4,7 @@ import { determineVoteDelta } from '../utils';
 export const initialState = {
   data: null,
   comments: [],
-  loading: false,
+  loading: true,
   creating: false,
   criteria: [{
     label: 'New',
@@ -19,16 +19,16 @@ export const initialState = {
   sortDirection: 'desc',
   showFull: false,
   bodyCharLimt: 90,
-  initialValues: {
-    title: '',
-    link: '',
-    body: '',
-    category: '',
-  },
   categorySuggestions: {
     results: [],
     timeoutId: null,
     timeoutLength: 750,
+  },
+  createData: {
+    title: '',
+    link: '',
+    body: '',
+    category: '',
   },
 };
 
@@ -107,6 +107,30 @@ const post = (state = initialState, action) => {
           timeoutId,
         },
       };
+    }
+    case types.POST_UPDATE_CREATE_CATEGORY: {
+      const { category } = action;
+      return {
+        ...state,
+        createData: {
+          ...state.createData,
+          category,
+        },
+      };
+    }
+    case types.POST_EDIT_DATA: {
+      const { postId, vals } = action;
+      if (state.data && state.data.id === postId) {
+        const data = { ...state.data };
+        Object.keys(vals).forEach((val) => {
+          data[val] = vals[val];
+        });
+        return {
+          ...state,
+          data,
+        };
+      }
+      return state;
     }
     case types.POST_EMPTY:
       return initialState;

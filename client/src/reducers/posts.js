@@ -32,7 +32,7 @@ const posts = (state = initialState, action) => {
     case types.USER_UPDATE_VOTES: {
       const { id, option, previousVote, target } = action;
       if (target === 'comments') return state;
-      const items = [...state[target]];
+      const items = [...state.posts];
       const oldIndex = items.findIndex(item => item.id === id);
       if (oldIndex < 0) return state;
       const oldItem = items[oldIndex];
@@ -40,7 +40,20 @@ const posts = (state = initialState, action) => {
       const voteScore = oldItem.voteScore + delta;
       const newItem = { ...oldItem, voteScore };
       items.splice(oldIndex, 1, newItem);
-      return { ...state, [target]: items };
+      return { ...state, posts: items };
+    }
+    case types.POST_EDIT_DATA: {
+      const { postId, vals } = action;
+      const items = [...state.posts];
+      const oldIndex = items.findIndex(item => item.id === postId);
+      if (oldIndex < 0) return state;
+      const oldItem = items[oldIndex];
+      const newItem = { ...oldItem };
+      Object.keys(vals).forEach((val) => {
+        newItem[val] = vals[val];
+      });
+      items.splice(oldIndex, 1, newItem);
+      return { ...state, posts: items };
     }
     default:
       return state;

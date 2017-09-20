@@ -1,12 +1,10 @@
 import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { Field, reduxForm } from 'redux-form';
+import { Field, reduxForm, change as changeFieldValue } from 'redux-form';
 import { Redirect } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Section from 'grommet/components/Section';
-import Box from 'grommet/components/Box';
-import Spinning from 'grommet/components/icons/Spinning';
 import Form from 'grommet/components/Form';
 import Header from 'grommet/components/Header';
 import Title from 'grommet/components/Title';
@@ -18,9 +16,11 @@ import Button from 'grommet/components/Button';
 import NewPostInput from './NewPostInput';
 import NewPostTextArea from './NewPostTextArea';
 import NewPostSelect from './NewPostSelect';
+import Loading from '../Loading';
 import {
   postCreateNew,
   postGetCategorySuggestions,
+  postUpdateCreateCategory,
 } from '../../actions/post';
 import { getIsMobile } from '../../selectors/responsive';
 import { validate, warn } from './validation';
@@ -56,7 +56,7 @@ class NewPost extends Component {
       },
     } = this.props;
     return isCreating
-      ? <Box pad="large" justify="center" align="center" className="loading-container"><Spinning /></Box>
+      ? <Loading />
       : (
         <Section pad="none" className="main-container">
           <Header
@@ -103,9 +103,13 @@ class NewPost extends Component {
                 label="Category"
                 id="create-post-category"
                 onSearch={actions.postGetCategorySuggestions}
+                updateSelectInput={(val) => {
+                  actions.postUpdateCategoryValue('postCreateNew', 'category', val);
+                }}
                 options={categorySuggestions}
                 help={<Anchor path="/categories/create">Or create one.</Anchor>}
                 placeholder="Where to post, e.g. react"
+                updateCategory={actions.postUpdateCreateCategory}
                 component={NewPostSelect}
               />
             </FormFields>
@@ -138,7 +142,7 @@ NewPost.propTypes = {
 
 const mapStateToProps = ({ post, navbar, responsive }) => ({
   postData: post.data,
-  initialValues: post.initialValues,
+  initialValues: post.createData,
   categorySuggestions: post.categorySuggestions,
   isCreating: post.creating,
   navTitle: navbar.title,
@@ -149,6 +153,8 @@ const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     postCreateNew,
     postGetCategorySuggestions,
+    postUpdateCreateCategory,
+    postUpdateCategoryValue: changeFieldValue,
   }, dispatch),
 });
 

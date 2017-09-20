@@ -55,6 +55,8 @@ const user = (state = initialState, action) => {
       }
       return newState;
     }
+    case types.USER_RESET_LOGIN_FORM:
+      return initialState;
     case types.RESET:
       return initialState;
     default:

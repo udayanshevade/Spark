@@ -87,9 +87,9 @@ function get (postId) {
   return new Promise((res) => {
     const posts = getData();
     res(
-      posts[postId].deleted 
-        ? {}
-        : posts[postId]
+      posts[postId]
+        ? posts[postId]
+        : {}
     );
   });
 }
@@ -102,7 +102,8 @@ function get (postId) {
 function getByIds (postIds, query) {
   return new Promise((res) => {
     const allPosts = getData();
-    let selectedPosts = postIds.map(id => allPosts[id]);
+    let selectedPosts = postIds.map(id => allPosts[id])
+      .filter(post => !post.deleted);
     if (query) {
       const fuse = new Fuse(selectedPosts, fuseOptions);
       selectedPosts = fuse.search(query);

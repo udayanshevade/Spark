@@ -119,13 +119,14 @@ function login (userId, password) {
   return new Promise((res, reject) => {
     const users = getData();
     const user = users[userId];
+    if (!user) reject(403);
     const { password: dbPassword, profile } = user;
     if (password === dbPassword) {
       const sessionToken = generateSessionToken(userId);
       users[userId].sessionToken = sessionToken;
       res({ sessionToken, profile });
     } else {
-      reject('Incorrect password.', 403);
+      reject(403);
     }
   });
 }
@@ -135,27 +136,30 @@ function login (userId, password) {
  * @param {string} userId
  * @param {object} newData - password (req), email (opt)
  */
-function create (userId, newData) {
+function create (id, newData) {
   return new Promise((res, reject) => {
     const users = getData();
-    if (users[userId]) {
+    const user = users[id];
+    if (user) {
       reject(403);
     } else {
       const { password, email } = newData;
-      users[userId] = {
+      const newUser = {
+        password: password,
         profile: Object.assign(
           {
-            userId,
+            id: id,
             created: Date.now(),
           }, 
           clone(newUserProfileData),
         ),
       };
-      users[userId].password = password;
-      if (email) users[userId].email = email;
-      const sessionToken = generateSessionToken(userId);
-      users[userId].sessionToken = sessionToken;
-      res(users[userId]);
+      if (email) newUser.email = email;
+      const sessionToken = generateSessionToken(id);
+      newUser.sessionToken = sessionToken;
+      // write to database
+      users[id] = newUser;
+      res(users[id]);
     }
   });
 }
@@ -169,12 +173,12 @@ function create (userId, newData) {
 function update (sessionToken, userId, updatedData) {
   return new Promise((res, reject) => {
     const users = getData();
-    const { sessionToken: dbSessionToken, userId: dbUserId } = users[userId];
+    const { sessionToken: dbSessionToken, id: dbUserId } = users[userId];
     verifySessionToken(sessionToken, dbUserId)
       .then(data => {
         const { email, password, profile } = updatedData;
-        if (password) users[userId].password = password;
-        if (email) users[userId].email = email;
+        if (password) users[id].password = password;
+        if (email) users[id].email = email;
         res({});
       })
       .catch(err => reject(err));

@@ -7,10 +7,10 @@ import Label from 'grommet/components/Label';
 import Timestamp from 'grommet/components/Timestamp';
 import Tabs from 'grommet/components/Tabs';
 import Tab from 'grommet/components/Tab';
-import Spinning from 'grommet/components/icons/Spinning';
 import VoteHistory from './VoteHistory';
 import PostHistory from './PostHistory';
 import CommentHistory from './CommentHistory';
+import Loading from '../Loading';
 import {
   getProfileData,
   getProfileName,
@@ -38,7 +38,7 @@ const ProfileDetails = ({
   votesGivenSeries,
 }) => (
   !data || loading
-  ? <Box pad="large" justify="center" align="center" className="loading-container"><Spinning /></Box>
+  ? <Loading />
   : (
       <Box
         pad={{ vertical: 'large', horizontal: 'none' }}

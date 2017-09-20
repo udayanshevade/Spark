@@ -29,13 +29,13 @@ export const postGetData = postId => async(dispatch) => {
 export const postGetComments = postId => async(dispatch) => {
   const comments = await Requests.get(`${APIbaseURL}/thread/${postId}/comments`);
   dispatch(postUpdateComments(comments));
-  dispatch(postSetLoading(false));
 };
 
 export const postGetDetails = postId => async(dispatch) => {
   dispatch(postSetLoading(true));
-  dispatch(postGetData(postId));
-  dispatch(postGetComments(postId));
+  await dispatch(postGetData(postId));
+  await dispatch(postGetComments(postId));
+  dispatch(postSetLoading(false));
 };
 
 export const postUpdateSortCriterion = selectedCriterion => ({
@@ -108,8 +108,7 @@ export const postLoadCategorySuggestions = query => async(dispatch) => {
   dispatch(postUpdateCategorySuggestions(suggestions));
 };
 
-export const postGetCategorySuggestions = (e) => async(dispatch, getState) => {
-  const query = e.target.value;
+export const postGetCategorySuggestions = query => async(dispatch, getState) => {
   const { post } = getState();
   const { categorySuggestions } = post;
   const { timeoutId, timeoutLength } = categorySuggestions;
@@ -126,3 +125,29 @@ export const postCategorySuggestionsSetTimeout = timeoutId => ({
   type: types.POST_CATEGORIES_SET_TIMEOUT,
   timeoutId,
 });
+
+export const postUpdateCreateCategory = category => ({
+  type: types.POST_UPDATE_CREATE_CATEGORY,
+  category,
+});
+
+export const postEditData = (postId, vals) => ({
+  type: types.POST_EDIT_DATA,
+  postId,
+  vals,
+});
+
+export const postDelete = postId => async(dispatch, getState) => {
+  const { user } = getState();
+  if (!user.user) return;
+  const { sessionToken, profile } = user.user;
+  const res = await Requests.delete({
+    url: `${APIbaseURL}/thread/${postId}/delete`,
+    headers: { sessionToken },
+    body: { userId: profile.id },
+  });
+  if (!res.error) {
+    const newVals = { deleted: true };
+    dispatch(postEditData(postId, newVals))
+  }
+};

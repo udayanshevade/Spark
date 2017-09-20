@@ -1,16 +1,22 @@
 import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { Redirect } from 'react-router-dom';
 import Anchor from 'grommet/components/Anchor';
 import Header from 'grommet/components/Header';
 import Title from 'grommet/components/Title';
 import Heading from 'grommet/components/Heading';
 import Box from 'grommet/components/Box';
-import Spinning from 'grommet/components/icons/Spinning';
 import MoreIcon from 'grommet/components/icons/base/More';
 import PostPreview from '../Posts/PostPreview';
 import Comments from '../Comments';
-import { postGetDetails, postToggleShowFull, postEmpty } from '../../actions/post';
+import Loading from '../Loading';
+import {
+  postGetDetails,
+  postToggleShowFull,
+  postEmpty,
+  postDelete,
+} from '../../actions/post';
 import { profileSetUser } from '../../actions/profile';
 import { userRecordVote } from '../../actions/user';
 import { getUsername, getUserVotesGiven } from '../../selectors/user';
@@ -31,9 +37,14 @@ class Post extends Component {
       showFull,
       bodyCharLim,
       votesGiven,
+      loading,
       username,
     } = this.props;
-    if (!data) return <Box justify="center" className="loading-container"><Spinning /></Box>
+    if (loading) {
+      return <Loading />;
+    } else if (!data) {
+      return <Redirect to="/" />;
+    }
     const { category } = data;
     return (
       <Box direction="column" className="post-container">
@@ -63,6 +74,7 @@ class Post extends Component {
           applyVote={(id, vote) => {
             actions.userRecordVote('posts', id, vote);
           }}
+          postDelete={actions.postDelete}
           votesGiven={votesGiven}
           username={username}
           {...data}
@@ -76,6 +88,7 @@ class Post extends Component {
 const mapStateToProps = ({ user, post, responsive, navbar }) => ({
   width: responsive.width,
   data: post.data,
+  loading: post.loading,
   showFull: post.showFull,
   navbarTitle: navbar.title,
   bodyCharLim: post.bodyCharLim,
@@ -90,6 +103,7 @@ const mapDispatchToProps = dispatch => ({
     postToggleShowFull,
     postEmpty,
     userRecordVote,
+    postDelete,
   }, dispatch),
 });
 

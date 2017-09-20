@@ -90,3 +90,7 @@ export const userSetLoading = loading => ({
   type: types.USER_SET_LOADING,
   loading,
 });
+
+export const userResetLoginForm = () => ({
+  type: types.USER_RESET_LOGIN_FORM,
+});
