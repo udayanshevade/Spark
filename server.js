@@ -303,7 +303,13 @@ app.put('/posts/thread/:id/edit', (req, res) => {
     const errors = { 500: serverErrorMsg, 401: authErrorMsg };
     posts.edit(req.sessionToken, req.params.id, req.body)
       .then(
-        (data) => res.send(data),
+        ({ data, oldCategory }) => {
+          console.log(oldCategory);
+          if (oldCategory) {
+            categories.switchPostCategory(data.id, data.category, oldCategory);
+          }
+          res.send(data);
+        },
         handleErrorFn(res, errors)
       );
   }

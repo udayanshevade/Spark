@@ -26,7 +26,7 @@ export const initialState = {
   },
   createData: {
     title: '',
-    link: '',
+    url: '',
     body: '',
     category: '',
   },
@@ -63,9 +63,10 @@ const post = (state = initialState, action) => {
       return { ...state, showFull };
     }
     case types.USER_UPDATE_VOTES: {
-      const { id, option, previousVote, target } = action;
+      const { id, option, previousVote, target, isNew } = action;
       const delta = determineVoteDelta(option, previousVote);
-      if (target === 'posts') {
+      if (!isNew) return state;
+      else if (target === 'posts') {
         if (!state.data) return state;
         const voteScore = state.data.voteScore + delta;
         return {
@@ -108,13 +109,13 @@ const post = (state = initialState, action) => {
         },
       };
     }
-    case types.POST_UPDATE_CREATE_CATEGORY: {
-      const { category } = action;
+    case types.POST_UPDATE_CREATE_DATA: {
+      const { createData } = action;
       return {
         ...state,
         createData: {
           ...state.createData,
-          category,
+          ...createData,
         },
       };
     }
@@ -133,7 +134,10 @@ const post = (state = initialState, action) => {
       return state;
     }
     case types.POST_EMPTY:
-      return initialState;
+      return {
+        ...initialState,
+        createData: state.createData,
+      };
     default:
       return state;
   }

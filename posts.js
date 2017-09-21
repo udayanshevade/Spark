@@ -127,9 +127,10 @@ function add (sessionToken, post) {
             id,
             timestamp: Date.now(),
             title: post.title,
-            body: post.body,
-            author: post.author,
+            url: post.url || '',
+            body: post.body || '',
             category: post.category,
+            author: post.author,
             comments: [],
             voteScore: 1,
             deleted: false,
@@ -197,10 +198,15 @@ function edit (sessionToken, postId, editedPost) {
   return new Promise((res, reject) => {
     verifySessionToken(sessionToken, posts[postId].author)
       .then(data => {
+        const currentPost = posts[postId];
+        const { category: newCategory } = editedPost;
+        const oldCategory = currentPost.category !== newCategory
+          ? currentPost.category
+          : null;
         Object.keys(editedPost).forEach((prop) => {
-          posts[postId][prop] = editedPost[prop];
+          currentPost[prop] = editedPost[prop];
         });
-        res(posts[postId]);
+        res({ data: posts[postId], oldCategory });
       }).catch(err => reject(err));
   });
 }

@@ -48,12 +48,13 @@ export const userRecordVote = (target, id, voted) => async(dispatch, getState) =
   }
 };
 
-export const userUpdateVotes = (id, option, previousVote, target) => ({
+export const userUpdateVotes = (id, option, previousVote, target, isNew) => ({
   type: types.USER_UPDATE_VOTES,
   id,
   option,
   previousVote,
   target,
+  isNew,
 });
 
 export const userAddPost = (postId) => ({

@@ -11,8 +11,6 @@ export const validate = values => {
       errors.title = 'Required';
     } else if (title && title.length > lengths.title) {
       errors.title = 'Too long';
-    } else if (title && !/^[\w-\s]+$/.test(title)) {
-      errors.title = 'No invalid characters';
     }
     if (body && body.length > lengths.body) {
       errors.body = 'Too long';

@@ -72,8 +72,18 @@ function addPost (cat, postId) {
   category.posts.unshift(postId);
 }
 
+/**
+ * @description Change post category
+ */
+function switchPostCategory (postId, newCategory, oldCategory) {
+  const db = getData();
+  db[oldCategory].posts = db[oldCategory].posts.filter(id => id !== postId);
+  db[newCategory].posts.unshift(postId);
+}
+
 module.exports = {
   getAll,
   getCategoryPosts,
   addPost,
+  switchPostCategory,
 };

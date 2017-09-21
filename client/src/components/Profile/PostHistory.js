@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import VotesMeter from '../VotesMeter';
 import Section from 'grommet/components/Section';
@@ -20,16 +21,15 @@ import {
   profilePostsSelectSortCriterion,
 } from '../../actions/profile';
 import { userRecordVote } from '../../actions/user';
+import { postDelete, postUpdateCreateData } from '../../actions/post';
 
 const PostHistory = ({
   width,
   posts,
   postVotesReceivedMax,
   postVotesReceivedSeries,
-  selectSortCriterion,
+  actions,
   netScore,
-  setUser,
-  applyVote,
   votesGiven,
   username,
   ...sortProps,
@@ -49,7 +49,7 @@ const PostHistory = ({
     <Box pad={{ vertical: 'none' }} className="profile-details-list-container">
       <FilterBar
         width={width}
-        selectSortCriterion={selectSortCriterion}
+        selectSortCriterion={actions.selectSortCriterion}
         {...sortProps}
       />
       <List>
@@ -58,10 +58,12 @@ const PostHistory = ({
             <PostPreview
               key={`profile-post-${i}`}
               width={width}
-              profileSetUser={setUser}
+              profileSetUser={actions.profileSetUser}
               applyVote={(id, vote) => {
-                applyVote('posts', id, vote);
+                actions.applyVote('posts', id, vote);
               }}
+              postDelete={actions.postDelete}
+              postUpdateCreateData={actions.postUpdateCreateData}
               votesGiven={votesGiven}
               username={username}
               {...post}
@@ -105,8 +107,14 @@ const mapStateToProps = ({ user, profile }) => ({
   username: getUsername(user),
 });
 
-export default connect(mapStateToProps, {
-  selectSortCriterion: profilePostsSelectSortCriterion,
-  setUser: profileSetUser,
-  applyVote: userRecordVote,
-})(PostHistory);
+const mapDispatchToProps = dispatch => ({
+  actions: bindActionCreators({
+    selectSortCriterion: profilePostsSelectSortCriterion,
+    profileSetUser,
+    applyVote: userRecordVote,
+    postDelete,
+    postUpdateCreateData,
+  }, dispatch),
+})
+
+export default connect(mapStateToProps, mapDispatchToProps)(PostHistory);

@@ -11,7 +11,7 @@ import Footer from './components/Footer';
 import Login from './components/Login';
 import Profile from './components/Profile';
 import Post from './components/Post';
-import NewPost from './components/NewPost';
+import { NewPost, EditPost} from './components/UpdatePost';
 import Category from './components/Category';
 import { responsiveResizeListener } from './actions/responsive';
 import { appCloseTip } from './actions/app';
@@ -41,6 +41,19 @@ class AppComponent extends Component {
               actions.userSetLoginActive(true);
             } else {
               el = <NewPost {...props} />;
+            }
+            return el;
+          }}
+        />
+        <Route
+          path="/posts/edit/:id"
+          render={(props) => {
+            let el;
+            if (!loggedIn) {
+              el = <Redirect to={{ pathname: '/' }} />;
+              actions.userSetLoginActive(true);
+            } else {
+              el = <EditPost {...props} />;
             }
             return el;
           }}

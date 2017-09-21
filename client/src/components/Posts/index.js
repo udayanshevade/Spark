@@ -15,7 +15,7 @@ import * as postsActions from '../../actions/posts';
 import { searchSelectSortCriterion } from '../../actions/search';
 import { profileSetUser } from '../../actions/profile';
 import { getSortedPosts } from '../../selectors/posts';
-import { postDelete } from '../../actions/post';
+import { postDelete, postUpdateCreateData } from '../../actions/post';
 import { userRecordVote } from '../../actions/user';
 import { getUsername, getUserVotesGiven } from '../../selectors/user';
 
@@ -69,6 +69,7 @@ export const PostsComponent = ({
                     votesGiven={votesGiven}
                     username={username}
                     postDelete={actions.postDelete}
+                    postUpdateCreateData={actions.postUpdateCreateData}
                     {...post}
                   />
                 </ListItem>
@@ -121,6 +122,7 @@ const mapDispatchToProps = dispatch => ({
     profileSetUser,
     userRecordVote,
     postDelete,
+    postUpdateCreateData,
   }, dispatch),
 });
 

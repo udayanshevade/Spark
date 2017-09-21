@@ -91,8 +91,8 @@ export const postCreateNew = rawData => async(dispatch, getState) => {
     body: { ...postData },
   });
   if (!data.error) {
-    dispatch(postUpdateData(data));
-    dispatch(userUpdateVotes(data.id, 'upVote', null, 'posts'));
+    await dispatch(userUpdateVotes(data.id, 'upVote', null, 'posts', true));
+    await dispatch(postUpdateData(data));
     dispatch(userAddPost(data.id));
   }
   dispatch(postSetCreating(false));
@@ -126,9 +126,9 @@ export const postCategorySuggestionsSetTimeout = timeoutId => ({
   timeoutId,
 });
 
-export const postUpdateCreateCategory = category => ({
-  type: types.POST_UPDATE_CREATE_CATEGORY,
-  category,
+export const postUpdateCreateData = createData => ({
+  type: types.POST_UPDATE_CREATE_DATA,
+  createData,
 });
 
 export const postEditData = (postId, vals) => ({
@@ -150,4 +150,24 @@ export const postDelete = postId => async(dispatch, getState) => {
     const newVals = { deleted: true };
     dispatch(postEditData(postId, newVals))
   }
+};
+
+export const postEdit = (postId, editedData) => async(dispatch, getState) => {
+  const { user } = getState();
+  if (!user.user) {
+    appShowTipWithText('Login to submit a new post.', 'footer-login-button');
+    return;
+  }
+  const { sessionToken } = user.user;
+  dispatch(postSetCreating(true));
+  const data = await Requests.put({
+    url: `${APIbaseURL}/thread/${postId}/edit`,
+    headers: { sessionToken },
+    body: { ...editedData },
+  });
+  if (!data.error) {
+    dispatch(postUpdateData(data));
+    dispatch(postEditData(postId, editedData));
+  }
+  dispatch(postSetCreating(false));
 };

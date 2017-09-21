@@ -34,6 +34,7 @@ const PostPreview = ({
   username,
   deleted,
   postDelete,
+  postUpdateCreateData,
 }) => (
   <Box
     direction="row"
@@ -134,6 +135,26 @@ const PostPreview = ({
                       : () => {
                           postDelete(id);
                         }
+                  }
+                />
+            }
+            {
+              username === author &&
+                <Button
+                  plain
+                  className="options-tray__button"
+                  label="edit"
+                  path={`/posts/edit/${id}`}
+                  onClick={postUpdateCreateData
+                    ? () => {
+                      postUpdateCreateData({
+                        title,
+                        url,
+                        body,
+                        category,
+                      });
+                    }
+                    : null
                   }
                 />
             }

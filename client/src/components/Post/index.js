@@ -15,7 +15,9 @@ import {
   postGetDetails,
   postToggleShowFull,
   postEmpty,
+  postSetLoading,
   postDelete,
+  postUpdateCreateData,
 } from '../../actions/post';
 import { profileSetUser } from '../../actions/profile';
 import { userRecordVote } from '../../actions/user';
@@ -23,7 +25,12 @@ import { getUsername, getUserVotesGiven } from '../../selectors/user';
 
 class Post extends Component {
   componentDidMount() {
-    this.props.actions.postGetDetails(this.props.match.params.id);
+    const { data, match } = this.props;
+    if (!(data && data.id === match.params.id)) {
+      this.props.actions.postGetDetails(this.props.match.params.id);
+    } else {
+      this.props.actions.postSetLoading(false);
+    }
   }
   componentWillUnmount() {
     this.props.actions.postEmpty();
@@ -75,6 +82,7 @@ class Post extends Component {
             actions.userRecordVote('posts', id, vote);
           }}
           postDelete={actions.postDelete}
+          postUpdateCreateData={actions.postUpdateCreateData}
           votesGiven={votesGiven}
           username={username}
           {...data}
@@ -102,8 +110,10 @@ const mapDispatchToProps = dispatch => ({
     profileSetUser,
     postToggleShowFull,
     postEmpty,
+    postSetLoading,
     userRecordVote,
     postDelete,
+    postUpdateCreateData,
   }, dispatch),
 });
 

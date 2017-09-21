@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
-import { Field, reduxForm, change as changeFieldValue } from 'redux-form';
+import { Field, reduxForm } from 'redux-form';
 import { Redirect } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import Section from 'grommet/components/Section';
@@ -17,21 +15,15 @@ import NewPostInput from './NewPostInput';
 import NewPostTextArea from './NewPostTextArea';
 import NewPostSelect from './NewPostSelect';
 import Loading from '../Loading';
-import {
-  postCreateNew,
-  postGetCategorySuggestions,
-  postUpdateCreateCategory,
-} from '../../actions/post';
-import { getIsMobile } from '../../selectors/responsive';
 import { validate, warn } from './validation';
 
-class NewPost extends Component {
+class UpdatePost extends Component {
   state = {
     shouldRedirect: false,
   }
 
   componentWillReceiveProps(nextProps) {
-    if (this.props.isCreating && nextProps.postData && !nextProps.isCreating) {
+    if (this.props.isUpdating && nextProps.postData && !nextProps.isUpdating) {
       this.setState({ shouldRedirect: true });
     }
   }
@@ -47,15 +39,16 @@ class NewPost extends Component {
     }
     const {
       handleSubmit,
-      isCreating,
+      updateSelectInput,
+      onSubmit,
+      isUpdating,
       actions,
       isMobile,
       navTitle,
-      categorySuggestions: {
-        results: categorySuggestions,
-      },
+      suggestions,
+      heading,
     } = this.props;
-    return isCreating
+    return isUpdating
       ? <Loading />
       : (
         <Section pad="none" className="main-container">
@@ -70,11 +63,11 @@ class NewPost extends Component {
           </Header>
           <Form
             compact={isMobile}
-            onSubmit={handleSubmit(actions.postCreateNew)}
+            onSubmit={handleSubmit(onSubmit)}
             className="create-post-form"
           >
             <Header>
-              <Heading className="new-post-create-title">new post</Heading>
+              <Heading className="new-post-create-title">{heading}</Heading>
             </Header>
             <FormFields>
               <Field
@@ -85,9 +78,9 @@ class NewPost extends Component {
                 component={NewPostInput}
               />
               <Field
-                name="link"
+                name="url"
                 label="Link"
-                id="create-post-link"
+                id="create-post-url"
                 placeholder="A link if you've got one"
                 component={NewPostInput}
               />
@@ -103,13 +96,11 @@ class NewPost extends Component {
                 label="Category"
                 id="create-post-category"
                 onSearch={actions.postGetCategorySuggestions}
-                updateSelectInput={(val) => {
-                  actions.postUpdateCategoryValue('postCreateNew', 'category', val);
-                }}
-                options={categorySuggestions}
+                updateSelectInput={updateSelectInput}
+                options={suggestions}
                 help={<Anchor path="/categories/create">Or create one.</Anchor>}
                 placeholder="Where to post, e.g. react"
-                updateCategory={actions.postUpdateCreateCategory}
+                updateCategory={(category) => actions.postUpdateCreateData({ category })}
                 component={NewPostSelect}
               />
             </FormFields>
@@ -117,7 +108,7 @@ class NewPost extends Component {
               <Button
                 plain
                 label="submit"
-                onClick={handleSubmit(actions.postCreateNew)}
+                onClick={handleSubmit(onSubmit)}
               />
             </Footer>
           </Form>
@@ -126,42 +117,20 @@ class NewPost extends Component {
   }
 }
 
-NewPost.propTypes = {
+UpdatePost.propTypes = {
   navTitle: PropTypes.string,
-  handleSubmit: PropTypes.func,
+  onSubmit: PropTypes.func,
   actions: PropTypes.shape({
     postCreateNew: PropTypes.func,
   }),
   isMobile: PropTypes.bool,
-  categorySuggestions: PropTypes.shape({
-    results: PropTypes.arrayOf(
-      PropTypes.string
-    ),
-  }),
+  suggestions: PropTypes.arrayOf(
+    PropTypes.string
+  ),
 };
 
-const mapStateToProps = ({ post, navbar, responsive }) => ({
-  postData: post.data,
-  initialValues: post.createData,
-  categorySuggestions: post.categorySuggestions,
-  isCreating: post.creating,
-  navTitle: navbar.title,
-  isMobile: getIsMobile(responsive),
-});
-
-const mapDispatchToProps = dispatch => ({
-  actions: bindActionCreators({
-    postCreateNew,
-    postGetCategorySuggestions,
-    postUpdateCreateCategory,
-    postUpdateCategoryValue: changeFieldValue,
-  }, dispatch),
-});
-
-export default connect(mapStateToProps, mapDispatchToProps)(
-  reduxForm({
-    form: 'postCreateNew',
-    validate,
-    warn,
-  })(NewPost)
-);
+export default reduxForm({
+  form: 'postCreateNew',
+  validate,
+  warn,
+})(UpdatePost);
