@@ -63,10 +63,9 @@ const post = (state = initialState, action) => {
       return { ...state, showFull };
     }
     case types.USER_UPDATE_VOTES: {
-      const { id, option, previousVote, target, isNew } = action;
+      const { id, option, previousVote, target } = action;
       const delta = determineVoteDelta(option, previousVote);
-      if (!isNew) return state;
-      else if (target === 'posts') {
+      if (target === 'posts') {
         if (!state.data) return state;
         const voteScore = state.data.voteScore + delta;
         return {
