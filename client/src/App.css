@@ -160,6 +160,10 @@
   margin-bottom: 0;
 }
 
+.sort-bar {
+  font-size: 0.85em;
+}
+
 .card-description {
   margin: 0.75em 0 1.5em;
 }
@@ -174,7 +178,21 @@
 
 .comment-list-item {
   padding-right: 0;
+  padding-bottom: 0.75em;
   border-left: 2px solid rgba(50, 50, 50, 0.2);
+}
+
+.comments-section > .comments-container > .comment-list > .comment-list-item {
+  border-left: none;
+}
+
+.new-comment .grommetux-form:not(.grommetux-form--plain) {
+  width: 100%;
+  max-width: 500px;
+}
+
+.new-comment-footer .grommetux-button__label {
+  font-size: 0.75em;
 }
 
 .header-arrow-icon {
@@ -229,6 +247,11 @@
 .options-tray__button .grommetux-button__label {
   margin: 0;
   font-size: 0.75em;
+}
+
+.new-comment,
+.new-comment-footer {
+  padding-bottom: 0;
 }
 
 @media screen and (min-width: 500px) {

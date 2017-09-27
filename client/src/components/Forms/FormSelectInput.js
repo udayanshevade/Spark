@@ -2,7 +2,7 @@ import React from 'react';
 import FormField from 'grommet/components/FormField';
 import SearchInput from 'grommet/components/SearchInput';
 
-const NewPostSelect = ({
+const FormSelectInput = ({
   options,
   placeholder,
   onSearch,
@@ -14,8 +14,7 @@ const NewPostSelect = ({
     touched,
     error,
   },
-  updateCategory,
-  updateSelectInput,
+  onUpdateValue,
 }) => (
   <FormField
     label={label}
@@ -28,17 +27,19 @@ const NewPostSelect = ({
       placeHolder={placeholder}
       suggestions={options}
       onDOMChange={(e) => {
-        updateCategory(e.target.value);
-        updateSelectInput(e.target.value);
-        onSearch(e.target.value);
+        if (onUpdateValue) {
+          onUpdateValue(e.target.value);
+        }
+        if (onSearch) {
+          onSearch(e.target.value);
+        }
       }}
       value={input.value}
       onSelect={(e) => {
-        updateSelectInput(e.suggestion);
-        updateCategory(e.suggestion);
+        onUpdateValue(e.suggestion);
       }}
     />
   </FormField>
 );
 
-export default NewPostSelect;
+export default FormSelectInput;

@@ -142,6 +142,30 @@ function add (sessionToken, post) {
 }
 
 /**
+ * @description Add comment to post
+ * @param {string} postId 
+ * @param {string} commentId 
+ */
+function addComment (postId, commentId) {
+  const posts = getData(); 
+  const post = posts[postId];
+  if (!post) return;
+  post.comments.unshift(commentId);
+}
+
+/**
+ * @description Add comment to post
+ * @param {string} postId 
+ * @param {string} commentId 
+ */
+function removeComment (postId, commentId) {
+  const posts = getData(); 
+  const post = posts[postId];
+  if (!post) return;
+  post.comments = post.comments.filter(id => id !== commentId);
+}
+
+/**
  * @description Vote on a post
  * @param {string} sessionToken
  * @param {string} postId
@@ -220,4 +244,6 @@ module.exports = {
   disable,
   edit,
   getAll,
+  addComment,
+  removeComment,
 };

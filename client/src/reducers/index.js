@@ -9,6 +9,7 @@ import user, { initialState as userState } from './user';
 import search, { initialState as searchState } from './search';
 import profile, { initialState as profileState } from './profile';
 import post, { initialState as postState } from './post';
+import comment, { initialState as commentState } from './comment';
 
 export const initialState = {
   responsive: responsiveState,
@@ -20,6 +21,7 @@ export const initialState = {
   search: searchState,
   profile: profileState,
   post: postState,
+  comment: commentState,
 };
 
 export default combineReducers({
@@ -32,5 +34,6 @@ export default combineReducers({
   search,
   profile,
   post,
+  comment,
   form: formReducer,
 });

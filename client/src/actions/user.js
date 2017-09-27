@@ -57,9 +57,14 @@ export const userUpdateVotes = (id, option, previousVote, target, isNew) => ({
   isNew,
 });
 
-export const userAddPost = (postId) => ({
+export const userAddPost = postId => ({
   type: types.USER_ADD_POST,
   postId,
+});
+
+export const userAddComment = commentId => ({
+  type: types.USER_ADD_COMMENT,
+  commentId,
 });
 
 export const userUpdateData = user => ({

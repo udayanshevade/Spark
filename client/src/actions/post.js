@@ -126,6 +126,15 @@ export const postCategorySuggestionsSetTimeout = timeoutId => ({
   timeoutId,
 });
 
+export const postResetCreateData = () => (dispatch) => {
+  dispatch(postUpdateCreateData({
+    title: '',
+    url: '',
+    body: '',
+    category: '',
+  }));
+};
+
 export const postUpdateCreateData = createData => ({
   type: types.POST_UPDATE_CREATE_DATA,
   createData,

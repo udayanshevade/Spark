@@ -9,6 +9,7 @@ import Heading from 'grommet/components/Heading';
 import Box from 'grommet/components/Box';
 import MoreIcon from 'grommet/components/icons/base/More';
 import PostPreview from '../Posts/PostPreview';
+import NewComment from '../UpdateComment/NewComment';
 import Comments from '../Comments';
 import Loading from '../Loading';
 import {
@@ -22,6 +23,7 @@ import {
 import { profileSetUser } from '../../actions/profile';
 import { userRecordVote } from '../../actions/user';
 import { getUsername, getUserVotesGiven } from '../../selectors/user';
+import { getRandomID } from '../../utils';
 
 class Post extends Component {
   componentDidMount() {
@@ -46,6 +48,7 @@ class Post extends Component {
       votesGiven,
       loading,
       username,
+      blankComment,
     } = this.props;
     if (loading) {
       return <Loading />;
@@ -87,13 +90,21 @@ class Post extends Component {
           username={username}
           {...data}
         />
-        <Comments />
+        {
+          username &&
+            <NewComment
+              randomFormID={getRandomID()}
+              postId={data.id}
+              initialValues={blankComment}
+            />
+        }
+        <Comments threadView />
       </Box>
     );
   }
 }
 
-const mapStateToProps = ({ user, post, responsive, navbar }) => ({
+const mapStateToProps = ({ user, post, responsive, navbar, comment }) => ({
   width: responsive.width,
   data: post.data,
   loading: post.loading,
@@ -102,6 +113,7 @@ const mapStateToProps = ({ user, post, responsive, navbar }) => ({
   bodyCharLim: post.bodyCharLim,
   votesGiven: getUserVotesGiven(user),
   username: getUsername(user),
+  blankComment: comment.data,
 });
 
 const mapDispatchToProps = dispatch => ({

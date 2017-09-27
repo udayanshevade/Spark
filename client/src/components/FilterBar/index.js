@@ -24,6 +24,7 @@ const FilterBarComponent = ({
         direction={sortDirection}
         value={selectedCriterion}
         onChange={selectSortCriterion}
+        className="sort-bar"
       />
     </Header>
   );

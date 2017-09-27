@@ -8,6 +8,7 @@ import {
   postEdit,
   postGetCategorySuggestions,
   postUpdateCreateData,
+  postResetCreateData,
 } from '../../actions/post';
 import { getIsMobile } from '../../selectors/responsive';
 
@@ -73,6 +74,7 @@ const mapDispatchToProps = dispatch => ({
     postGetCategorySuggestions,
     postUpdateCreateData,
     postUpdateCategoryValue: changeFieldValue,
+    postResetCreateData,
   }, dispatch),
 });
 

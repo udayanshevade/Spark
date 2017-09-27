@@ -97,14 +97,17 @@ function add (sessionToken, comment) {
           body: comment.body,
           author: comment.author,
           postId: comment.postId,
-          parentId: comment.parentId || null,
-          ancestorId: comment.ancestorId || null,
+          parentId: comment.parentId !== 'null' ? comment.parentId : null,
+          ancestorId: comment.ancestorId !== 'null' ? comment.ancestorId : null,
+          children: [],
           voteScore: 1,
           deleted: false,
           postDeleted: false,
         };
 
-        comments[comment.parentId].children.push(id);
+        if (comment.parentId !== 'null') {
+          comments[comment.parentId].children.push(id);
+        }
 
         res(comments[id]);
     }).catch(err => reject(err));

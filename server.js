@@ -350,6 +350,7 @@ app.post('/comments', (req, res) => {
     comments.add(req.sessionToken, req.body)
       .then(
         (data) => {
+          posts.addComment(data.postId, data.id);
           // record new post in user profile
           user.addComment(data.author, data.id);
           // add default upvote from author
@@ -415,6 +416,7 @@ app.delete('/comments/:id', (req, res) => {
       comments.disable(req.sessionToken, req.params.id)
         .then(
           (data) => {
+            posts.removeComment(data.postId, data.id);
             user.removeComment(data.author, data.id);
             res.send(data);
           },

@@ -21,6 +21,7 @@ export const CommentsContainer = ({
   actions,
   votesGiven,
   username,
+  threadView,
   ...filterProps,
 }) => {
   let commentsEl;
@@ -44,7 +45,7 @@ export const CommentsContainer = ({
     );
   } else {
     commentsEl = (
-      <Section pad={{ vertical: 'large' }}>
+      <Section pad={{ vertical: 'medium' }} className="comments-section">
         <FilterBar
           width={width}
           {...filterProps}
@@ -60,6 +61,7 @@ export const CommentsContainer = ({
           showChildren
           votesGiven={votesGiven}
           username={username}
+          threadView={threadView}
         />
       </Section>
     );

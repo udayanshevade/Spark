@@ -55,6 +55,28 @@ const user = (state = initialState, action) => {
       }
       return newState;
     }
+    case types.USER_ADD_COMMENT: {
+      const { commentId } = action;
+      let newState = { ...state };
+      if (state.user) {
+        newState.user = {
+          ...state.user,
+          profile: {
+            ...state.user.profile,
+            comments: [...state.user.profile.comments].unshift(commentId),
+            votesGiven: {
+              ...state.user.profile.votesGiven,
+              [commentId]: 'upVote',
+            },
+            commentVotesReceived: {
+              ...state.user.profile.commentVotesReceived,
+              upVote: state.user.profile.commentVotesReceived.upVote + 1,
+            }
+          },
+        };
+      }
+      return newState;
+    }
     case types.USER_RESET_LOGIN_FORM:
       return initialState;
     case types.RESET:

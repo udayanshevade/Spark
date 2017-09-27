@@ -11,9 +11,11 @@ import Heading from 'grommet/components/Heading';
 import FormFields from 'grommet/components/FormFields';
 import Footer from 'grommet/components/Footer';
 import Button from 'grommet/components/Button';
-import NewPostInput from './NewPostInput';
-import NewPostTextArea from './NewPostTextArea';
-import NewPostSelect from './NewPostSelect';
+import {
+  FormTextInput,
+  FormSelectInput,
+  FormTextArea,
+} from '../Forms';
 import Loading from '../Loading';
 import { validate, warn } from './validation';
 
@@ -30,6 +32,7 @@ class UpdatePost extends Component {
 
   componentWillUnmount() {
     this.setState({ shouldRedirect: false });
+    this.props.actions.postResetCreateData();
   }
 
   render() {
@@ -75,33 +78,35 @@ class UpdatePost extends Component {
                 label="Title"
                 id="create-post-title"
                 placeholder="Title of your post"
-                component={NewPostInput}
+                component={FormTextInput}
               />
               <Field
                 name="url"
                 label="Link"
                 id="create-post-url"
                 placeholder="A link if you've got one"
-                component={NewPostInput}
+                component={FormTextInput}
               />
               <Field
                 name="body"
                 label="Body"
                 id="create-post-body"
                 placeholder="Talk about the post here"
-                component={NewPostTextArea}
+                component={FormTextArea}
               />
               <Field
                 name="category"
                 label="Category"
                 id="create-post-category"
                 onSearch={actions.postGetCategorySuggestions}
-                updateSelectInput={updateSelectInput}
+                onUpdateValue={(val) => {
+                  updateSelectInput(val);
+                  actions.postUpdateCreateData({ category: val });
+                }}
                 options={suggestions}
                 help={<Anchor path="/categories/create">Or create one.</Anchor>}
                 placeholder="Where to post, e.g. react"
-                updateCategory={(category) => actions.postUpdateCreateData({ category })}
-                component={NewPostSelect}
+                component={FormSelectInput}
               />
             </FormFields>
             <Footer pad={{ vertical: 'medium' }}>
@@ -121,7 +126,7 @@ UpdatePost.propTypes = {
   navTitle: PropTypes.string,
   onSubmit: PropTypes.func,
   actions: PropTypes.shape({
-    postCreateNew: PropTypes.func,
+    postGetCategorySuggestions: PropTypes.func,
   }),
   isMobile: PropTypes.bool,
   suggestions: PropTypes.arrayOf(
