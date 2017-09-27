@@ -1,4 +1,3 @@
-import * as types from './types';
 import Requests from '../requests';
 import { appShowTipWithText } from './app';
 import { postUpdateComments } from './post';
@@ -6,15 +5,10 @@ import { userAddComment } from './user';
 
 const APIbaseURL = '/comments';
 
-export const commentUpdateBody = body => ({
-  type: types.COMMENT_UPDATE_BODY,
-  body,
-});
-
 export const commentUpdate = formData => async(dispatch, getState) => {
   const { user, post } = getState();
   if (!user.user) {
-    appShowTipWithText('Login to edit comments.', 'footer-login-button');
+    dispatch(appShowTipWithText('Login to edit comments.', 'footer-login-button'));
     return;
   }
   const {
@@ -43,7 +37,7 @@ export const commentUpdate = formData => async(dispatch, getState) => {
 export const commentCreateNew = formData => async(dispatch, getState) => {
   const { user, post } = getState();
   if (!user.user) {
-    appShowTipWithText('Login to submit comments.', 'footer-login-button');
+    dispatch(appShowTipWithText('Login to comment.', 'footer-login-button'));
     return;
   }
   const { sessionToken, profile } = user.user;
@@ -72,4 +66,26 @@ export const commentCreateNew = formData => async(dispatch, getState) => {
     await dispatch(userAddComment(newCommentData.id));
   }
   return true;
+};
+
+export const commentDelete = commentId => async(dispatch, getState) => {
+  const { user, post } = getState();
+  if (!user.user) {
+    dispatch(appShowTipWithText('Login to delete comments.', 'footer-login-button'));
+    return;
+  }
+  const { sessionToken } = user.user;
+  const url = `${APIbaseURL}/${commentId}`;
+  const deleted = await Requests.delete({
+    url,
+    headers: { sessionToken },
+  });
+  if (deleted.error) return;
+  const { data: postData, comments: postComments } = post;
+  if (postData && postData.id === deleted.postId) {
+    const newPostComments = [...postComments];
+    const oldIndex = newPostComments.findIndex(comment => comment.id === commentId);
+    newPostComments.splice(oldIndex, 1, deleted);
+    await dispatch(postUpdateComments(newPostComments));
+  }
 };

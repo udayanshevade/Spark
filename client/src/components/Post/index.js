@@ -26,6 +26,14 @@ import { getUsername, getUserVotesGiven } from '../../selectors/user';
 import { getRandomID } from '../../utils';
 
 class Post extends Component {
+  blankComment = {
+    body: '',
+    parentId: null,
+    ancestorId: null,
+  }
+  
+  newCommentId = getRandomID()
+
   componentDidMount() {
     const { data, match } = this.props;
     if (!(data && data.id === match.params.id)) {
@@ -48,7 +56,6 @@ class Post extends Component {
       votesGiven,
       loading,
       username,
-      blankComment,
     } = this.props;
     if (loading) {
       return <Loading />;
@@ -90,21 +97,18 @@ class Post extends Component {
           username={username}
           {...data}
         />
-        {
-          username &&
-            <NewComment
-              randomFormID={getRandomID()}
-              postId={data.id}
-              initialValues={blankComment}
-            />
-        }
+        <NewComment
+          randomFormID={this.newCommentId}
+          postId={data.id}
+          initialValues={this.blankComment}
+        />
         <Comments threadView />
       </Box>
     );
   }
 }
 
-const mapStateToProps = ({ user, post, responsive, navbar, comment }) => ({
+const mapStateToProps = ({ user, post, responsive, navbar }) => ({
   width: responsive.width,
   data: post.data,
   loading: post.loading,
@@ -113,7 +117,6 @@ const mapStateToProps = ({ user, post, responsive, navbar, comment }) => ({
   bodyCharLim: post.bodyCharLim,
   votesGiven: getUserVotesGiven(user),
   username: getUsername(user),
-  blankComment: comment.data,
 });
 
 const mapDispatchToProps = dispatch => ({

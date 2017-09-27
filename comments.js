@@ -47,7 +47,9 @@ function getByParent (postId) {
   return new Promise((res) => {
     const comments = getData()
     const keys = Object.keys(comments)
-    filtered_keys = keys.filter(key => comments[key].postId === postId && !comments[key].deleted)
+    filtered_keys = keys.filter(
+      key => comments[key].postId === postId
+    )
     res(filtered_keys.map(key => comments[key]))
   });
 }
@@ -170,7 +172,7 @@ function disable (sessionToken, commentId) {
     verifySessionToken(sessionToken, comments[commentId].author)
       .then(data => {
         const commentToDisable = comments[commentId];
-        commentToDisable.deleted = true;
+        commentToDisable.deleted = !commentToDisable.deleted;
         res(comments[commentId]);
       }).catch(err => reject(err));
     });

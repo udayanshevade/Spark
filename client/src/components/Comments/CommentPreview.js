@@ -32,6 +32,7 @@ class CommentPreview extends Component {
       votesGiven,
       username,
       threadView,
+      commentDelete,
       ...comment,
     } = this.props;
     const {
@@ -43,6 +44,7 @@ class CommentPreview extends Component {
       children,
       postId,
       ancestorId,
+      deleted,
     } = comment;
     const commentEl = this.state.editing
       ? (
@@ -61,11 +63,13 @@ class CommentPreview extends Component {
           username={username}
           profileSetUser={profileSetUser}
           body={body}
+          deleted={deleted}
           timestamp={timestamp}
           setEditMode={this.setEditMode}
           setReplyMode={this.setReplyMode}
           threadView={threadView}
           applyVote={applyVote}
+          commentDelete={commentDelete}
         />
       );
     return (
@@ -96,6 +100,7 @@ class CommentPreview extends Component {
               votesGiven={votesGiven}
               username={username}
               threadView={threadView}
+              commentDelete={commentDelete}
             />
         }
       </Box>
@@ -114,6 +119,7 @@ CommentPreview.propTypes = {
   applyVote: PropTypes.func,
   votesGiven: PropTypes.object,
   username: PropTypes.string,
+  commentDelete: PropTypes.func,
 };
 
 export default CommentPreview;

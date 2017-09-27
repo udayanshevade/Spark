@@ -13,6 +13,7 @@ const Comments = ({
   votesGiven,
   username,
   threadView,
+  commentDelete,
 }) => (
   <Box pad={{ vertical: 'none' }} className="comments-container">
     <List className="comment-list">
@@ -27,6 +28,7 @@ const Comments = ({
               votesGiven={votesGiven}
               username={username}
               threadView={threadView}
+              commentDelete={commentDelete}
               {...comment}
             />
           </ListItem>

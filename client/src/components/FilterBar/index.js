@@ -15,7 +15,7 @@ const FilterBarComponent = ({
       responsive={false}
       flex
       size="small"
-      justify={width < 500 ? 'end' : 'start'}
+      justify={width < 500 ? 'center' : 'start'}
       pad="small"
       className="filter-header"
     >

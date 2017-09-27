@@ -18,11 +18,13 @@ const Comment = ({
   username,
   profileSetUser,
   body,
+  deleted,
   timestamp,
   setEditMode,
   setReplyMode,
   threadView,
   applyVote,
+  commentDelete,
 }) => (
   <Box
     direction="row"
@@ -32,14 +34,17 @@ const Comment = ({
     pad={{ horizontal: 'small', vertical: 'none' }}
     className="preview-list-item__inner"
   >
-    <VoteBox
-      voteScore={voteScore}
-      applyVote={(vote) => {
-        applyVote(id, vote);
-      }}
-      vote={votesGiven ? votesGiven[id] : null}
-      showScore={author === username}
-    />
+    {
+      !deleted &&
+        <VoteBox
+          voteScore={voteScore}
+          applyVote={(vote) => {
+            applyVote(id, vote);
+          }}
+          vote={votesGiven ? votesGiven[id] : null}
+          showScore={author === username}
+        />
+    }
     <Card
       flex
       label={
@@ -58,7 +63,11 @@ const Comment = ({
           justify="between"
           align="start"
         >
-          <Paragraph className="card-description">{body || null}</Paragraph>
+          <Paragraph
+            className={`card-description ${deleted ? 'card-description--deleted' : ''}`}
+          >
+            {deleted ? 'deleted' : body || null}
+          </Paragraph>
           <Timestamp
             value={(new Date(+timestamp)).toISOString()}
             fields="date"
@@ -70,6 +79,17 @@ const Comment = ({
             pad={{ vertical: 'small' }}
             responsive={false}
           >
+            {
+              author === username &&
+                <Button
+                  plain
+                  label={deleted ? 'restore' : 'delete'}
+                  className="options-tray__button"
+                  onClick={() => {
+                    commentDelete(id);
+                  }}
+                />
+            }
             <Button
               plain
               label="link"
@@ -77,7 +97,7 @@ const Comment = ({
               className="options-tray__button"
             />
             {
-              author === username &&
+              !deleted && author === username &&
                 <Button
                   plain
                   label="edit"
@@ -115,6 +135,7 @@ Comment.propTypes = {
   setEditMode: PropTypes.func,
   threadView: PropTypes.bool,
   applyVote: PropTypes.func,
+  commentDelete: PropTypes.func,
 };
 
 export default Comment;

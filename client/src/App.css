@@ -46,6 +46,12 @@
   top: 0;
 }
 
+.post-header {
+  position: sticky;
+  z-index: 0;
+  background: #f6f6f6;
+}
+
 .filter-header {
   padding-top: 0;
 }
@@ -152,10 +158,6 @@
   width: 100%;
 }
 
-.post-header {
-  background: #f6f6f6;
-}
-
 .post-heading {
   margin-bottom: 0;
 }
@@ -166,6 +168,14 @@
 
 .card-description {
   margin: 0.75em 0 1.5em;
+  max-height: 500px;
+  overflow-y: auto;
+  word-break: break-word;
+}
+
+.card-description--deleted {
+  background: #efefef;
+  opacity: 0.75;
 }
 
 .grommetux-card .grommetux-card__content {
@@ -180,6 +190,22 @@
   padding-right: 0;
   padding-bottom: 0.75em;
   border-left: 2px solid rgba(50, 50, 50, 0.2);
+}
+
+.new-comment {
+  background: white;
+}
+
+.comments-section {
+  z-index: 1;
+  background: white;
+}
+
+.comments-section > div.grommetux-box:first-of-type {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: white;
 }
 
 .comments-section > .comments-container > .comment-list > .comment-list-item {
@@ -255,6 +281,9 @@
 }
 
 @media screen and (min-width: 500px) {
+  .post-header {
+    position: static;
+  }
   .post-timestamp {
     text-align: right;
   }
@@ -263,8 +292,5 @@
   }
   .grommetux-button__icon .downvote {
     vertical-align: top;
-  }
-  .search-input-container .grommetux-input {
-    text-align: initial;
   }
 }

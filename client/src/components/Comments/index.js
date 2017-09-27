@@ -10,6 +10,7 @@ import Comments from './Comments';
 import FilterBar from '../FilterBar';
 import { userRecordVote } from '../../actions/user';
 import { postSelectSortCriterion } from '../../actions/post';
+import { commentDelete } from '../../actions/comment';
 import { profileSetUser } from '../../actions/profile';
 import { getSortedComments } from '../../selectors/post';
 import { getUsername, getUserVotesGiven } from '../../selectors/user';
@@ -62,6 +63,7 @@ export const CommentsContainer = ({
           votesGiven={votesGiven}
           username={username}
           threadView={threadView}
+          commentDelete={actions.commentDelete}
         />
       </Section>
     );
@@ -98,6 +100,7 @@ const mapDispatchToProps = dispatch => ({
     postSelectSortCriterion,
     profileSetUser,
     userRecordVote,
+    commentDelete,
   }, dispatch),
 });
 

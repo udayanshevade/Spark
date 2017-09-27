@@ -164,7 +164,7 @@ export const postDelete = postId => async(dispatch, getState) => {
 export const postEdit = (postId, editedData) => async(dispatch, getState) => {
   const { user } = getState();
   if (!user.user) {
-    appShowTipWithText('Login to submit a new post.', 'footer-login-button');
+    dispatch(appShowTipWithText('Login to submit a new post.', 'footer-login-button'));
     return;
   }
   const { sessionToken } = user.user;
