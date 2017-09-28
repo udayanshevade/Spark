@@ -29,6 +29,7 @@ const EditPost = ({
   match,
 }) => (
   <UpdatePost
+    form="postCreateNew"
     actions={actions}
     onSubmit={(form) => {
       postEdit(match.params.id, form);

@@ -29,6 +29,10 @@
   z-index: 51;
 }
 
+.grommetux-list-item:last-of-type {
+  border-bottom: none;
+}
+
 .vote-box {
   text-align: center;
 }
@@ -278,6 +282,50 @@
 .new-comment,
 .new-comment-footer {
   padding-bottom: 0;
+}
+
+.category-description {
+  margin: 12px;
+}
+
+.category-link {
+  font-size: 1em;
+}
+
+.create-category-link {
+  width: fit-content;
+}
+
+.next-link {
+  font-size: 1.15em;
+  font-weight: normal;
+}
+
+.next-link .grommetux-control-icon {
+  margin-left: 6px;
+}
+
+.categories-list-items-container .grommetux-control-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.categories-suggestions-list-container {
+  background: #f6f6f6;
+}
+
+.categories-suggestions-title {
+  margin-left: 6px;
+  margin-bottom: 6px;
+}
+
+.categories-suggestions-list {
+  max-height: 125px;
+  overflow-y: auto;
+}
+
+.categories-suggestions-list-item--matched {
+  background: #fefefe;
 }
 
 @media screen and (min-width: 500px) {

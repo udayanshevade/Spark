@@ -167,6 +167,15 @@ app.get('/categories/get/:query*?', (req, res) => {
   );
 });
 
+app.post('/categories/create', (req, res) => {
+  const errors = { 500: serverErrorMsg, 403: 'Category exists' };
+  categories.add(req.sessionToken, req.body)
+    .then(
+      data => res.send(data),
+      handleErrorFn(res, errors)
+    );
+});
+
 /**
  * @description Get (matching) categories names
  */
@@ -186,7 +195,7 @@ app.get('/categories/suggestions/:query*?', (req, res) => {
  * @description Get posts for a category
  */
 app.get('/categories/category/:category/posts/:query*?', (req, res) => {
-  const errors = { 500: serverErrorMsg };
+  const errors = { 500: serverErrorMsg, 403: 'Category does not exist' };
   categories.getCategoryPosts(req.params.category)
     .then(
       postIds => posts.getByIds(postIds, req.params.query).then(

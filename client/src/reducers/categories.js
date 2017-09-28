@@ -5,6 +5,19 @@ export const initialState = {
   categories: [],
   loading: false,
   active: '',
+  emptyValues: {
+    name: '',
+    blurb: '',
+    private: false,
+  },
+  categorySuggestions: {
+    query: '',
+    results: [],
+    timeoutId: null,
+    timeoutLength: 750,
+    loading: false,
+  },
+  isCreating: false,
 };
 
 const categories = (state = initialState, action) => {
@@ -19,12 +32,55 @@ const categories = (state = initialState, action) => {
     case types.CATEGORIES_SET_LOADING:
       const { loading } = action; 
       return { ...state, loading };
+    case types.CATEGORIES_SET_IS_CREATING:
+      const { isCreating } = action; 
+      return { ...state, isCreating };
     case types.CATEGORIES_UPDATE:
       const { categories } = action;
       return { ...state, categories };
     case types.CATEGORIES_SET_ACTIVE:
       const { active } = action;
       return { ...state, active };
+    case types.CATEGORIES_UPDATE_SUGGESTIONS_QUERY: {
+      const { query } = action;
+      return {
+        ...state,
+        categorySuggestions: {
+          ...state.categorySuggestions,
+          query,
+        },
+      };
+    }
+    case types.CATEGORIES_UPDATE_SUGGESTIONS: {
+      const { results } = action;
+      return {
+        ...state,
+        categorySuggestions: {
+          ...state.categorySuggestions,
+          results,
+        },
+      };
+    }
+    case types.CATEGORIES_SUGGESTIONS_SET_TIMEOUT: {
+      const { timeoutId } = action;
+      return {
+        ...state,
+        categorySuggestions: {
+          ...state.categorySuggestions,
+          timeoutId,
+        },
+      };
+    }
+    case types.CATEGORIES_SUGGESTIONS_SET_LOADING: {
+      const { loading } = action;
+      return {
+        ...state,
+        categorySuggestions: {
+          ...state.categorySuggestions,
+          loading,
+        },
+      };
+    }
     default:
       return state;
   }

@@ -11,7 +11,11 @@ import Footer from './components/Footer';
 import Login from './components/Login';
 import Profile from './components/Profile';
 import Post from './components/Post';
-import { NewPost, EditPost} from './components/UpdatePost';
+import {
+  NewPost,
+  EditPost,
+} from './components/UpdatePost';
+import NewCategory from './components/NewCategory';
 import Category from './components/Category';
 import { responsiveResizeListener } from './actions/responsive';
 import { appCloseTip } from './actions/app';
@@ -58,7 +62,8 @@ class AppComponent extends Component {
             return el;
           }}
         />
-        <Route path="/categories/:category" component={Category} />
+        <Route path="/categories/category/:category" component={Category} />
+        <Route path="/categories/create" component={NewCategory} />
         <Footer />
         {
           tipTarget &&

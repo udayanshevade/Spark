@@ -28,6 +28,7 @@ const NewPost = ({
   },
 }) => (
   <UpdatePost
+    form="postCreateNew"
     actions={actions}
     onSubmit={postCreateNew}
     postData={postData}

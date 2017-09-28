@@ -2,11 +2,12 @@ import React from 'react';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import List from 'grommet/components/List';
-import ListItem from 'grommet/components/ListItem';
+import Accordion from 'grommet/components/Accordion';
+import AccordionPanel from 'grommet/components/AccordionPanel';
 import ListPlaceHolder from 'grommet-addons/components/ListPlaceholder';
-import Anchor from 'grommet/components/Anchor';
-import CaretDownIcon from 'grommet/components/icons/base/CaretDown';
+import Button from 'grommet/components/Button';
+import Box from 'grommet/components/Box';
+import Paragraph from 'grommet/components/Paragraph';
 import Loading from '../Loading';
 import Navbar from '../Navbar';
 import * as categoriesActions from '../../actions/categories';
@@ -23,25 +24,43 @@ export const CategoriesComponent = ({ loading, categories, actions, active }) =>
     );
   } else {
     categoriesEl = (
-      <List className="categories-list-items-container">
-        {categories.map(({ name, path }, i) => (
-          <ListItem
-            separator="horizontal"
+      <Accordion className="categories-list-items-container">
+        {categories.map(({ name, path, blurb }, i) => (
+          <AccordionPanel
             key={`list-category-item-${i}`}
+            heading={name}
+            pad="small"
           >
-            <Anchor
-              icon={<CaretDownIcon size="xsmall" />}
-              path={`./categories/${path}`}
-              label={name}
-            />
-          </ListItem>
+            <Box direction="column">
+              {
+                blurb &&
+                  <Paragraph className="category-description">
+                    {blurb}
+                  </Paragraph>
+              }
+              <Button
+                plain
+                path={`/categories/category/${path}`}
+                label="more"
+                className="category-link"
+              />
+            </Box>
+          </AccordionPanel>
         ))}
-      </List>
+      </Accordion>
     );
   }
   return (
     <div>
       <Navbar />
+      <Box direction="column" align="end">
+        <Button
+          plain
+          path="/categories/create"
+          label="Create"
+          className="category-link create-category-link"
+        />
+      </Box>
       {categoriesEl}
     </div>
   );

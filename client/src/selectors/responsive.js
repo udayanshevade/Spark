@@ -5,7 +5,7 @@ export const getViewportWidth = responsive => responsive.width;
 export const getViewportHeight = responsive => responsive.height;
 
 const viewportLimits = {
-  xs: 300,
+  xs: 321,
   sm: 500,
   md: 698,
   lg: 882,

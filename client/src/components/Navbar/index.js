@@ -11,10 +11,10 @@ import Title from 'grommet/components/Title';
 import MoreIcon from 'grommet/components/icons/base/More';
 import FilterSelect from './FilterSelect';
 import { searchQueryChange, searchFilterUpdate } from '../../actions/search';
-import { getIsMobile } from '../../selectors/responsive';
+import { getIsTiny } from '../../selectors/responsive';
 
 const NavbarComponent = ({
-  isMobile,
+  isTiny,
   title,
   categoriesQuery,
   postsQuery,
@@ -39,7 +39,7 @@ const NavbarComponent = ({
           <Box direction="row" responsive={false} pad="none" align="center">
             <MoreIcon size="small" className="header-arrow-icon" />
             <Heading tag="h3" className="post-heading">
-              <Anchor path={`/categories/${category}`}>
+              <Anchor path={`/categories/category/${category}`}>
                 /{category}
               </Anchor>
             </Heading>
@@ -57,7 +57,7 @@ const NavbarComponent = ({
           fill
           size="medium"
           dropAlign={{ right: 'right' }}
-          placeHolder={`Search ${isMobile ? '' : (!category ? filter : `/${category}`)}`}
+          placeHolder={`Search ${isTiny ? '' : (!category ? filter : `/${category}`)}`}
           onDOMChange={(e) => {
             actions.searchQueryChange(e, category);
           }}
@@ -90,11 +90,11 @@ NavbarComponent.propTypes = {
     searchFilterChange: PropTypes.func,
   }),
   category: PropTypes.string,
-  isMobile: PropTypes.bool,
+  isTiny: PropTypes.bool,
 };
 
 const mapStateToProps = ({ responsive, navbar, search, categories, posts }) => ({
-  isMobile: getIsMobile(responsive),
+  isTiny: getIsTiny(responsive),
   title: navbar.title,
   categoriesQuery: categories.query,
   postsQuery: posts.query,

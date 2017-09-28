@@ -64,7 +64,7 @@ const PostPreview = ({
           <span>shared</span>
           {
             !threadView &&
-              <span className="anchor-text-padded">in <Anchor path={`/categories/${category}`}>/{category}</Anchor></span>
+              <span className="anchor-text-padded">in <Anchor path={`/categories/category/${category}`}>/{category}</Anchor></span>
           }
           :
         </div>

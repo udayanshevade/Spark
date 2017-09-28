@@ -14,32 +14,37 @@ const FormSelectInput = ({
     touched,
     error,
   },
+  touch,
   onUpdateValue,
-}) => (
-  <FormField
-    label={label}
-    error={touched && error ? error : null}
-    help={touched && !input.value ? help : null}
-  >
-    <SearchInput
-      id={id}
-      { ...input }
-      placeHolder={placeholder}
-      suggestions={options}
-      onDOMChange={(e) => {
-        if (onUpdateValue) {
-          onUpdateValue(e.target.value);
-        }
-        if (onSearch) {
-          onSearch(e.target.value);
-        }
+}) => {
+  return (
+    <FormField
+      label={label}
+      error={touched && error ? error : null}
+      help={touched && help ? help : null}
+      onFocus={() => {
+        touch();
       }}
-      value={input.value}
-      onSelect={(e) => {
-        onUpdateValue(e.suggestion);
-      }}
-    />
-  </FormField>
-);
+    >
+      <SearchInput
+        id={id}
+        { ...input }
+        placeHolder={placeholder}
+        suggestions={options}
+        onDOMChange={(e) => {
+          if (onUpdateValue) {
+            onUpdateValue(e.target.value);
+          }
+          if (onSearch) {
+            onSearch(e.target.value);
+          }
+        }}
+        onSelect={(e) => {
+          onUpdateValue(e.suggestion);
+        }}
+      />
+    </FormField>
+  );
+};
 
 export default FormSelectInput;

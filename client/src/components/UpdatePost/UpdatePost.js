@@ -7,6 +7,7 @@ import Form from 'grommet/components/Form';
 import Header from 'grommet/components/Header';
 import Title from 'grommet/components/Title';
 import Anchor from 'grommet/components/Anchor';
+import ArrowNext from 'grommet/components/icons/base/LinkNext'
 import Heading from 'grommet/components/Heading';
 import FormFields from 'grommet/components/FormFields';
 import Footer from 'grommet/components/Footer';
@@ -50,6 +51,7 @@ class UpdatePost extends Component {
       navTitle,
       suggestions,
       heading,
+      touch,
     } = this.props;
     return isUpdating
       ? <Loading />
@@ -104,8 +106,21 @@ class UpdatePost extends Component {
                   actions.postUpdateCreateData({ category: val });
                 }}
                 options={suggestions}
-                help={<Anchor path="/categories/create">Or create one.</Anchor>}
+                help={
+                  <Anchor
+                    reverse
+                    primary
+                    path="/categories/create"
+                    icon={<ArrowNext size="xsmall" />}
+                    className="next-link"
+                  >
+                    create one
+                  </Anchor>
+                }
                 placeholder="Where to post, e.g. react"
+                touch={() => {
+                  touch('category');
+                }}
                 component={FormSelectInput}
               />
             </FormFields>
@@ -135,7 +150,6 @@ UpdatePost.propTypes = {
 };
 
 export default reduxForm({
-  form: 'postCreateNew',
   validate,
   warn,
 })(UpdatePost);

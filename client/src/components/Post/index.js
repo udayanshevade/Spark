@@ -75,7 +75,7 @@ class Post extends Component {
           </Title>
           <MoreIcon size="small" className="header-arrow-icon" />
           <Heading tag="h3" className="post-heading">
-            <Anchor path={`/categories/${category}`}>
+            <Anchor path={`/categories/category/${category}`}>
               /{category}
             </Anchor>
           </Heading>
