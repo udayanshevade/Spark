@@ -84,17 +84,17 @@ const PostPreview = ({
           justify="center"
           align="start"
         >
-          <Timestamp
-            value={(new Date(+timestamp)).toISOString()}
-            fields="date"
-            className="post-timestamp"
-          />
           <Blurb
             blurb={body}
             blurbExpanded={showFull}
             blurbLimit={bodyCharLim}
             toggleBlurbExpanded={toggleShowFull}
             iconHide={!threadView}
+          />
+          <Timestamp
+            value={(new Date(+timestamp)).toISOString()}
+            fields="date"
+            className="post-timestamp"
           />
           <Box
             direction="row"
