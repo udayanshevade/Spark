@@ -6,6 +6,7 @@ const db = {
   'react': {
     name: 'react',
     path: 'react',
+    creator: 'user',
     private: false,
     posts: ['8xf0y6ziyjabvozdd253nd'],
     blurb: 'Explore and discuss react.',
@@ -13,6 +14,7 @@ const db = {
   'redux': {
     name: 'redux',
     path: 'redux',
+    creator: 'user',
     private: false,
     posts: ['6ni6ok3ym7mf1p33lnez', 'llgj1kasd78f1ptk1nz1'],
     blurb: 'Explore and discuss redux.',
@@ -20,6 +22,7 @@ const db = {
   'udacity': {
     name: 'udacity',
     path: 'udacity',
+    creator: 'user',
     private: false,
     posts: [],
     blurb: 'Explore and discuss Udacity.',
@@ -32,6 +35,19 @@ const db = {
 function getData () {
   const data = db;
   return data;
+}
+
+/**
+ * @description Get specific category
+ */
+function get (category) {
+  return new Promise((res, reject) => {
+    const db = getData();
+    if (!db[category]) {
+      reject(403);
+    }
+    res(db[category]);
+  });
 }
 
 const fuseOptions = {
@@ -98,6 +114,7 @@ function add (sessionToken, data) {
           reject(403);
         } else {
           db[data.name] = {
+            creator: data.user,
             name: data.name,
             path: data.name,
             blurb: data.blurb,
@@ -112,6 +129,7 @@ function add (sessionToken, data) {
 }
 
 module.exports = {
+  get,
   getAll,
   getCategoryPosts,
   addPost,

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
@@ -12,37 +12,43 @@ import {
   userResetLoginForm,
 } from '../../actions/user';
 
-const Login = ({ actions, loginActive, loginForm }) => {
-  const isLogin = loginForm === 'login';
-  return (
-    <Layer
-      closer
-      hidden={!loginActive}
-      onClose={() => {
-        actions.userSetLoginActive(false);
-        actions.userResetLoginForm();
-      }}
-    >
-      <LoginForm
-        onSubmit={actions.userLogin}
-        title={loginForm}
-        secondaryText={
-          <span>
-            {isLogin ? 'Don\'t have an account?' : 'Already got an account?'}
-            <Button
-              plain
-              label={isLogin ? 'Create one.' : 'Login.'}
-              onClick={() => {
-                const updatedForm = loginForm === 'login' ? 'signup' : 'login';
-                actions.userSelectLoginForm(updatedForm);
-            }} />
-          </span>
-        }
-        usernameType="text"
-        align="start"
-      />
-    </Layer>
-  );
+class Login extends Component {
+  componentWillUnmount() {
+    this.props.actions.userResetLoginForm();
+  }
+  render() {
+    const { defaultValues, actions, loginActive, loginForm, isLoggingIn } = this.props;
+    const isLogin = loginForm === 'login';
+    return (
+      <Layer
+        closer
+        hidden={!loginActive}
+        onClose={() => {
+          actions.userSetLoginActive(false);
+        }}
+      >
+        <LoginForm
+          defaultValues={defaultValues}
+          onSubmit={isLoggingIn ? null : actions.userLogin}
+          title={loginForm}
+          secondaryText={
+            <span>
+              {isLogin ? 'Don\'t have an account?' : 'Already got an account?'}
+              <Button
+                plain
+                label={isLogin ? 'Create one.' : 'Login.'}
+                onClick={() => {
+                  const updatedForm = loginForm === 'login' ? 'signup' : 'login';
+                  actions.userSelectLoginForm(updatedForm);
+              }} />
+            </span>
+          }
+          usernameType="text"
+          align="start"
+        />
+      </Layer>
+    );
+  }
 };
 
 Login.propTypes = {
@@ -56,8 +62,10 @@ Login.propTypes = {
 };
 
 const mapStateToProps = ({ user }) => ({
+  isLoggingIn: user.isLoggingIn,
   loginActive: user.loginActive,
   loginForm: user.loginForm,
+  defaultValues: user.defaultValues,
 });
 
 const mapDispatchToProps = dispatch => ({

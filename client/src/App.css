@@ -261,11 +261,6 @@
   color: #acacac;
 }
 
-.post-description {
-  margin-top: 1em;
-  margin-bottom: 0;
-}
-
 .options-tray {
   width: 100%;
 }
@@ -326,6 +321,14 @@
 
 .categories-suggestions-list-item--matched {
   background: #fefefe;
+}
+
+.blurb-paragraph {
+  padding: 0 12px;
+}
+
+.expand-icon--flipped {
+  transform: scaleY(-1);
 }
 
 @media screen and (min-width: 500px) {

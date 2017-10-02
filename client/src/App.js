@@ -29,11 +29,11 @@ class AppComponent extends Component {
     this.unlistenResize();
   }
   render() {
-    const { loggedIn, actions, tipText, tipTarget } = this.props;
+    const { loginActive, loggedIn, actions, tipText, tipTarget } = this.props;
     return (
       <div className="grommet grommetux-app">
         <Route exact path="/" component={Main} />
-        <Route path="/" component={Login} />
+        <Route path="/" component={loginActive ? Login : null} />
         <Route path="/" component={Profile} />
         <Route path="/posts/thread/:id" component={Post} />
         <Route
@@ -92,6 +92,7 @@ AppComponent.propTypes = {
 
 const mapStateToProps = ({ user, app }) => ({
   loggedIn: user.loggedIn,
+  loginActive: user.loginActive,
   tipText: app.tipText,
   tipTarget: app.tipTarget,
 });

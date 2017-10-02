@@ -30,7 +30,7 @@ export const postsLoadData = (query = '', category) => async(dispatch) => {
   } else {
     dispatch(searchUpdateSortCriterion('voteScore'))
   }
-  const posts = await Requests.get(url);
-  dispatch(postsUpdate(posts));
+  const res = await Requests.get(url);
+  if (!res.error) dispatch(postsUpdate(res));
   dispatch(postsSetLoading(false));
 };

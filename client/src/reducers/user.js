@@ -2,10 +2,15 @@ import * as types from '../actions/types';
 
 export const initialState = {
   loggedIn: false,
+  isLoggingIn: false,
   user: null,
   loginActive: false,
   loginForm: 'login',
   loading: false,
+  defaultValues: {
+    username: '',
+    password: '',
+  },
 };
 
 const user = (state = initialState, action) => {
@@ -13,6 +18,13 @@ const user = (state = initialState, action) => {
     case types.USER_SET_LOGGED_IN: {
       const { loggedIn } = action;
       return { ...state, loggedIn };
+    }
+    case types.USER_SET_LOGGING_IN: {
+      const { isLoggingIn } = action;
+      return {
+        ...state,
+        isLoggingIn,
+      };
     }
     case types.USER_UPDATE_DATA: {
       const { user } = action;
@@ -78,7 +90,11 @@ const user = (state = initialState, action) => {
       return newState;
     }
     case types.USER_RESET_LOGIN_FORM:
-      return initialState;
+      return {
+        ...initialState,
+        user: state.user,
+        loggedIn: state.loggedIn,
+      };
     case types.RESET:
       return initialState;
     default:

@@ -1,6 +1,7 @@
 import { SubmissionError } from 'redux-form';
 import * as types from './types';
 import { appShowTipWithText } from './app';
+import { postsLoadData } from './posts';
 import Requests from '../requests';
 
 const categoriesURL = '/categories';
@@ -109,3 +110,27 @@ export const categoriesCreateNew = data => async(dispatch, getState) => {
   }
   dispatch(categoriesSetIsCreating(false));
 };
+
+const categoriesGetCategoryData = async(category) => {
+  const res = await Requests.get(`${categoriesURL}/category/${category}`);
+  if (!res.error) {
+    return res;
+  }
+};
+
+export const categoriesLoadCategoryData = category => async(dispatch, getState) => {
+  const { categories: { categories } } = getState();
+  dispatch(postsLoadData('', category));
+  const freshCategories = [...categories];
+  const oldIndex = freshCategories.findIndex(cat => cat.name === category);
+  const res = await categoriesGetCategoryData(category);
+  if (res && !res.error) {
+    freshCategories.splice(oldIndex, 1, res);
+  }
+  dispatch(categoriesUpdate(freshCategories));
+};
+
+export const categoriesToggleBlurbExpanded = blurbExpanded => ({
+  type: types.CATEGORIES_TOGGLE_BLURB_EXPANDED,
+  blurbExpanded,
+});

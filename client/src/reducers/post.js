@@ -18,7 +18,7 @@ export const initialState = {
   selectedCriterion: 'timestamp',
   sortDirection: 'desc',
   showFull: false,
-  bodyCharLimt: 90,
+  bodyCharLim: 90,
   categorySuggestions: {
     results: [],
     timeoutId: null,

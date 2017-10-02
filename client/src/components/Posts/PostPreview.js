@@ -1,16 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Card from 'grommet/components/Card';
-import Paragraph from 'grommet/components/Paragraph';
 import Timestamp from 'grommet/components/Timestamp';
 import Box from 'grommet/components/Box';
-import DownIcon from 'grommet/components/icons/base/CaretDown';
 import NewIcon from 'grommet/components/icons/base/New';
 import Button from 'grommet/components/Button';
 import Anchor from 'grommet/components/Anchor';
 import Heading from 'grommet/components/Heading';
 import VoteBox from '../VoteBox';
 import ProfileButton from '../Profile/ProfileButton';
+import Blurb from '../Blurb';
 
 const PostPreview = ({
   width,
@@ -90,24 +89,13 @@ const PostPreview = ({
             fields="date"
             className="post-timestamp"
           />
-          {
-            body &&
-              <Paragraph className="post-description">
-                {`${body.slice(0, (showFull ? body.length : bodyCharLim))}${body.length > bodyCharLim ? '...' : ''}` || null}
-              </Paragraph>
-          }
-          {
-            threadView && body.length > bodyCharLim &&
-              <Button
-                plain
-                icon={
-                  <DownIcon
-                    size="xsmall"
-                    onClick={toggleShowFull}
-                  />
-                }
-              />
-          }
+          <Blurb
+            blurb={body}
+            blurbExpanded={showFull}
+            blurbLimit={bodyCharLim}
+            toggleBlurbExpanded={toggleShowFull}
+            iconHide={!threadView}
+          />
           <Box
             direction="row"
             className="options-tray"

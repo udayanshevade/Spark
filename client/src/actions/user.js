@@ -11,8 +11,14 @@ const votePaths = {
   posts: postBaseURL,
 };
 
+export const userSetLoggingIn = isLoggingIn => ({
+  type: types.USER_SET_LOGGING_IN,
+  isLoggingIn,
+});
+
 export const userLogin = ({ username, password }) => async(dispatch, getState) => {
   if (username && password) {
+    dispatch(userSetLoggingIn(true));
     const { loginForm } = getState().user;
     const userData = await Requests.post({
       url: `${userBaseURL}/${username}/${loginForm}`,
@@ -20,6 +26,7 @@ export const userLogin = ({ username, password }) => async(dispatch, getState) =
     });
     if (userData.sessionToken) {
       dispatch(userUpdateData(userData));
+      dispatch(userSetLoggingIn(false));
       dispatch(userSetLoggedIn(true));
       dispatch(userSetLoginActive(false));
     }

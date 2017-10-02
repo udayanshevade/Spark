@@ -18,6 +18,8 @@ export const initialState = {
     loading: false,
   },
   isCreating: false,
+  blurbExpanded: false,
+  blurbLimit: 90,
 };
 
 const categories = (state = initialState, action) => {
@@ -79,6 +81,13 @@ const categories = (state = initialState, action) => {
           ...state.categorySuggestions,
           loading,
         },
+      };
+    }
+    case types.CATEGORIES_TOGGLE_BLURB_EXPANDED: {
+      const { blurbExpanded } = action;
+      return {
+        ...state,
+        blurbExpanded,
       };
     }
     default:
