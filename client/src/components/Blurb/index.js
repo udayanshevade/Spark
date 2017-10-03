@@ -13,7 +13,7 @@ const Blurb = ({
 }) => (
   blurb
     ? (
-      <Box direction="column" align="center">
+      <Box direction="column" align="center" className="blurb-container">
         <Paragraph
           margin="small"
           className="blurb-paragraph"

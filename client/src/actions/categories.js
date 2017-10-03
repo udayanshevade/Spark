@@ -134,3 +134,30 @@ export const categoriesToggleBlurbExpanded = blurbExpanded => ({
   type: types.CATEGORIES_TOGGLE_BLURB_EXPANDED,
   blurbExpanded,
 });
+
+export const categoriesUpdateSubscribers = (category, option) => (dispatch, getState) => {
+  const { categories: { categories } } = getState();
+  const newCategories = [...categories];
+  const index = newCategories.findIndex(cat => cat.name === category);
+  let updateBy;
+  switch (option) {
+    case 'subscribe': {
+      updateBy = 1;
+      break;
+    }
+    case 'unsubscribe': {
+      updateBy = -1;
+      break;
+    }
+    default: {
+      updateBy = 0;
+    }
+  }
+  const oldCategory = categories[index];
+  const updatedCategory = {
+    ...oldCategory,
+    subscribers: oldCategory.subscribers + updateBy,
+  };
+  newCategories.splice(index, 1, updatedCategory);
+  dispatch(categoriesUpdate(newCategories));
+}

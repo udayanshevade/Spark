@@ -10,6 +10,7 @@ const db = {
     private: false,
     posts: ['8xf0y6ziyjabvozdd253nd'],
     blurb: 'Explore and discuss react.',
+    subscribers: 1,
   },
   'redux': {
     name: 'redux',
@@ -18,6 +19,7 @@ const db = {
     private: false,
     posts: ['6ni6ok3ym7mf1p33lnez', 'llgj1kasd78f1ptk1nz1'],
     blurb: 'Explore and discuss redux.',
+    subscribers: 1,
   },
   'udacity': {
     name: 'udacity',
@@ -26,6 +28,7 @@ const db = {
     private: false,
     posts: [],
     blurb: 'Explore and discuss Udacity.',
+    subscribers: 1,
   }
 };
 
@@ -119,12 +122,42 @@ function add (sessionToken, data) {
             path: data.name,
             blurb: data.blurb,
             posts: [],
+            subscribers: 1,
             private: data.private,
           };
           res({ success: 'Category added' });
         }
       })
       .catch(err => reject(err));
+  });
+}
+
+/**
+ * @description Updates category subscription
+ */
+function updateSubscription ({ category, option }) {
+  return new Promise((res, reject) => {
+    const categories = getData();
+    if (!categories[category]) {
+      reject(403);
+    } else {
+      let updateBy;
+      switch (option) {
+        case 'subscribe': {
+          updateBy = 1;
+          break;
+        }
+        case 'unsubscribe': {
+          updateBy = -1;
+          break;
+        }
+        default: {
+          updateBy = 0;
+          break;
+        }
+      }
+      categories[category].subscribers += updateBy;
+    }
   });
 }
 
@@ -135,4 +168,5 @@ module.exports = {
   addPost,
   switchPostCategory,
   add,
+  updateSubscription,
 };

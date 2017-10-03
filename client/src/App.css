@@ -78,10 +78,6 @@
   margin-bottom: 52px;
 }
 
-.list-items-container {
-  height: calc(100vh - 188px);
-}
-
 .categories-list-items-container {
   height: calc(100vh - 124px);
 }
@@ -331,6 +327,15 @@
   transform: scaleY(-1);
 }
 
+.subscribers-label {
+  padding: 0 12px;
+  border: 2px solid transparent;
+}
+
+.subscribe-button {
+  color: #865CD6;
+}
+
 @media screen and (min-width: 500px) {
   .post-header {
     position: static;
@@ -343,5 +348,11 @@
   }
   .grommetux-button__icon .downvote {
     vertical-align: top;
+  }
+  .subscribe-container {
+    justify-content: flex-end;
+  }
+  .blurb-container {
+    align-items: flex-end;
   }
 }

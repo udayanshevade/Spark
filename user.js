@@ -6,6 +6,7 @@ const db = {
     sessionToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyIiwiaWF0IjoxNTA0ODMwMzM3fQ.3TV_r0Bngo1Mvl-zKtzb6gUJt9BKKVbbg7PXJa9QTBg',
     email: 'sample@email.com',
     password: 'password',
+    subscriptions: ['react', 'redux', 'udacity'],
     profile: {
       id: 'user',
       created: 1468166872634,
@@ -120,11 +121,11 @@ function login (userId, password) {
     const users = getData();
     const user = users[userId];
     if (!user) reject(403);
-    const { password: dbPassword, profile } = user;
+    const { password: dbPassword, profile, subscriptions } = user;
     if (password === dbPassword) {
       const sessionToken = generateSessionToken(userId);
       users[userId].sessionToken = sessionToken;
-      res({ sessionToken, profile });
+      res({ sessionToken, profile, subscriptions });
     } else {
       reject(403);
     }
@@ -312,6 +313,37 @@ function updateUserVote (sessionToken, userId, voteId, option) {
   });
 }
 
+/**
+ * @description Add subscription
+ * @param {string} sessionToken
+ * @param {string} userId
+ * @param {string} category
+ */
+function subscribe (sessionToken, userId, category, option) {
+  return new Promise((res, reject) => {
+    verifySessionToken(sessionToken, userId)
+      .then((data) => {
+        const users = getData();
+        const user = users[userId];
+        switch (option) {
+          case 'unsubscribe': {
+            const subscriptionIndex = user.subscriptions.indexOf(category);
+            user.subscriptions.splice(subscriptionIndex, 1);
+            break;
+          }
+          case 'subscribe': {
+            user.subscriptions.unshift(category);
+            break;
+          }
+          default: {
+            return;
+          }
+        }
+        res({ category, option });
+      }).catch(err => reject(err));
+  });
+}
+
 module.exports = {
   getProfile,
   getPosts,
@@ -328,4 +360,5 @@ module.exports = {
   updateCommentScore,
   writeUserVote,
   updateUserVote,
+  subscribe,
 };

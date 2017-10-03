@@ -1,10 +1,12 @@
 import * as types from './types';
 import Requests from '../requests';
 import { appShowTipWithText } from './app';
+import { categoriesUpdateSubscribers } from './categories';
 
 const userBaseURL = '/user';
 const commentBaseURL = '/comments';
 const postBaseURL = '/posts/thread';
+const categoriesURL = '/categories';
 
 const votePaths = {
   comments: commentBaseURL,
@@ -107,3 +109,34 @@ export const userSetLoading = loading => ({
 export const userResetLoginForm = () => ({
   type: types.USER_RESET_LOGIN_FORM,
 });
+
+export const userSubscribeCategory = category => async(dispatch, getState) => {
+  const { user } = getState();
+  if (!user.user) {
+    const tipText = 'Login to subscribe.';
+    dispatch(appShowTipWithText(tipText, 'footer-login-button'));
+    return;
+  }
+  const { subscriptions, sessionToken, profile } = user.user;
+  const { id: userId } = profile;
+  const newSubscriptions = [...subscriptions];
+  const subscriptionIndex = subscriptions.indexOf(category);
+  let update = '';
+  if (subscriptionIndex > -1) {
+    update = 'unsubscribe';
+    newSubscriptions.splice(subscriptionIndex, 1);
+  } else {
+    update = 'subscribe';
+    newSubscriptions.unshift(category);
+  }
+  const url = `${categoriesURL}/subscribe/${category}/${update}`;
+  const res = await Requests.put({
+    url,
+    headers: { sessionToken },
+    body: { userId },
+  });
+  if (res.success) {
+    dispatch(userUpdateData({ subscriptions: newSubscriptions }));
+    dispatch(categoriesUpdateSubscribers(category, res.success));
+  }
+};

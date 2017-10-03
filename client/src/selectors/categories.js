@@ -13,3 +13,8 @@ export const getCategoryCreator = createSelector(
   getCategoryData,
   (data) => data ? data.creator : null
 );
+
+export const getCategorySubscribers = createSelector(
+  getCategoryData,
+  (data) => data ? data.subscribers : null
+);

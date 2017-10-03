@@ -219,6 +219,26 @@ app.get('/categories/category/:category/posts/:query*?', (req, res) => {
 });
 
 /**
+ * @description Subscribe to a category
+ */
+app.put('/categories/subscribe/:category/:update', (req, res) => {
+  const errors = { 500: serverErrorMsg, 403: 'Subscription update failed.' };
+  const { category: reqCategory, update: reqUpdate } = req.params;
+  user.subscribe(req.sessionToken, req.body.userId, reqCategory, reqUpdate)
+    .then(
+      (data) => {
+        let response = {};
+        if (data) {
+          categories.updateSubscription(data);
+          response = { success: data.option };
+        }
+        res.send(response);
+      },
+      handleErrorFn(res, errors)
+    );
+});
+
+/**
  * @description Get all posts
  */
 app.get('/posts/get/:query*?', (req, res) => {

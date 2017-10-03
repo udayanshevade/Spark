@@ -3,6 +3,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import Box from 'grommet/components/Box';
+import Subscribe from './Subscribe';
 import Posts from '../Posts';
 import Blurb from '../Blurb';
 import { searchFilterUpdate } from '../../actions/search';
@@ -11,7 +12,12 @@ import {
   categoriesLoadCategoryData,
   categoriesToggleBlurbExpanded,
 } from '../../actions/categories';
-import { getCategoryBlurb } from '../../selectors/categories';
+import {
+  getCategoryBlurb,
+  getCategorySubscribers,
+} from '../../selectors/categories';
+import { getUserSubscribed } from '../../selectors/user';
+import { userSubscribeCategory } from '../../actions/user';
 
 class Category extends Component {
   componentDidMount() {
@@ -21,9 +27,25 @@ class Category extends Component {
     this.props.actions.postsLoadData('', category);
   }
   render() {
-    const { match, blurb, blurbExpanded, blurbLimit, actions } = this.props;
+    const {
+      match,
+      blurb,
+      blurbExpanded,
+      blurbLimit,
+      actions,
+      subscribers,
+      userSubscribed,
+      loggedIn,
+    } = this.props;
     return (
       <Box pad={{ vertical: 'none' }} className="main-container">
+        <Subscribe
+          subscribers={subscribers}
+          category={match.params.category}
+          userSubscribed={userSubscribed}
+          toggleSubscribe={actions.userSubscribeCategory}
+          loggedIn={loggedIn}
+        />
         <Blurb
           blurb={blurb}
           blurbExpanded={blurbExpanded}
@@ -55,6 +77,7 @@ const mapStateToProps = (
       blurbLimit,
     },
     search,
+    user,
   },
   {
     match: {
@@ -69,6 +92,9 @@ const mapStateToProps = (
   filters: search.filters,
   activeFilter: search.activeFilter,
   blurb: getCategoryBlurb(categories, category),
+  subscribers: getCategorySubscribers(categories, category),
+  userSubscribed: getUserSubscribed(user, category),
+  loggedIn: user.loggedIn,
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -77,6 +103,7 @@ const mapDispatchToProps = dispatch => ({
     searchFilterUpdate,
     categoriesLoadCategoryData,
     categoriesToggleBlurbExpanded,
+    userSubscribeCategory,
   }, dispatch),
 });
 
