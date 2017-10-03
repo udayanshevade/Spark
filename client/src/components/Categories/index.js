@@ -25,13 +25,16 @@ export const CategoriesComponent = ({ loading, categories, actions, active }) =>
   } else {
     categoriesEl = (
       <Accordion className="categories-list-items-container">
-        {categories.map(({ name, path, blurb }, i) => (
+        {categories.map(({ name, path, blurb, subscribers }, i) => (
           <AccordionPanel
             key={`list-category-item-${i}`}
             heading={name}
-            pad="small"
+            pad="medium"
           >
             <Box direction="column">
+              <Paragraph className="category-description">
+                <b>{subscribers}</b> subscribers
+              </Paragraph>
               {
                 blurb &&
                   <Paragraph className="category-description">

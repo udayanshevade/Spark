@@ -33,6 +33,11 @@
   border-bottom: none;
 }
 
+.categories-list-items-container .grommetux-list-item:last-of-type {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.15);
+  background: rgba(125, 125, 125, 0.05);
+}
+
 .vote-box {
   text-align: center;
 }
@@ -76,10 +81,6 @@
 
 .post-container {
   margin-bottom: 52px;
-}
-
-.categories-list-items-container {
-  height: calc(100vh - 124px);
 }
 
 .profile-layer:not(.grommetux-layer--hidden) .profile-username-heading {
