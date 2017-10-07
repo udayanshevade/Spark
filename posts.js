@@ -1,18 +1,21 @@
 const Fuse = require('fuse.js');
-const { verifySessionToken } = require('./utils');
+const { verifySessionToken, getWeightedSort, getHotSort } = require('./utils');
 const uuidv4 = require('uuid/v4');
 
 const db = {
   "8xf0y6ziyjabvozdd253nd": {
     id: '8xf0y6ziyjabvozdd253nd',
-    timestamp: 1467166872634,
+    timestamp: 1498454400220,
     title: 'Udacity is the best place to learn React',
     url: 'https://www.udacity.com',
     body: 'Everyone says so after all.',
     author: 'user',
     category: 'react',
     comments: ['894tuq4ut84ut8v4t8wun89g', '8tu4bsun805n8un48ve89'],
-    voteScore: 6,
+    votes: {
+      upVote: 11,
+      downVote: 5,
+    },
     deleted: false, 
   },
   "6ni6ok3ym7mf1p33lnez": {
@@ -24,19 +27,145 @@ const db = {
     author: 'user',
     category: 'redux',
     comments: [],
-    voteScore: 5,
+    votes: {
+      upVote: 10,
+      downVote: 5,
+    },
     deleted: false,
   },
   "llgj1kasd78f1ptk1nz1": {
     id: 'llgj1kasd78f1ptk1nz1',
-    timestamp: 1498439787190,
+    timestamp: 1459735617190,
     title: 'Redux is easy!',
     url: null,
     body: 'But practice makes perfect.',
     author: 'user',
     category: 'redux',
     comments: [],
-    voteScore: 15,
+    votes: {
+      upVote: 19,
+      downVote: 10,
+    },
+    deleted: false,
+  },
+  "llgj1kjg278f1ptk1nz1": {
+    id: 'llgj1kasd78f1ptk1nz1',
+    timestamp: 1406758287190,
+    title: 'Redux is easy!',
+    url: null,
+    body: 'But practice makes perfect.',
+    author: 'user',
+    category: 'redux',
+    comments: [],
+    votes: {
+      upVote: 19,
+      downVote: 10,
+    },
+    deleted: false,
+  },
+  "kqgj1kasd78f66fagnz1": {
+    id: 'kqgj1kasd78f66fagnz1',
+    timestamp: 1507234587136,
+    title: 'Everything can be done!',
+    url: null,
+    body: 'You just gotta want it, and have some luck.',
+    author: 'user',
+    category: 'udacity',
+    comments: [],
+    votes: {
+      upVote: 9,
+      downVote: 7,
+    },
+    deleted: false,
+  },
+  "plg1dausd78fa11dauz1": {
+    id: 'plg1dausd78fa11dauz1',
+    timestamp: 1336341718190,
+    title: 'Redux is easy!',
+    url: null,
+    body: 'Redux is a good tool.',
+    author: 'user',
+    category: 'redux',
+    comments: [],
+    votes: {
+      upVote: 25,
+      downVote: 14,
+    },
+    deleted: false,
+  },
+  "kogj1kasas171ptk1aj1": {
+    id: 'kogj1kasas171ptk1aj1',
+    timestamp: 1442817787235,
+    title: 'React is easy!',
+    url: null,
+    body: 'Reacting fast.',
+    author: 'user',
+    category: 'react',
+    comments: [],
+    votes: {
+      upVote: 12,
+      downVote: 13,
+    },
+    deleted: false,
+  },
+  "hggjgy32d78faaas1nf4": {
+    id: 'hggjgy32d78faaas1nf4',
+    timestamp: 1148752381293,
+    title: 'Keep it classy.',
+    url: null,
+    body: '',
+    author: 'user',
+    category: 'udacity',
+    comments: [],
+    votes: {
+      upVote: 3,
+      downVote: 1,
+    },
+    deleted: false,
+  },
+  "mlgjgfwh1d78f1ack1123": {
+    id: 'mlgjgfwh1d78f1ack1123',
+    timestamp: 1458474281234,
+    title: 'This is a repost.',
+    url: null,
+    body: 'Reposts are allowed.',
+    author: 'user',
+    category: 'react',
+    comments: [],
+    votes: {
+      upVote: 15,
+      downVote: 9,
+    },
+    deleted: false,
+  },
+  "ghjea8asd78f1pj42171": {
+    id: 'ghjea8asd78f1pj42171',
+    timestamp: 1445679786288,
+    title: 'Redux is easy!',
+    url: null,
+    body: 'But practice makes perfect.',
+    author: 'user',
+    category: 'redux',
+    comments: [],
+    votes: {
+      upVote: 5,
+      downVote: 13,
+    },
+    deleted: false,
+  },
+  "haj871asd78f1pjgs713": {
+    id: 'haj871asd78f1pjgs713',
+    timestamp: 1395639721190,
+    title: 'Redux is easy!',
+    url: null,
+    body: 'But practice makes perfect.',
+    author: 'user',
+    category: 'redux',
+    comments: [],
+    votes: {
+      upVote: 21,
+      downVote: 17,
+    },
     deleted: false,
   },
 }
@@ -47,6 +176,57 @@ const db = {
 function getData () {
   const data = db;
   return data;
+}
+
+/**
+ * @description Get posts array
+ */
+function getPostsList () {
+  const db = getData();
+  return Object.values(db).filter(post => !post.deleted);
+}
+
+/**
+ * @description Get sorted post items
+ */
+function getSortedPostsList (criterion) {
+  const posts = getPostsList();
+  let sortedPosts;
+  switch (criterion) {
+    case 'score': {
+      sortedPosts = posts.sort((a, b) => {
+        const aVoteScore = a.votes.upVote - a.votes.downVote;
+        const bVoteScore = b.votes.upVote - b.votes.downVote;
+        return bVoteScore - aVoteScore;
+      });
+      break;
+    }
+    case 'new': {
+      sortedPosts = posts.sort((a, b) => b.timestamp - a.timestamp);
+      break;
+    }
+    case 'best': {
+      sortedPosts = getWeightedSort(posts);
+      break;
+    }
+    case 'hot': {
+      sortedPosts = getHotSort(posts);
+      break;
+    }
+    default: {
+      sortedPosts = posts;
+    }
+  }
+  return sortedPosts;
+}
+
+/**
+ * @description Get limited post items
+ */
+function getRestrictedPostsList (posts, direction, offset, limit) {
+  const orderedPosts = direction === 'desc'
+    ? posts : [...posts].reverse();
+  return orderedPosts.slice(offset, offset + limit);
 }
 
 const fuseOptions = {
@@ -66,15 +246,17 @@ const fuseOptions = {
  * @description Get all posts
  * @returns {array} all post data
  */
-function getAll (query) {
+function getAll (query, criterion, direction, offset = 0, limit = 10) {
   return new Promise((res) => {
-    let posts = Object.values(getData()).filter(post => !post.deleted);
+    let posts = getSortedPostsList(criterion);
     if (query) {
       const fuse = new Fuse(posts, fuseOptions);
       // return matching
       posts = fuse.search(query);
     }
-    res(posts);
+    const depleted = offset + limit > posts.length - 1;
+    const postsList = getRestrictedPostsList(posts, direction, offset, limit);
+    res({ posts: postsList, depleted });
   });
 }
 
@@ -99,7 +281,7 @@ function get (postId) {
  * @param {array} postIds
  * @returns {array} batch of posts by ids
  */
-function getByIds (postIds, query) {
+function getByIds (postIds, query, direction, offset, limit) {
   return new Promise((res) => {
     const allPosts = getData();
     let selectedPosts = postIds.map(id => allPosts[id])
@@ -108,7 +290,9 @@ function getByIds (postIds, query) {
       const fuse = new Fuse(selectedPosts, fuseOptions);
       selectedPosts = fuse.search(query);
     }
-    res(selectedPosts);
+    const depleted = offset + limit > selectedPosts.length - 1;
+    const postsList = getRestrictedPostsList(selectedPosts, direction, offset, limit);
+    res({ posts: postsList, depleted });
   });
 }
 
@@ -132,7 +316,10 @@ function add (sessionToken, post) {
             category: post.category,
             author: post.author,
             comments: [],
-            voteScore: 1,
+            votes: {
+              upVote: 1,
+              downVote: 0,
+            },
             deleted: false,
           };
           res(posts[id]);
@@ -175,22 +362,17 @@ function vote (postId, option, previousVote) {
   return new Promise((res, reject) => {
     const posts = getData();
     post = posts[postId];
-    let delta = 0;
-    if ((!previousVote && option === 'upVote') ||
-      (!option && previousVote === 'downVote')) {
-      delta = 1;
-    } else if ((!previousVote && option === 'downVote') ||
-      (!option && previousVote === 'upVote')) {
-      delta = -1;
-    } else if (previousVote === 'downVote' && option ==='upVote') {
-      delta = 2;
-    } else if (previousVote === 'upVote' && option === 'downVote') {
-      delta = -2;
-    } else {
+    if (previousVote && previousVote === option) {
       console.log(`Duplicated vote on post: ${postId}.`);
       reject(403);
+      return;
     }
-    post.voteScore += delta;
+    if (option) {
+      post.votes[option] += 1;
+    }
+    if (previousVote && previousVote !== option) {
+      post.votes[previousVote] -= 1;
+    }
     res(post);
   });
 }

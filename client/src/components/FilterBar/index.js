@@ -4,6 +4,7 @@ import Header from 'grommet/components/Header';
 import Sort from 'grommet-addons/components/Sort';
 
 const FilterBarComponent = ({
+  category,
   sortCriteria,
   sortDirection,
   selectedCriterion,
@@ -23,7 +24,9 @@ const FilterBarComponent = ({
         options={sortCriteria}
         direction={sortDirection}
         value={selectedCriterion}
-        onChange={selectSortCriterion}
+        onChange={(vals) => {
+          selectSortCriterion(vals, category);
+        }}
         className="sort-bar"
       />
     </Header>

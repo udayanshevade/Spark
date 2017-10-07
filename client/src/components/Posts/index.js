@@ -4,6 +4,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Section from 'grommet/components/Section';
 import Box from 'grommet/components/Box';
+import Footer from 'grommet/components/Footer';
+import Button from 'grommet/components/Button';
 import List from 'grommet/components/List';
 import ListItem from 'grommet/components/ListItem';
 import ListPlaceHolder from 'grommet-addons/components/ListPlaceholder';
@@ -14,10 +16,10 @@ import Loading from '../Loading';
 import * as postsActions from '../../actions/posts';
 import { searchSelectSortCriterion } from '../../actions/search';
 import { profileSetUser } from '../../actions/profile';
-import { getSortedPosts } from '../../selectors/posts';
 import { postDelete, postUpdateCreateData } from '../../actions/post';
 import { userRecordVote } from '../../actions/user';
 import { getUsername, getUserVotesGiven } from '../../selectors/user';
+import { getSearchCriteria } from '../../selectors/search';
 
 export const PostsComponent = ({
   width,
@@ -30,10 +32,12 @@ export const PostsComponent = ({
   userRecordVote,
   votesGiven,
   username,
+  query,
+  depleted,
   ...filterProps,
 }) => {
   let postsEl;
-  if (loading) {
+  if (loading && !posts.length) {
     postsEl = <Loading />;
   } else if (!posts.length) {
     postsEl = (
@@ -47,6 +51,7 @@ export const PostsComponent = ({
     postsEl = (
       <Section pad={{ vertical: 'none' }}>
         <FilterBar
+          category={category}
           width={width}
           {...filterProps}
           selectSortCriterion={actions.searchSelectSortCriterion}
@@ -76,6 +81,21 @@ export const PostsComponent = ({
               ))
             }
           </List>
+          {
+            !(depleted || loading) &&
+              <Footer justify="center">
+                <Button
+                  plain
+                  label="Load more"
+                  onClick={() => {
+                    actions.postsLoadData(query, category);
+                  }}
+                />
+              </Footer>
+          }
+          {
+            loading && <Loading />
+          }
         </Box>
       </Section>
     );
@@ -104,9 +124,11 @@ PostsComponent.propTypes = {
 
 const mapStateToProps = ({ user, posts, post, search, responsive }) => ({
   loading: posts.loading,
-  posts: getSortedPosts({ posts, search }),
+  depleted: posts.depleted,
+  posts: posts.posts,
   active: posts.active,
-  sortCriteria: search.criteria,
+  sortCriteria: getSearchCriteria(search),
+  query: posts.query,
   sortDirection: search.sortDirection,
   selectedCriterion: search.selectedCriterion,
   width: responsive.width,

@@ -11,7 +11,10 @@ const db = {
     timestamp: 1468166872634,
     body: 'Hi there! I am a COMMENT.',
     author: 'user',
-    voteScore: 6,
+    votes: {
+      upVote: 6,
+      downVote: 1.
+    },
     deleted: false,
     postDeleted: false,
   },
@@ -24,7 +27,10 @@ const db = {
     timestamp: 1469479767190,
     body: 'Comments. Are. Cool.',
     author: 'user',
-    voteScore: -5,
+    votes: {
+      upVote: 1,
+      downVote: 6.
+    },
     deleted: false,
     postDeleted: false,
   },
@@ -102,7 +108,10 @@ function add (sessionToken, comment) {
           parentId: comment.parentId !== 'null' ? comment.parentId : null,
           ancestorId: comment.ancestorId !== 'null' ? comment.ancestorId : null,
           children: [],
-          voteScore: 1,
+          votes: {
+            upVote: 1,
+            downVote: 0,
+          },
           deleted: false,
           postDeleted: false,
         };
@@ -126,22 +135,17 @@ function vote (commentId, option, previousVote) {
   return new Promise((res, reject) => {
     const comments = getData();
     comment = comments[commentId];
-    let delta = 0;
-    if ((!previousVote && option === 'upVote') ||
-      (!option && previousVote === 'downVote')) {
-      delta = 1;
-    } else if ((!previousVote && option === 'downVote') ||
-      (!option && previousVote === 'upVote')) {
-      delta = -1;
-    } else if (previousVote === 'downVote' && option ==='upVote') {
-      delta = 2;
-    } else if (previousVote === 'upVote' && option === 'downVote') {
-      delta = -2;
-    } else {
+    if (previousVote && previousVote === option) {
       console.log(`Duplicated vote on comment: ${commentId}.`);
       reject(403);
+      return;
     }
-    comment.voteScore += delta;
+    if (option) {
+      comment.votes[option] += 1;
+    }
+    if (previousVote && previousVote !== option) {
+      comment.votes[previousVote] -= 1;
+    }
     res(comment);
   });
 }

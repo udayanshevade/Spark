@@ -3,20 +3,28 @@ import * as types from '../actions/types';
 export const initialState = {
   filters: ['categories', 'posts'],
   criteria: [{
+    label: 'Hot',
+    value: 'hot',
+    direction: 'desc',
+  }, {
+    label: 'Best',
+    value: 'best',
+    direction: 'desc',
+  }, {
     label: 'Relevance',
     value: 'relevance',
     direction: 'desc',
   }, {
     label: 'New',
-    value: 'timestamp',
+    value: 'new',
     direction: 'desc'
   }, {
     label: 'Score',
-    value: 'voteScore',
+    value: 'score',
     direction: 'desc',
   }],
   sortDirection: 'desc',
-  selectedCriterion: 'relevance',
+  selectedCriterion: 'hot',
   activeFilter: 1,
   timeoutId: null,
   timeoutLength: 750,

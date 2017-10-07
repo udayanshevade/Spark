@@ -11,7 +11,7 @@ import ProfileButton from '../Profile/ProfileButton';
 
 const Comment = ({
   width,
-  voteScore,
+  votes,
   id,
   votesGiven,
   author,
@@ -37,7 +37,7 @@ const Comment = ({
     {
       !deleted &&
         <VoteBox
-          voteScore={voteScore}
+          votes={votes}
           applyVote={(vote) => {
             applyVote(id, vote);
           }}
@@ -124,7 +124,9 @@ const Comment = ({
 
 Comment.propTypes = {
   width: PropTypes.number,
-  voteScore: PropTypes.number,
+  votes: PropTypes.shape({
+    upVote: PropTypes.number,
+  }),
   id: PropTypes.string,
   votesGiven: PropTypes.object,
   author: PropTypes.string,

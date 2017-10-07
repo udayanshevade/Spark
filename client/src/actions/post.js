@@ -22,12 +22,14 @@ export const postUpdateComments = comments => ({
 });
 
 export const postGetData = postId => async(dispatch) => {
-  const data = await Requests.get(`${APIbaseURL}/thread/${postId}`);
+  const url = `${APIbaseURL}/thread/${postId}`;
+  const data = await Requests.get({ url });
   dispatch(postUpdateData(data));
 };
 
 export const postGetComments = postId => async(dispatch) => {
-  const comments = await Requests.get(`${APIbaseURL}/thread/${postId}/comments`);
+  const url = `${APIbaseURL}/thread/${postId}/comments`;
+  const comments = await Requests.get({ url });
   dispatch(postUpdateComments(comments));
 };
 
@@ -104,7 +106,8 @@ export const postUpdateCategorySuggestions = results => ({
 });
 
 export const postLoadCategorySuggestions = query => async(dispatch) => {
-  const suggestions = await Requests.get(`${categoriesURL}/suggestions/${query}/suggestions`);
+  const url = `${categoriesURL}/suggestions/${query}/suggestions`;
+  const suggestions = await Requests.get({ url });
   dispatch(postUpdateCategorySuggestions(suggestions));
 };
 

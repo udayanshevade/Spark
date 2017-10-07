@@ -39,7 +39,7 @@ class CommentPreview extends Component {
       author,
       body,
       timestamp,
-      voteScore,
+      votes,
       id,
       children,
       postId,
@@ -56,7 +56,7 @@ class CommentPreview extends Component {
       ) : (
         <Comment
           width={width}
-          voteScore={voteScore}
+          votes={votes}
           id={id}
           votesGiven={votesGiven}
           author={author}
@@ -113,7 +113,9 @@ CommentPreview.propTypes = {
   body: PropTypes.string,
   timestamp: PropTypes.number,
   author: PropTypes.string,
-  voteScore: PropTypes.number,
+  votes: PropTypes.shape({
+    upVote: PropTypes.number,
+  }),
   children: PropTypes.array,
   profileSetUser: PropTypes.func,
   applyVote: PropTypes.func,

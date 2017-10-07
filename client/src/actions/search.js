@@ -1,11 +1,21 @@
 import * as types from './types';
 import { categoriesLoadData, categoriesQueryUpdate } from './categories';
-import { postsLoadData, postsQueryUpdate } from './posts';
+import {
+  postsUpdate,
+  postsUpdateOffset,
+  postsLoadData,
+  postsQueryUpdate,
+} from './posts';
 
 export const searchQueryChange = (e, category) => (dispatch, getState) => {
   const query = e.target.value;
-  const { search } = getState();
-  const { filters, activeFilter, timeoutId, timeoutLength } = search;
+  const { search, posts } = getState();
+  const {
+    filters,
+    activeFilter,
+    timeoutId,
+    timeoutLength,
+  } = search;
   const filter = filters[activeFilter];
   // update query string
   dispatch(searchQueryUpdate(filter, query));
@@ -17,6 +27,16 @@ export const searchQueryChange = (e, category) => (dispatch, getState) => {
     if (filter === 'categories') {
       dispatch(categoriesLoadData(query));
     } else {
+      const { query: prevQuery } = posts;
+      if (query !== prevQuery) {
+        dispatch(postsUpdate([]));
+        dispatch(postsUpdateOffset(0));
+      }
+      if (query) {
+        dispatch(searchUpdateSortCriterion('relevance'));
+      } else {
+        dispatch(searchUpdateSortCriterion('hot'));
+      }
       dispatch(postsLoadData(query, category));
     }
   }, timeoutLength);
@@ -41,15 +61,19 @@ export const searchFilterUpdate = activeFilter => ({
   activeFilter,
 });
 
-export const searchSelectSortCriterion = ({ value, direction }) => (dispatch, getState) => {
-  const { search } = getState();
+export const searchSelectSortCriterion = ({ value, direction }, category) => (dispatch, getState) => {
+  const { search, posts } = getState();
   const { selectedCriterion, sortDirection } = search;
+  const { query } = posts;
   if (selectedCriterion !== value) {
     dispatch(searchUpdateSortCriterion(value));
   }
   if (sortDirection !== direction) {
     dispatch(searchUpdateSortDirection(direction));
   }
+  dispatch(postsUpdate([]));
+  dispatch(postsUpdateOffset(0));
+  dispatch(postsLoadData(query, category));
 };
 
 export const searchUpdateSortCriterion = selectedCriterion => ({

@@ -18,7 +18,7 @@ const PostPreview = ({
   author,
   body,
   timestamp,
-  voteScore,
+  votes,
   id,
   comments,
   category,
@@ -44,7 +44,7 @@ const PostPreview = ({
     className={`preview-item__inner ${main ? 'post-header' : ''}`}
   >
     <VoteBox
-      voteScore={voteScore}
+      votes={votes}
       applyVote={(vote) => {
         applyVote(id, vote);
       }}
@@ -163,7 +163,9 @@ PostPreview.propTypes = {
   comments: PropTypes.arrayOf(PropTypes.string),
   timestamp: PropTypes.number,
   author: PropTypes.string,
-  voteScore: PropTypes.number,
+  votes: PropTypes.shape({
+    upVote: PropTypes.number,
+  }),
   showFull: PropTypes.bool,
   profileSetUser: PropTypes.func,
   votesGiven: PropTypes.object,

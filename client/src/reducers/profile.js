@@ -1,5 +1,4 @@
 import * as types from '../actions/types';
-import { determineVoteDelta } from '../utils';
 
 export const initialState = {
   username: '',
@@ -69,13 +68,21 @@ const profile = (state = initialState, action) => {
     }
     case types.USER_UPDATE_VOTES: {
       const { id, option, previousVote, target } = action;
+      if (!previousVote && previousVote === option) {
+        return state;
+      }
       const items = [...state[target]];
       const oldIndex = items.findIndex(item => item.id === id);
       if (oldIndex < 0) return state;
       const oldItem = items[oldIndex];
-      const delta = determineVoteDelta(option, previousVote);
-      const voteScore = oldItem.voteScore + delta;
-      const newItem = { ...oldItem, voteScore };
+      const votes = { ...oldItem.votes };
+      if (option) {
+        votes[option] += 1;
+      }
+      if (previousVote && previousVote !== option) {
+        votes[previousVote] -= 1;
+      }
+      const newItem = { ...oldItem, votes };
       items.splice(oldIndex, 1, newItem);
       return { ...state, [target]: items };
     }

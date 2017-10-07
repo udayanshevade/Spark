@@ -17,7 +17,8 @@ export const profileSetUsername = username => ({
 
 export const profileGetData = profile => async(dispatch) => {
   dispatch(profileSetLoading(true));
-  const user = await Requests.get(`${APIbaseURL}/${profile}/profile`);
+  const url = `${APIbaseURL}/${profile}/profile`;
+  const user = await Requests.get({ url });
   dispatch(profileUpdateData(user));
   dispatch(profileSetLoading(false));
 };
@@ -44,7 +45,8 @@ export const profileUpdateActivity = ({ posts, comments }) => ({
 });
 
 export const profileGetActivity = (profile) => async(dispatch) => {
-  const activity = await Requests.get(`${APIbaseURL}/${profile}/history`);
+  const url = `${APIbaseURL}/${profile}/history`;
+  const activity = await Requests.get({ url });
   dispatch(profileUpdateActivity(activity));
 };
 

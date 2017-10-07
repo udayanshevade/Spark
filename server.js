@@ -208,13 +208,21 @@ app.get('/categories/suggestions/:query*?', (req, res) => {
  */
 app.get('/categories/category/:category/posts/:query*?', (req, res) => {
   const errors = { 500: serverErrorMsg, 403: 'Category does not exist' };
+  const { criterion, offset, limit, direction } = req.headers;
   categories.getCategoryPosts(req.params.category)
     .then(
-      postIds => posts.getByIds(postIds, req.params.query).then(
-        (data) => res.send(data),
+      postIds => posts.getByIds(
+        postIds,
+        req.params.query,
+        direction,
+        offset,
+        limit
+      )
+        .then(
+          (data) => res.send(data),
+          handleErrorFn(res, errors)
+        ),
         handleErrorFn(res, errors)
-      ),
-      handleErrorFn(res, errors)
     );
 });
 
@@ -243,7 +251,8 @@ app.put('/categories/subscribe/:category/:update', (req, res) => {
  */
 app.get('/posts/get/:query*?', (req, res) => {
   const errors = { 500: serverErrorMsg };
-  posts.getAll(req.params.query)
+  const { criterion, offset, limit, direction } = req.headers;
+  posts.getAll(req.params.query, criterion, direction, offset, limit)
     .then(
       (data) => res.send(data),
       handleErrorFn(res, errors)

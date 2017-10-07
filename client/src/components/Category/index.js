@@ -7,7 +7,7 @@ import Subscribe from './Subscribe';
 import Posts from '../Posts';
 import Blurb from '../Blurb';
 import { searchFilterUpdate } from '../../actions/search';
-import { postsLoadData } from '../../actions/posts';
+import { postsUpdate, postsLoadData, postsUpdateOffset } from '../../actions/posts';
 import {
   categoriesLoadCategoryData,
   categoriesToggleBlurbExpanded,
@@ -21,10 +21,22 @@ import { userSubscribeCategory } from '../../actions/user';
 
 class Category extends Component {
   componentDidMount() {
-    const { category } = this.props.match.params;
+    const { match } = this.props;
+    const { category } = match.params;
     this.props.actions.searchFilterUpdate(1);
+    this.props.actions.postsUpdateOffset(0);
+    this.props.actions.postsUpdate([]);
     this.props.actions.categoriesLoadCategoryData(category);
     this.props.actions.postsLoadData('', category);
+  }
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.match.params.category !== this.props.match.params.category) {
+      this.props.actions.postsUpdateOffset(0);
+    }
+  }
+  componentWillUnmount() {
+    this.props.actions.postsUpdate([]);
+    this.props.actions.postsUpdateOffset(0);
   }
   render() {
     const {
@@ -100,6 +112,8 @@ const mapStateToProps = (
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     postsLoadData,
+    postsUpdate,
+    postsUpdateOffset,
     searchFilterUpdate,
     categoriesLoadCategoryData,
     categoriesToggleBlurbExpanded,

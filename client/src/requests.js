@@ -1,8 +1,8 @@
 const Requests = {
-  get: url => handleRequest({ url }),
-  post: (request) => handleRequest({ method: 'post', ...request }),
-  put: (request) => handleRequest({ method: 'put', ...request }),
-  delete: (request) => handleRequest({ method: 'delete', ...request }),
+  get: request => handleRequest({ ...request }),
+  post: request => handleRequest({ method: 'post', ...request }),
+  put: request => handleRequest({ method: 'put', ...request }),
+  delete: request => handleRequest({ method: 'delete', ...request }),
 };
 
 const handleRequest = async(request) => {

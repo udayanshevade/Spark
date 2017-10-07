@@ -1,3 +1,4 @@
+import { SubmissionError } from 'redux-form';
 import Requests from '../requests';
 import { appShowTipWithText } from './app';
 import { postUpdateComments } from './post';
@@ -16,6 +17,9 @@ export const commentUpdate = formData => async(dispatch, getState) => {
     id,
     ...newComment,
   } = formData;
+  if (!newComment.body) {
+    throw new SubmissionError({ body: 'Nothing here' });
+  }
   const { sessionToken } = user.user;
   const url = `${APIbaseURL}/${id}/edit`;
   const newCommentData = await Requests.put({
@@ -45,6 +49,9 @@ export const commentCreateNew = formData => async(dispatch, getState) => {
     ...formData,
     author: profile.id,
   };
+  if (!newComment.body) {
+    throw new SubmissionError({ body: 'Nothing here' });
+  }
   const newCommentData = await Requests.post({
     url: APIbaseURL,
     headers: { sessionToken },

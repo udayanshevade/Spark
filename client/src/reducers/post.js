@@ -1,5 +1,4 @@
 import * as types from '../actions/types';
-import { determineVoteDelta } from '../utils';
 
 export const initialState = {
   data: null,
@@ -64,29 +63,45 @@ const post = (state = initialState, action) => {
     }
     case types.USER_UPDATE_VOTES: {
       const { id, option, previousVote, target } = action;
-      const delta = determineVoteDelta(option, previousVote);
-      if (target === 'posts') {
-        if (!state.data) return state;
-        const voteScore = state.data.voteScore + delta;
-        return {
-          ...state,
-          data: {
-            ...state.data,
-            voteScore,
-          },
-        };
-      } else if (target === 'comments') {
-        if (!state.comments.length) return state;
-        const items = [...state.comments];
-        const oldIndex = items.findIndex(item => item.id === id);
-        if (oldIndex < 0) return state;
-        const oldItem = items[oldIndex];
-        const voteScore = oldItem.voteScore + delta;
-        const newItem = { ...oldItem, voteScore };
-        items.splice(oldIndex, 1, newItem);
-        return { ...state, [target]: items };
+      if (!state.data ||
+        (previousVote && previousVote === option)
+      ) { return state; }
+      switch (target) {
+        case 'posts': {
+          const votes = { ...state.data.votes };
+          if (option) {
+            votes[option] += 1;
+          }
+          if (previousVote && previousVote !== option) {
+            votes[previousVote] -= 1;
+          }
+          return {
+            ...state,
+            data: {
+              ...state.data,
+              votes,
+            },
+          };
+        }
+        case 'comments': {
+          if (!state.comments.length) return state;
+          const comments = [...state.comments];
+          const oldIndex = comments.findIndex(item => item.id === id);
+          if (oldIndex < 0) return state;
+          const oldItem = comments[oldIndex];
+          const votes = { ...oldItem.votes };
+          if (option) {
+            votes[option] += 1;
+          } else if (previousVote && previousVote !== option) {
+            votes[previousVote] -= 1;
+          }
+          const newItem = { ...oldItem, votes };
+          comments.splice(oldIndex, 1, newItem);
+          return { ...state, comments };
+        }
+        default:
+          return state;
       }
-      return state;
     }
     case types.POST_UPDATE_CATEGORY_SUGGESTIONS: {
       const { results } = action;

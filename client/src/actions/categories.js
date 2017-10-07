@@ -2,6 +2,7 @@ import { SubmissionError } from 'redux-form';
 import * as types from './types';
 import { appShowTipWithText } from './app';
 import { postsLoadData } from './posts';
+import { userUpdateData } from './user';
 import Requests from '../requests';
 
 const categoriesURL = '/categories';
@@ -28,7 +29,8 @@ export const categoriesUpdate = categories => ({
 
 export const categoriesLoadData = (query = '') => async(dispatch) => {
   dispatch(categoriesSetLoading(true));
-  const categories = await Requests.get(`${categoriesURL}/get/${query}`);
+  const url = `${categoriesURL}/get/${query}`;
+  const categories = await Requests.get({ url });
   dispatch(categoriesSetLoading(false));
   dispatch(categoriesUpdate(categories));
 };
@@ -49,7 +51,8 @@ export const categoriesSetSuggestionsLoading = loading => ({
 });
 
 export const categoriesLoadSuggestions = query => async(dispatch) => {
-  const suggestions = await Requests.get(`${categoriesURL}/suggestions/${query}/suggestions`);
+  const url = `${categoriesURL}/suggestions/${query}/suggestions`;
+  const suggestions = await Requests.get({ url });
   dispatch(categoriesUpdateSuggestions(suggestions));
   return suggestions;
 };
@@ -87,7 +90,8 @@ export const categoriesCreateNew = data => async(dispatch, getState) => {
     dispatch(appShowTipWithText('Login to create a category', 'footer-login-button'));
     return;
   }
-  const { sessionToken, profile } = user;
+  const { subscriptions, sessionToken, profile } = user;
+  const { id } = profile;
   const url = `${categoriesURL}/create`;
   if (data.name === categorySuggestions.results[0]) {
     throw new SubmissionError({ name: 'Category exists' });
@@ -96,7 +100,7 @@ export const categoriesCreateNew = data => async(dispatch, getState) => {
   const res = await Requests.post({
     url,
     headers: { sessionToken },
-    body: { user: profile.id, ...data },
+    body: { user: id, ...data },
   });
   if (res.success) {
     const newCategories = [...categories];
@@ -105,14 +109,18 @@ export const categoriesCreateNew = data => async(dispatch, getState) => {
       path: data.name,
       posts: [],
     });
+    const newSubscriptions = [...subscriptions];
+    newSubscriptions.unshift(data.name);
     dispatch(categoriesSetActive(data.name));
     dispatch(categoriesUpdate(newCategories));
+    dispatch(userUpdateData({ subscriptions: newSubscriptions }));
   }
   dispatch(categoriesSetIsCreating(false));
 };
 
 const categoriesGetCategoryData = async(category) => {
-  const res = await Requests.get(`${categoriesURL}/category/${category}`);
+  const url = `${categoriesURL}/category/${category}`;
+  const res = await Requests.get({ url });
   if (!res.error) {
     return res;
   }

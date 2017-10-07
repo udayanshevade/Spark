@@ -35,7 +35,7 @@
 
 .categories-list-items-container .grommetux-list-item:last-of-type {
   border-bottom: 1px solid rgba(0, 0, 0, 0.15);
-  background: rgba(125, 125, 125, 0.05);
+  background: rgba(200, 200, 200, 0.05);
 }
 
 .vote-box {
