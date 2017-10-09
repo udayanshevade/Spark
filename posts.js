@@ -245,12 +245,19 @@ function get (postId) {
  * @param {array} postIds
  * @returns {array} batch of posts by ids
  */
-function getByIds (postIds, criterion, direction, offset, limit) {
+function getByIds (query, postIds, criterion, direction, offset, limit) {
   return new Promise((res) => {
     const dbPosts = getData();
     const rawPosts = postIds.map(id => dbPosts[id])
       .filter(post => !post.deleted);
-    const selectedPosts = getSortedList(rawPosts, criterion);
+    let selectedPosts; 
+    if (query) {
+      const fuse = new Fuse(rawPosts, fuseOptions);
+      // return matching
+      selectedPosts = fuse.search(query);
+    } else {
+      selectedPosts = getSortedList(rawPosts, criterion);
+    }
     const depleted = offset + limit > selectedPosts.length - 1;
     const postsList = getRestrictedList(selectedPosts, direction, offset, limit);
     res({ posts: postsList, depleted });

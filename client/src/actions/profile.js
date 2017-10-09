@@ -124,7 +124,10 @@ export const profileGetActivity = profile => async(dispatch) => {
   dispatch(profileGetComments(profile));
 };
 
-export const profilePostsSelectSortCriterion = ({ value, direction }) => (dispatch, getState) => {
+export const profilePostsSelectSortCriterion = ({
+  value,
+  direction,
+}) => (dispatch, getState) => {
   const { profile } = getState();
   const { selectedCriterion, sortDirection } = profile.posts;
   if (selectedCriterion !== value) {
@@ -150,7 +153,10 @@ export const profileUpdateSortDirection = (sortDirection, affects) => ({
   affects,
 });
 
-export const profileCommentsSelectSortCriterion = ({ value, direction }) => (dispatch, getState) => {
+export const profileCommentsSelectSortCriterion = ({
+  value,
+  direction,
+}) => (dispatch, getState) => {
   const { profile } = getState();
   const { selectedCriterion, sortDirection } = profile.comments;
   if (selectedCriterion !== value) {

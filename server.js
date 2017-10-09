@@ -212,8 +212,8 @@ app.get('/categories/category/:category/posts/:query*?', (req, res) => {
   categories.getCategoryPosts(req.params.category)
     .then(
       postIds => posts.getByIds(
-        postIds,
         req.params.query,
+        postIds,
         criterion,
         direction,
         offset,
@@ -554,6 +554,7 @@ app.get('/user/:userId/posts', (req, res) => {
   user.getPosts(req.params.userId).then(postIds => {
     // get post data by post ids
     posts.getByIds(
+      null,
       postIds,
       criterion,
       direction,
