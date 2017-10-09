@@ -7,16 +7,22 @@ import Section from 'grommet/components/Section';
 import Box from 'grommet/components/Box';
 import List from 'grommet/components/List';
 import Value from 'grommet/components/Value';
+import Footer from 'grommet/components/Footer';
+import Button from 'grommet/components/Button';
+import Loading from '../Loading';
 import FilterBar from '../FilterBar';
 import PostPreview from '../Posts/PostPreview';
 import {
   getProfilePosts,
+  getProfilePostsDepleted,
+  getProfilePostsLoading,
   getProfilePostsSortCriterion,
   getProfilePostsSortDirection,
   getProfilePostsNetScore,
 } from '../../selectors/profile';
 import { getUsername, getUserVotesGiven } from '../../selectors/user';
 import {
+  profileGetPosts,
   profileSetUser,
   profilePostsSelectSortCriterion,
 } from '../../actions/profile';
@@ -32,6 +38,8 @@ const PostHistory = ({
   netScore,
   votesGiven,
   username,
+  depleted,
+  loading,
   ...sortProps,
 }) => (
   <Section responsive align="center" pad="small">
@@ -71,6 +79,21 @@ const PostHistory = ({
           ))
         }
       </List>
+      {
+        !(depleted || loading) &&
+          <Footer justify="center">
+            <Button
+              plain
+              label="Load more"
+              onClick={() => {
+                actions.profileGetPosts(username);
+              }}
+            />
+          </Footer>
+      }
+      {
+        loading && <Loading />
+      }
     </Box>
   </Section>
 );
@@ -99,6 +122,8 @@ PostHistory.propTypes = {
 
 const mapStateToProps = ({ user, profile }) => ({
   sortCriteria: profile.sortCriteria,
+  depleted: getProfilePostsDepleted(profile),
+  loading: getProfilePostsLoading(profile),
   selectedCriterion: getProfilePostsSortCriterion(profile),
   sortDirection: getProfilePostsSortDirection(profile),
   posts: getProfilePosts(profile),
@@ -114,6 +139,7 @@ const mapDispatchToProps = dispatch => ({
     applyVote: userRecordVote,
     postDelete,
     postUpdateCreateData,
+    profileGetPosts,
   }, dispatch),
 })
 

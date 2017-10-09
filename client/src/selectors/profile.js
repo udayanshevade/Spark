@@ -3,9 +3,13 @@ import { createSelector } from 'reselect';
 export const getProfileData = profile => profile.user;
 export const getProfileName = profile => profile.username;
 export const getProfilePosts = profile => profile.posts.posts;
+export const getProfilePostsDepleted = profile => profile.posts.depleted;
+export const getProfilePostsLoading = profile => profile.posts.loading;
 export const getProfilePostsSortCriterion = profile => profile.posts.selectedCriterion;
 export const getProfilePostsSortDirection = profile => profile.posts.sortDirection;
 export const getProfileComments = profile => profile.comments.comments;
+export const getProfileCommentsDepleted = profile => profile.comments.depleted;
+export const getProfileCommentsLoading = profile => profile.comments.loading;
 export const getProfileCommentsSortCriterion = profile => profile.comments.selectedCriterion;
 export const getProfileCommentsSortDirection = profile => profile.comments.sortDirection;
 

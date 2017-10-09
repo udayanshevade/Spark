@@ -9,6 +9,7 @@ export const initialState = {
     limit: 10,
     selectedCriterion: 'new',
     sortDirection: 'desc',
+    loading: false,
   },
   comments: {
     comments: [],
@@ -16,6 +17,7 @@ export const initialState = {
     limit: 10,
     selectedCriterion: 'new',
     sortDirection: 'desc',
+    loading: false,
   },
   sortCriteria: [{
     label: 'New',
@@ -41,8 +43,18 @@ const profile = (state = initialState, action) => {
       return { ...state, username };
     }
     case types.PROFILE_SET_LOADING: {
-      const { loading } = action;
-      return { ...state, loading };
+      const { loading, affects } = action;
+      if (!affects) {
+        return { ...state, loading };
+      } else {
+        return {
+          ...state,
+          [affects]: {
+            ...state[affects],
+            loading,
+          },
+        };
+      }
     }
     case types.PROFILE_UPDATE_DATA: {
       const { user } = action;

@@ -23,9 +23,10 @@ export const profileGetData = profile => async(dispatch) => {
   dispatch(profileSetLoading(false));
 };
 
-export const profileSetLoading = loading => ({
+export const profileSetLoading = (loading, affects) => ({
   type: types.PROFILE_SET_LOADING,
   loading,
+  affects,
 });
 
 export const profileUpdateData = user => ({
@@ -63,6 +64,7 @@ export const profileUpdateDepleted = (depleted, affects) => ({
 export const profileGetPosts = profile => async(dispatch, getState) => {
   const { posts: postsState } = getState().profile;
   const {
+    posts: oldPosts,
     offset,
     limit,
     sortDirection: direction,
@@ -75,21 +77,26 @@ export const profileGetPosts = profile => async(dispatch, getState) => {
     direction,
     criterion,
   };
+  dispatch(profileSetLoading(true, 'posts'));
   const res = await Requests.get({
     url,
     headers,
   });
   if (!res.error) {
     const { posts, depleted } = res;
-    dispatch(profileUpdatePosts(posts));
-    dispatch(profileUpdateDepleted('posts', depleted));
+    const newPosts = [ ...oldPosts, ...posts ];
+    dispatch(profileUpdatePosts(newPosts));
+    dispatch(profileUpdateDepleted(depleted, 'posts'));
+    dispatch(profileUpdateOffset(offset + limit, 'posts'));
   }
+  dispatch(profileSetLoading(false, 'posts'));
 };
 
 export const profileGetComments = profile => async(dispatch, getState) => {
   const { comments: commentsState } = getState().profile;
   const url = `${APIbaseURL}/${profile}/comments`;
   const {
+    comments: oldComments,
     offset,
     limit,
     sortDirection: direction,
@@ -101,12 +108,15 @@ export const profileGetComments = profile => async(dispatch, getState) => {
     direction,
     criterion,
   };
+  dispatch(profileSetLoading(true, 'comments'));
   const res = await Requests.get({ url, headers });
   if (!res.error) {
     const { comments, depleted } = res;
+    const newComments = [ ...oldComments, ...comments ];
     dispatch(profileUpdateComments(comments));
-    dispatch(profileUpdateDepleted('comments', depleted));
+    dispatch(profileUpdateDepleted(depleted, 'comments'));
   }
+  dispatch(profileSetLoading(false, 'comments'));
 };
 
 export const profileGetActivity = profile => async(dispatch) => {
@@ -118,11 +128,13 @@ export const profilePostsSelectSortCriterion = ({ value, direction }) => (dispat
   const { profile } = getState();
   const { selectedCriterion, sortDirection } = profile.posts;
   if (selectedCriterion !== value) {
-    dispatch(profileUpdateSortCriterion('posts', value));
+    dispatch(profileUpdateSortCriterion(value, 'posts'));
   }
   if (sortDirection !== direction) {
-    dispatch(profileUpdateSortDirection('posts', direction));
+    dispatch(profileUpdateSortDirection(direction, 'posts'));
   }
+  dispatch(profileUpdatePosts([]));
+  dispatch(profileUpdateOffset(0, 'posts'));
 };
 
 export const profileUpdateSortCriterion = (affects, selectedCriterion) => ({
@@ -141,11 +153,13 @@ export const profileCommentsSelectSortCriterion = ({ value, direction }) => (dis
   const { profile } = getState();
   const { selectedCriterion, sortDirection } = profile.comments;
   if (selectedCriterion !== value) {
-    dispatch(profileUpdateSortCriterion('comments', value));
+    dispatch(profileUpdateSortCriterion(value, 'comments'));
   }
   if (sortDirection !== direction) {
-    dispatch(profileUpdateSortDirection('comments', direction));
+    dispatch(profileUpdateSortDirection(direction, 'comments'));
   }
+  dispatch(profileUpdateComments([]));
+  dispatch(profileUpdateOffset(0, 'comments'));
 };
 
 export const profileReset = () => ({

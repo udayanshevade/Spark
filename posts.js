@@ -53,7 +53,7 @@ const db = {
     deleted: false,
   },
   "llgj1kjg278f1ptk1nz1": {
-    id: 'llgj1kasd78f1ptk1nz1',
+    id: 'llgj1kjg278f1ptk1nz1',
     timestamp: 1406758287190,
     title: 'Redux is easy!',
     url: null,
