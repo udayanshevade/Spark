@@ -113,7 +113,7 @@ export const profileGetComments = profile => async(dispatch, getState) => {
   if (!res.error) {
     const { comments, depleted } = res;
     const newComments = [ ...oldComments, ...comments ];
-    dispatch(profileUpdateComments(comments));
+    dispatch(profileUpdateComments(newComments));
     dispatch(profileUpdateDepleted(depleted, 'comments'));
   }
   dispatch(profileSetLoading(false, 'comments'));
@@ -135,15 +135,16 @@ export const profilePostsSelectSortCriterion = ({ value, direction }) => (dispat
   }
   dispatch(profileUpdatePosts([]));
   dispatch(profileUpdateOffset(0, 'posts'));
+  dispatch(profileGetPosts(profile.username));
 };
 
-export const profileUpdateSortCriterion = (affects, selectedCriterion) => ({
+export const profileUpdateSortCriterion = (selectedCriterion, affects) => ({
   type: types.PROFILE_UPDATE_SORT_CRITERION,
   selectedCriterion,
   affects,
 });
 
-export const profileUpdateSortDirection = (affects, sortDirection) => ({
+export const profileUpdateSortDirection = (sortDirection, affects) => ({
   type: types.PROFILE_UPDATE_SORT_DIRECTION,
   sortDirection,
   affects,
@@ -160,6 +161,7 @@ export const profileCommentsSelectSortCriterion = ({ value, direction }) => (dis
   }
   dispatch(profileUpdateComments([]));
   dispatch(profileUpdateOffset(0, 'comments'));
+  dispatch(profileGetComments(profile.username));
 };
 
 export const profileReset = () => ({

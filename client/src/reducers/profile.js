@@ -63,13 +63,13 @@ const profile = (state = initialState, action) => {
     case types.PROFILE_UPDATE_POSTS: {
       const { posts } = action;
       const newState = { ...state };
-      if (posts && posts.length) newState.posts.posts = posts;
+      if (posts) newState.posts.posts = posts;
       return newState; 
     }
     case types.PROFILE_UPDATE_COMMENTS: {
       const { comments } = action;
       const newState = { ...state };
-      if (comments && comments.length) newState.comments.comments = comments;
+      if (comments) newState.comments.comments = comments;
       return newState;
     }
     case types.PROFILE_SET_PREVIEW_ACTIVE: {
