@@ -2,20 +2,33 @@ import * as types from '../actions/types';
 
 export const initialState = {
   data: null,
-  comments: [],
+  comments: {
+    comments: [],
+    offset: 0,
+    limit: 50,
+    depleted: false,
+    selectedCriterion: 'best',
+    sortDirection: 'desc',
+    criteria: [{
+      label: 'Hot',
+      value: 'hot',
+      direction: 'desc',
+    }, {
+      label: 'Best',
+      value: 'best',
+      direction: 'desc',
+    }, {
+      label: 'New',
+      value: 'new',
+      direction: 'desc'
+    }, {
+      label: 'Score',
+      value: 'score',
+      direction: 'desc',
+    }],
+  },
   loading: true,
   creating: false,
-  criteria: [{
-    label: 'New',
-    value: 'timestamp',
-    direction: 'desc'
-  }, {
-    label: 'Score',
-    value: 'voteScore',
-    direction: 'desc',
-  }],
-  selectedCriterion: 'timestamp',
-  sortDirection: 'desc',
   showFull: false,
   bodyCharLim: 90,
   categorySuggestions: {
@@ -47,15 +60,53 @@ const post = (state = initialState, action) => {
     }
     case types.POST_UPDATE_COMMENTS: {
       const { comments } = action;
-      return { ...state, comments };
+      return {
+        ...state,
+        comments: {
+          ...state.comments,
+          comments,
+        },
+      };
+    }
+    case types.POST_COMMENTS_UPDATE_OFFSET: {
+      const { offset } = action;
+      return {
+        ...state,
+        comments: {
+          ...state.comments,
+          offset,
+        },
+      };
+    }
+    case types.POST_COMMENTS_UPDATE_DEPLETED: {
+      const { depleted } = action;
+      return {
+        ...state,
+        comments: {
+          ...state.comments,
+          depleted,
+        },
+      };
     }
     case types.POST_COMMENTS_UPDATE_SORT_CRITERION: {
       const { selectedCriterion } = action;
-      return { ...state, selectedCriterion };
+      return {
+        ...state,
+        comments: {
+          ...state.comments,
+          selectedCriterion,
+        },
+      };
     }
     case types.POST_COMMENTS_UPDATE_SORT_DIRECTION: {
       const { sortDirection } = action;
-      return { ...state, sortDirection };
+      return {
+        ...state,
+        comments: {
+          ...state.comments,
+          sortDirection,
+        },
+      };
     }
     case types.POST_TOGGLE_SHOW_FULL: {
       const showFull = !state.showFull;
@@ -84,8 +135,14 @@ const post = (state = initialState, action) => {
           };
         }
         case 'comments': {
-          if (!state.comments.length) return state;
-          const comments = [...state.comments];
+          const {
+            comments: {
+              comments: oldComments,
+              ...commentsState,
+            },
+          } = state;
+          if (!oldComments.length) return state;
+          const comments = [...oldComments];
           const oldIndex = comments.findIndex(item => item.id === id);
           if (oldIndex < 0) return state;
           const oldItem = comments[oldIndex];
@@ -97,7 +154,13 @@ const post = (state = initialState, action) => {
           }
           const newItem = { ...oldItem, votes };
           comments.splice(oldIndex, 1, newItem);
-          return { ...state, comments };
+          return {
+            ...state,
+            comments: {
+              ...commentsState,
+              comments,
+            },
+          };
         }
         default:
           return state;

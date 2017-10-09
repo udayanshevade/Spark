@@ -3,21 +3,33 @@ import * as types from '../actions/types';
 export const initialState = {
   username: '',
   user: null,
-  posts: [],
-  comments: [],
+  posts: {
+    posts: [],
+    offset: 0,
+    limit: 10,
+    selectedCriterion: 'new',
+    sortDirection: 'desc',
+  },
+  comments: {
+    comments: [],
+    offset: 0,
+    limit: 10,
+    selectedCriterion: 'new',
+    sortDirection: 'desc',
+  },
   sortCriteria: [{
     label: 'New',
-    value: 'timestamp',
+    value: 'new',
     direction: 'desc'
   }, {
+    label: 'Best',
+    value: 'best',
+    direction: 'desc',
+  },{
     label: 'Score',
-    value: 'voteScore',
+    value: 'score',
     direction: 'desc',
   }],
-  postsSelectedCriterion: 'timestamp',
-  postsSortDirection: 'desc',
-  commentsSelectedCriterion: 'timestamp',
-  commentsSortDirection: 'desc',
   previewActive: false,
   loading: false,
 };
@@ -36,32 +48,61 @@ const profile = (state = initialState, action) => {
       const { user } = action;
       return { ...state, user };
     }
-    case types.PROFILE_UPDATE_ACTIVITY: {
-      const { posts, comments } = action;
+    case types.PROFILE_UPDATE_POSTS: {
+      const { posts } = action;
       const newState = { ...state };
-      if (posts && posts.length) newState.posts = posts;
-      if (comments && comments.length) newState.comments = comments;
+      if (posts && posts.length) newState.posts.posts = posts;
       return newState; 
+    }
+    case types.PROFILE_UPDATE_COMMENTS: {
+      const { comments } = action;
+      const newState = { ...state };
+      if (comments && comments.length) newState.comments.comments = comments;
+      return newState;
     }
     case types.PROFILE_SET_PREVIEW_ACTIVE: {
       const { previewActive } = action;
       return { ...state, previewActive };
     }
-    case types.PROFILE_POSTS_UPDATE_SORT_CRITERION: {
-      const { postsSelectedCriterion } = action;
-      return { ...state, postsSelectedCriterion };
+    case types.PROFILE_UPDATE_SORT_CRITERION: {
+      const { selectedCriterion, affects } = action;
+      return {
+        ...state,
+        [affects]: {
+          ...state[affects],
+          selectedCriterion,
+        },
+      };
     }
-    case types.PROFILE_POSTS_UPDATE_SORT_DIRECTION: {
-      const { postsSortDirection } = action;
-      return { ...state, postsSortDirection };
+    case types.PROFILE_UPDATE_SORT_DIRECTION: {
+      const { sortDirection, affects } = action;
+      return {
+        ...state,
+        [affects]: {
+          ...state[affects],
+          sortDirection,
+        },
+      };
     }
-    case types.PROFILE_COMMENTS_UPDATE_SORT_CRITERION: {
-      const { commentsSelectedCriterion } = action;
-      return { ...state, commentsSelectedCriterion };
+    case types.PROFILE_UPDATE_OFFSET: {
+      const { offset, affects } = action;
+      return {
+        ...state,
+        [affects]: {
+          ...state[affects],
+          offset,
+        },
+      };
     }
-    case types.PROFILE_COMMENTS_UPDATE_SORT_DIRECTION: {
-      const { commentsSortDirection } = action;
-      return { ...state, commentsSortDirection };
+    case types.PROFILE_UPDATE_DEPLETED: {
+      const { depleted, affects } = action;
+      return {
+        ...state,
+        [affects]: {
+          ...state[affects],
+          depleted,
+        }
+      }
     }
     case types.PROFILE_RESET: {
       return initialState;

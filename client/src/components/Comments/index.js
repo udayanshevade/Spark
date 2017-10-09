@@ -3,21 +3,27 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Section from 'grommet/components/Section';
-import Box from 'grommet/components/Box';
+import Footer from 'grommet/components/Footer';
+import Button from 'grommet/components/Button';
 import ListPlaceHolder from 'grommet-addons/components/ListPlaceholder';
-import Spinning from 'grommet/components/icons/Spinning';
 import Comments from './Comments';
 import FilterBar from '../FilterBar';
+import Loading from '../Loading';
 import { userRecordVote } from '../../actions/user';
-import { postSelectSortCriterion } from '../../actions/post';
+import {
+  postSelectSortCriterion,
+  postGetComments,
+} from '../../actions/post';
 import { commentDelete } from '../../actions/comment';
 import { profileSetUser } from '../../actions/profile';
-import { getSortedComments } from '../../selectors/post';
+import { getStructuredComments } from '../../selectors/post';
 import { getUsername, getUserVotesGiven } from '../../selectors/user';
 
 export const CommentsContainer = ({
+  postId,
   width,
   loading,
+  depleted,
   comments,
   actions,
   votesGiven,
@@ -26,15 +32,9 @@ export const CommentsContainer = ({
   ...filterProps,
 }) => {
   let commentsEl;
-  if (loading) {
+  if (loading && !comments.length) {
     commentsEl = (
-      <Box
-        align="center"
-        pad="large"
-        className="loading-container"
-      >
-        <Spinning className="loading-spinner" />
-      </Box>
+      <Loading />
     );
   } else if (!comments.length) {
     commentsEl = (
@@ -65,6 +65,18 @@ export const CommentsContainer = ({
           threadView={threadView}
           commentDelete={actions.commentDelete}
         />
+        {
+          !(depleted || loading) &&
+            <Footer justify="center">
+              <Button
+                plain
+                label="Load more"
+                onClick={() => {
+                  actions.postGetComments(postId);
+                }}
+              />
+            </Footer>
+        }
       </Section>
     );
   }
@@ -85,11 +97,13 @@ CommentsContainer.propTypes = {
 };
 
 const mapStateToProps = ({ user, post, responsive }) => ({
+  postId: post.data.id,
   loading: post.loading,
-  comments: getSortedComments(post),
-  sortCriteria: post.criteria,
-  sortDirection: post.sortDirection,
-  selectedCriterion: post.selectedCriterion,
+  depleted: post.comments.depleted,
+  comments: getStructuredComments(post),
+  sortCriteria: post.comments.criteria,
+  sortDirection: post.comments.sortDirection,
+  selectedCriterion: post.comments.selectedCriterion,
   width: responsive.width,
   votesGiven: getUserVotesGiven(user),
   username: getUsername(user),
@@ -98,6 +112,7 @@ const mapStateToProps = ({ user, post, responsive }) => ({
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     postSelectSortCriterion,
+    postGetComments,
     profileSetUser,
     userRecordVote,
     commentDelete,

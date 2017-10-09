@@ -1,9 +1,6 @@
 import { createSelector } from 'reselect';
 
-const getPostComments = post => post.comments;
-
-const getPostSortCriterion = post => post.selectedCriterion;
-const getPostSortDirection = post => post.sortDirection;
+const getPostComments = post => post.comments.comments;
 
 export const getAncestorComments = createSelector(
   getPostComments,
@@ -24,34 +21,16 @@ export const getRawComments = createSelector(
   }
 );
 
-const structureComments = (ancestorIds, rawComments, criterion, direction) => {
+const structureComments = (ancestorIds, rawComments) => {
   const comments = [];
-  let sortedAncestorIds;
-  switch (direction) {
-    case 'asc':
-      sortedAncestorIds = [...ancestorIds].sort(
-        (a, b) => rawComments[a][criterion] - rawComments[b][criterion]
-      );
-      break;
-    case 'desc':
-      sortedAncestorIds = [...ancestorIds].sort(
-        (a, b) => rawComments[b][criterion] - rawComments[a][criterion]
-      );
-      break;
-    default:
-      sortedAncestorIds = ancestorIds;
-  }
-
-  for (const ancestorId of sortedAncestorIds) {
+  for (const ancestorId of ancestorIds) {
     const comment = rawComments[ancestorId];
     const childCommentIds = comment.children;
     const newComment = {
       ...comment,
       children: structureComments(
         childCommentIds,
-        rawComments,
-        criterion,
-        direction
+        rawComments
       ),
     };
     comments.push(newComment);
@@ -59,10 +38,10 @@ const structureComments = (ancestorIds, rawComments, criterion, direction) => {
   return comments;
 };
 
-export const getSortedComments = createSelector(
-  [getAncestorComments, getRawComments, getPostSortCriterion, getPostSortDirection],
-  (ancestors, rawComments, criterion, direction) => {
-    const sortedComments = structureComments(ancestors, rawComments, criterion, direction);
+export const getStructuredComments = createSelector(
+  [getAncestorComments, getRawComments],
+  (ancestors, rawComments) => {
+    const sortedComments = structureComments(ancestors, rawComments);
     return sortedComments;
   }
 );

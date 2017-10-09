@@ -105,10 +105,54 @@ function getHotSort (unsorted) {
   return sorted;
 }
 
+/**
+ * @description Get sorted post items
+ */
+function getSortedList (list, criterion) {
+  let sorted;
+  switch (criterion) {
+    case 'score': {
+      sorted = list.sort((a, b) => {
+        const aVoteScore = a.votes.upVote - a.votes.downVote;
+        const bVoteScore = b.votes.upVote - b.votes.downVote;
+        return bVoteScore - aVoteScore;
+      });
+      break;
+    }
+    case 'new': {
+      sorted = list.sort((a, b) => b.timestamp - a.timestamp);
+      break;
+    }
+    case 'best': {
+      sorted = getWeightedSort(list);
+      break;
+    }
+    case 'hot': {
+      sorted = getHotSort(list);
+      break;
+    }
+    default: {
+      sorted = list;
+    }
+  }
+  return sorted;
+}
+
+/**
+ * @description Get limited post items
+ */
+function getRestrictedList (list, direction, offset, limit) {
+  const orderedList = direction === 'desc'
+    ? list : [...list].reverse();
+  return orderedList.slice(offset, offset + limit);
+}
+
 module.exports = {
   generateSessionToken,
   verifySessionToken,
   handleErrorFn,
   getWeightedSort,
   getHotSort,
+  getSortedList,
+  getRestrictedList,
 };

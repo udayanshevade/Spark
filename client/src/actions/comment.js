@@ -28,7 +28,7 @@ export const commentUpdate = formData => async(dispatch, getState) => {
     body: newComment,
   });
   if (newCommentData.error) return false;
-  const { data: postData, comments: postComments } = post;
+  const { data: postData, comments: { comments: postComments } } = post;
   if (postData && postData.id === postId) {
     const newPostComments = [...postComments];
     const oldIndex = newPostComments.findIndex(comment => comment.id === id);
@@ -58,7 +58,7 @@ export const commentCreateNew = formData => async(dispatch, getState) => {
     body: newComment,
   });
   if (newCommentData.error) return false;
-  const { data: postData, comments: postComments } = post;
+  const { data: postData, comments: { comments: postComments } } = post;
   if (postData && postData.id === formData.postId) {
     const newPostComments = [...postComments];
     newPostComments.unshift(newCommentData);
@@ -88,7 +88,7 @@ export const commentDelete = commentId => async(dispatch, getState) => {
     headers: { sessionToken },
   });
   if (deleted.error) return;
-  const { data: postData, comments: postComments } = post;
+  const { data: postData, comments: { comments: postComments } } = post;
   if (postData && postData.id === deleted.postId) {
     const newPostComments = [...postComments];
     const oldIndex = newPostComments.findIndex(comment => comment.id === commentId);

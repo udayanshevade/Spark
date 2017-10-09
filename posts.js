@@ -1,5 +1,9 @@
 const Fuse = require('fuse.js');
-const { verifySessionToken, getWeightedSort, getHotSort } = require('./utils');
+const {
+  verifySessionToken,
+  getSortedList,
+  getRestrictedList,
+} = require('./utils');
 const uuidv4 = require('uuid/v4');
 
 const db = {
@@ -186,49 +190,6 @@ function getPostsList () {
   return Object.values(db).filter(post => !post.deleted);
 }
 
-/**
- * @description Get sorted post items
- */
-function getSortedPostsList (criterion) {
-  const posts = getPostsList();
-  let sortedPosts;
-  switch (criterion) {
-    case 'score': {
-      sortedPosts = posts.sort((a, b) => {
-        const aVoteScore = a.votes.upVote - a.votes.downVote;
-        const bVoteScore = b.votes.upVote - b.votes.downVote;
-        return bVoteScore - aVoteScore;
-      });
-      break;
-    }
-    case 'new': {
-      sortedPosts = posts.sort((a, b) => b.timestamp - a.timestamp);
-      break;
-    }
-    case 'best': {
-      sortedPosts = getWeightedSort(posts);
-      break;
-    }
-    case 'hot': {
-      sortedPosts = getHotSort(posts);
-      break;
-    }
-    default: {
-      sortedPosts = posts;
-    }
-  }
-  return sortedPosts;
-}
-
-/**
- * @description Get limited post items
- */
-function getRestrictedPostsList (posts, direction, offset, limit) {
-  const orderedPosts = direction === 'desc'
-    ? posts : [...posts].reverse();
-  return orderedPosts.slice(offset, offset + limit);
-}
-
 const fuseOptions = {
   keys: [{
     name: 'title',
@@ -248,14 +209,17 @@ const fuseOptions = {
  */
 function getAll (query, criterion, direction, offset = 0, limit = 10) {
   return new Promise((res) => {
-    let posts = getSortedPostsList(criterion);
+    const rawPosts = getPostsList();
+    let posts = [];
     if (query) {
-      const fuse = new Fuse(posts, fuseOptions);
+      const fuse = new Fuse(rawPosts, fuseOptions);
       // return matching
       posts = fuse.search(query);
+    } else {
+      posts = getSortedList(rawPosts, criterion);
     }
     const depleted = offset + limit > posts.length - 1;
-    const postsList = getRestrictedPostsList(posts, direction, offset, limit);
+    const postsList = getRestrictedList(posts, direction, offset, limit);
     res({ posts: postsList, depleted });
   });
 }
@@ -281,17 +245,14 @@ function get (postId) {
  * @param {array} postIds
  * @returns {array} batch of posts by ids
  */
-function getByIds (postIds, query, direction, offset, limit) {
+function getByIds (postIds, criterion, direction, offset, limit) {
   return new Promise((res) => {
-    const allPosts = getData();
-    let selectedPosts = postIds.map(id => allPosts[id])
+    const dbPosts = getData();
+    const rawPosts = postIds.map(id => dbPosts[id])
       .filter(post => !post.deleted);
-    if (query) {
-      const fuse = new Fuse(selectedPosts, fuseOptions);
-      selectedPosts = fuse.search(query);
-    }
+    const selectedPosts = getSortedList(rawPosts, criterion);
     const depleted = offset + limit > selectedPosts.length - 1;
-    const postsList = getRestrictedPostsList(selectedPosts, direction, offset, limit);
+    const postsList = getRestrictedList(selectedPosts, direction, offset, limit);
     res({ posts: postsList, depleted });
   });
 }

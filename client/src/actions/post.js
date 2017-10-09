@@ -21,24 +21,15 @@ export const postUpdateComments = comments => ({
   comments,
 });
 
-export const postGetData = postId => async(dispatch) => {
-  const url = `${APIbaseURL}/thread/${postId}`;
-  const data = await Requests.get({ url });
-  dispatch(postUpdateData(data));
-};
+export const postCommentsUpdateOffset = offset => ({
+  type: types.POST_COMMENTS_UPDATE_OFFSET,
+  offset,
+});
 
-export const postGetComments = postId => async(dispatch) => {
-  const url = `${APIbaseURL}/thread/${postId}/comments`;
-  const comments = await Requests.get({ url });
-  dispatch(postUpdateComments(comments));
-};
-
-export const postGetDetails = postId => async(dispatch) => {
-  dispatch(postSetLoading(true));
-  await dispatch(postGetData(postId));
-  await dispatch(postGetComments(postId));
-  dispatch(postSetLoading(false));
-};
+export const postCommentsUpdateDepleted = depleted => ({
+  type: types.POST_COMMENTS_UPDATE_DEPLETED,
+  depleted,
+});
 
 export const postUpdateSortCriterion = selectedCriterion => ({
   type: types.POST_COMMENTS_UPDATE_SORT_CRITERION,
@@ -59,6 +50,42 @@ export const postSelectSortCriterion = ({ value, direction }) => (dispatch, getS
   if (sortDirection !== direction) {
     dispatch(postUpdateSortDirection(direction));
   }
+  dispatch(postUpdateComments([]));
+  dispatch(postCommentsUpdateOffset(0));
+};
+
+export const postGetData = postId => async(dispatch) => {
+  const url = `${APIbaseURL}/thread/${postId}`;
+  const data = await Requests.get({ url });
+  dispatch(postUpdateData(data));
+};
+
+export const postGetComments = postId => async(dispatch, getState) => {
+  const { post } = getState();
+  const {
+    comments: oldComments,
+    offset,
+    limit,
+    selectedCriterion: criterion,
+    sortDirection: direction,
+  } = post.comments;
+  const headers = { offset, limit, criterion, direction };
+  const url = `${APIbaseURL}/thread/${postId}/comments`;
+  const res = await Requests.get({ url, headers });
+  if (!res.error) {
+    const { comments, depleted } = res;
+    const newComments = [...oldComments, ...comments];
+    dispatch(postUpdateComments(newComments));
+    dispatch(postCommentsUpdateDepleted(depleted));
+    dispatch(postCommentsUpdateOffset(offset + limit));
+  }
+};
+
+export const postGetDetails = postId => async(dispatch) => {
+  dispatch(postSetLoading(true));
+  await dispatch(postGetData(postId));
+  await dispatch(postGetComments(postId));
+  dispatch(postSetLoading(false));
 };
 
 export const postToggleShowFull = () => ({

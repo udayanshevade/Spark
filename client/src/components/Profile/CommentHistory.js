@@ -10,7 +10,7 @@ import Value from 'grommet/components/Value';
 import FilterBar from '../FilterBar';
 import CommentPreview from '../Comments/CommentPreview';
 import {
-  getProfileSortedComments,
+  getProfileComments,
   getProfileCommentsSortCriterion,
   getProfileCommentsSortDirection,
   getProfileCommentsNetScore,
@@ -101,7 +101,7 @@ const mapStateToProps = ({ user, profile }) => ({
   sortCriteria: profile.sortCriteria,
   selectedCriterion: getProfileCommentsSortCriterion(profile),
   sortDirection: getProfileCommentsSortDirection(profile),
-  comments: getProfileSortedComments(profile),
+  comments: getProfileComments(profile),
   netScore: getProfileCommentsNetScore(profile),
   votesGiven: getUserVotesGiven(user),
   username: getUsername(user),

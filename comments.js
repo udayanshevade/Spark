@@ -1,4 +1,8 @@
-const { verifySessionToken } = require('./utils');
+const {
+  verifySessionToken,
+  getSortedList,
+  getRestrictedList,
+} = require('./utils');
 const uuidv4 = require('uuid/v4');
 
 const db = {
@@ -49,14 +53,20 @@ function getData () {
  * @param {string} postId
  * @returns {array} comment objects with a shared post
  */
-function getByParent (postId) {
+function getByPost (postId, criterion, direction, offset, limit) {
   return new Promise((res) => {
-    const comments = getData()
-    const keys = Object.keys(comments)
-    filtered_keys = keys.filter(
-      key => comments[key].postId === postId
-    )
-    res(filtered_keys.map(key => comments[key]))
+    const dbComments = getData();
+    const rawComments = Object.values(dbComments)
+      .filter(c => c.postId === postId && !c.parentId);
+    const sortedComments = getSortedList(rawComments, criterion);
+    const depleted = offset + limit > rawComments.length - 1;
+    const comments = getRestrictedList(sortedComments, direction, offset, limit);
+    for (const comment of comments) {
+      for (const childId of comment.children) {
+        comments.push(dbComments[childId]);
+      }
+    }
+    res({ comments, depleted });
   });
 }
 
@@ -81,10 +91,15 @@ function get (commentId) {
  * @param {array} postIds
  * @returns {array} batch of posts by ids
  */
-function getByIds (commentIds) {
-  const comments = getData();
+function getByIds (commentIds, criterion, direction, offset, limit) {
   return new Promise((res) => {
-    res(commentIds.map(id => comments[id]));
+    const dbComments = getData();
+    const rawComments = commentIds.map(id => dbComments[id])
+      .filter(comment => !comment.deleted);
+    const selectedComments = getSortedList(rawComments, criterion);
+    const depleted = offset + limit > selectedComments.length - 1;
+    const commentsList = getRestrictedList(selectedComments, direction, offset, limit);
+    res({ comments: commentsList, depleted });
   });
 }
 
@@ -204,7 +219,7 @@ function edit (sessionToken, commentId, updatedComment) {
 module.exports = {
   get,
   getByIds,
-  getByParent,
+  getByPost,
   add,
   vote,
   disableByPost,

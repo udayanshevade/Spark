@@ -1,5 +1,9 @@
 const clone = require('clone');
-const { generateSessionToken, verifySessionToken } = require('./utils');
+const {
+  generateSessionToken,
+  verifySessionToken,
+  
+} = require('./utils');
 
 const db = {
   "user": {

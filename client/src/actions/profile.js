@@ -38,59 +38,115 @@ export const profileSetPreviewActive = previewActive => ({
   previewActive,
 });
 
-export const profileUpdateActivity = ({ posts, comments }) => ({
-  type: types.PROFILE_UPDATE_ACTIVITY,
+export const profileUpdatePosts = posts => ({
+  type: types.PROFILE_UPDATE_POSTS,
   posts,
+});
+
+export const profileUpdateComments = comments => ({
+  type: types.PROFILE_UPDATE_COMMENTS,
   comments,
 });
 
-export const profileGetActivity = (profile) => async(dispatch) => {
-  const url = `${APIbaseURL}/${profile}/history`;
-  const activity = await Requests.get({ url });
-  dispatch(profileUpdateActivity(activity));
+export const profileUpdateOffset = (offset, affects) => ({
+  type: types.PROFILE_UPDATE_OFFSET,
+  offset,
+  affects,
+});
+
+export const profileUpdateDepleted = (depleted, affects) => ({
+  type: types.PROFILE_UPDATE_DEPLETED,
+  depleted,
+  affects,
+});
+
+export const profileGetPosts = profile => async(dispatch, getState) => {
+  const { posts: postsState } = getState().profile;
+  const {
+    offset,
+    limit,
+    sortDirection: direction,
+    selectedCriterion: criterion,
+  } = postsState;
+  const url = `${APIbaseURL}/${profile}/posts`;
+  const headers = {
+    offset,
+    limit,
+    direction,
+    criterion,
+  };
+  const res = await Requests.get({
+    url,
+    headers,
+  });
+  if (!res.error) {
+    const { posts, depleted } = res;
+    dispatch(profileUpdatePosts(posts));
+    dispatch(profileUpdateDepleted('posts', depleted));
+  }
+};
+
+export const profileGetComments = profile => async(dispatch, getState) => {
+  const { comments: commentsState } = getState().profile;
+  const url = `${APIbaseURL}/${profile}/comments`;
+  const {
+    offset,
+    limit,
+    sortDirection: direction,
+    selectedCriterion: criterion,
+  } = commentsState;
+  const headers = {
+    offset,
+    limit,
+    direction,
+    criterion,
+  };
+  const res = await Requests.get({ url, headers });
+  if (!res.error) {
+    const { comments, depleted } = res;
+    dispatch(profileUpdateComments(comments));
+    dispatch(profileUpdateDepleted('comments', depleted));
+  }
+};
+
+export const profileGetActivity = profile => async(dispatch) => {
+  dispatch(profileGetPosts(profile));
+  dispatch(profileGetComments(profile));
 };
 
 export const profilePostsSelectSortCriterion = ({ value, direction }) => (dispatch, getState) => {
   const { profile } = getState();
-  const { postsSelectedCriterion, postsSortDirection } = profile;
-  if (postsSelectedCriterion !== value) {
-    dispatch(profilePostsUpdateSortCriterion(value));
+  const { selectedCriterion, sortDirection } = profile.posts;
+  if (selectedCriterion !== value) {
+    dispatch(profileUpdateSortCriterion('posts', value));
   }
-  if (postsSortDirection !== direction) {
-    dispatch(profilePostsUpdateSortDirection(direction));
+  if (sortDirection !== direction) {
+    dispatch(profileUpdateSortDirection('posts', direction));
   }
 };
 
-export const profilePostsUpdateSortCriterion = postsSelectedCriterion => ({
-  type: types.PROFILE_POSTS_UPDATE_SORT_CRITERION,
-  postsSelectedCriterion,
+export const profileUpdateSortCriterion = (affects, selectedCriterion) => ({
+  type: types.PROFILE_UPDATE_SORT_CRITERION,
+  selectedCriterion,
+  affects,
 });
 
-export const profilePostsUpdateSortDirection = postsSortDirection => ({
-  type: types.PROFILE_POSTS_UPDATE_SORT_DIRECTION,
-  postsSortDirection,
+export const profileUpdateSortDirection = (affects, sortDirection) => ({
+  type: types.PROFILE_UPDATE_SORT_DIRECTION,
+  sortDirection,
+  affects,
 });
 
 export const profileCommentsSelectSortCriterion = ({ value, direction }) => (dispatch, getState) => {
   const { profile } = getState();
-  const { commentsSelectedCriterion, commentsSortDirection } = profile;
-  if (commentsSelectedCriterion !== value) {
-    dispatch(profileCommentsUpdateSortCriterion(value));
+  const { selectedCriterion, sortDirection } = profile.comments;
+  if (selectedCriterion !== value) {
+    dispatch(profileUpdateSortCriterion('comments', value));
   }
-  if (commentsSortDirection !== direction) {
-    dispatch(profileCommentsUpdateSortDirection(direction));
+  if (sortDirection !== direction) {
+    dispatch(profileUpdateSortDirection('comments', direction));
   }
 };
-
-export const profileCommentsUpdateSortCriterion = commentsSelectedCriterion => ({
-  type: types.PROFILE_COMMENTS_UPDATE_SORT_CRITERION,
-  commentsSelectedCriterion,
-});
-
-export const profileCommentsUpdateSortDirection = commentsSortDirection => ({
-  type: types.PROFILE_COMMENTS_UPDATE_SORT_DIRECTION,
-  commentsSortDirection,
-});
 
 export const profileReset = () => ({
   type: types.PROFILE_RESET,

@@ -87,6 +87,10 @@
   position: relative;
 }
 
+.profile-layer .grommetux-layer__container {
+  padding: 0 12px;
+}
+
 .profile-layer .profile-username-heading:before,
 .profile-layer .profile-username-heading:after {
   content: "";
@@ -321,7 +325,7 @@
 }
 
 .blurb-paragraph {
-  padding: 0 12px;
+  padding: 0 6px;
 }
 
 .expand-icon--flipped {

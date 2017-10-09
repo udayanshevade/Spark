@@ -214,6 +214,7 @@ app.get('/categories/category/:category/posts/:query*?', (req, res) => {
       postIds => posts.getByIds(
         postIds,
         req.params.query,
+        criterion,
         direction,
         offset,
         limit
@@ -370,7 +371,14 @@ app.put('/posts/thread/:id/edit', (req, res) => {
  */
 app.get('/posts/thread/:id/comments', (req, res) => {
   const errors = { 500: serverErrorMsg };
-  comments.getByParent(req.params.id)
+  const { criterion, offset, limit, direction } = req.headers;
+  comments.getByPost(
+    req.params.id,
+    criterion,
+    direction,
+    offset,
+    limit
+  )
     .then(
       (data) => res.send(data),
       handleErrorFn(res, errors)
@@ -540,27 +548,43 @@ app.put('/user/:userId/update', (req, res) => {
 /**
  * @description Get posts by user
  */
-app.get('/user/:userId/history', (req, res) => {
-  const results = { posts: null, comments: null };
+app.get('/user/:userId/posts', (req, res) => {
+  const { criterion, offset, limit, direction } = req.headers;
   // get post ids by user
   user.getPosts(req.params.userId).then(postIds => {
     // get post data by post ids
-    posts.getByIds(postIds).then((userPosts) => {
-      results.posts = userPosts;
-      // get comment ids by user
-      user.getComments(req.params.userId)
-        .then((commentIds) => {
-          // get comment data by comment ids
-          comments.getByIds(commentIds)
-            .then((userComments) => {
-              results.comments = userComments;
-              // send results
-              res.send(results);
-            });
-        });
+    posts.getByIds(
+      postIds,
+      criterion,
+      direction,
+      offset,
+      limit
+    ).then((data) => {
+      res.send(data);
     });
   })
   .catch(err => res.send({ error: serverErrorMsg }));
+});
+
+/**
+ * @description Get comments by user
+ */
+app.get('/user/:userId/comments', (req, res) => {
+  const { criterion, offset, limit, direction } = req.headers;
+  // get comment ids by user
+  user.getComments(req.params.userId).then((commentIds) => {
+    // get comment data by comment ids
+    comments.getByIds(
+      commentIds,
+      criterion,
+      direction,
+      offset,
+      limit
+    ).then((data) => {
+        // send results
+        res.send(data);
+    });
+  });
 });
 
 app.listen(config.port, () => {
