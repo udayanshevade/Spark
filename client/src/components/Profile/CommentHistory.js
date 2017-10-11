@@ -27,6 +27,7 @@ import {
   profileCommentsSelectSortCriterion,
 } from '../../actions/profile';
 import { userRecordVote } from '../../actions/user';
+import { commentDelete } from '../../actions/comment';
 
 const CommentHistory = ({
   width,
@@ -42,6 +43,7 @@ const CommentHistory = ({
   depleted,
   loading,
   getComments,
+  deleteComment,
   ...sortProps,
 }) => (
   <Section responsive align="center" pad="small">
@@ -72,6 +74,7 @@ const CommentHistory = ({
                 applyVote={(id, vote) => {
                   applyVote('comments', id, vote);
                 }}
+                commentDelete={deleteComment}
                 votesGiven={votesGiven}
                 username={username}
                 {...post}
@@ -138,4 +141,5 @@ export default connect(mapStateToProps, {
   setUser: profileSetUser,
   applyVote: userRecordVote,
   getComments: profileGetComments,
+  deleteComment: commentDelete,
 })(CommentHistory);

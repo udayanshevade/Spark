@@ -52,126 +52,6 @@ const db = {
     },
     deleted: false,
   },
-  "llgj1kjg278f1ptk1nz1": {
-    id: 'llgj1kjg278f1ptk1nz1',
-    timestamp: 1406758287190,
-    title: 'Redux is easy!',
-    url: null,
-    body: 'But practice makes perfect.',
-    author: 'user',
-    category: 'redux',
-    comments: [],
-    votes: {
-      upVote: 19,
-      downVote: 10,
-    },
-    deleted: false,
-  },
-  "kqgj1kasd78f66fagnz1": {
-    id: 'kqgj1kasd78f66fagnz1',
-    timestamp: 1507234587136,
-    title: 'Everything can be done!',
-    url: null,
-    body: 'You just gotta want it, and have some luck.',
-    author: 'user',
-    category: 'udacity',
-    comments: [],
-    votes: {
-      upVote: 9,
-      downVote: 7,
-    },
-    deleted: false,
-  },
-  "plg1dausd78fa11dauz1": {
-    id: 'plg1dausd78fa11dauz1',
-    timestamp: 1336341718190,
-    title: 'Redux is easy!',
-    url: null,
-    body: 'Redux is a good tool.',
-    author: 'user',
-    category: 'redux',
-    comments: [],
-    votes: {
-      upVote: 25,
-      downVote: 14,
-    },
-    deleted: false,
-  },
-  "kogj1kasas171ptk1aj1": {
-    id: 'kogj1kasas171ptk1aj1',
-    timestamp: 1442817787235,
-    title: 'React is easy!',
-    url: null,
-    body: 'Reacting fast.',
-    author: 'user',
-    category: 'react',
-    comments: [],
-    votes: {
-      upVote: 12,
-      downVote: 13,
-    },
-    deleted: false,
-  },
-  "hggjgy32d78faaas1nf4": {
-    id: 'hggjgy32d78faaas1nf4',
-    timestamp: 1148752381293,
-    title: 'Keep it classy.',
-    url: null,
-    body: '',
-    author: 'user',
-    category: 'udacity',
-    comments: [],
-    votes: {
-      upVote: 3,
-      downVote: 1,
-    },
-    deleted: false,
-  },
-  "mlgjgfwh1d78f1ack1123": {
-    id: 'mlgjgfwh1d78f1ack1123',
-    timestamp: 1458474281234,
-    title: 'This is a repost.',
-    url: null,
-    body: 'Reposts are allowed.',
-    author: 'user',
-    category: 'react',
-    comments: [],
-    votes: {
-      upVote: 15,
-      downVote: 9,
-    },
-    deleted: false,
-  },
-  "ghjea8asd78f1pj42171": {
-    id: 'ghjea8asd78f1pj42171',
-    timestamp: 1445679786288,
-    title: 'Redux is easy!',
-    url: null,
-    body: 'But practice makes perfect.',
-    author: 'user',
-    category: 'redux',
-    comments: [],
-    votes: {
-      upVote: 5,
-      downVote: 13,
-    },
-    deleted: false,
-  },
-  "haj871asd78f1pjgs713": {
-    id: 'haj871asd78f1pjgs713',
-    timestamp: 1395639721190,
-    title: 'Redux is easy!',
-    url: null,
-    body: 'But practice makes perfect.',
-    author: 'user',
-    category: 'redux',
-    comments: [],
-    votes: {
-      upVote: 21,
-      downVote: 17,
-    },
-    deleted: false,
-  },
 }
 
 /**
@@ -250,7 +130,7 @@ function getByIds (query, postIds, criterion, direction, offset, limit) {
     const dbPosts = getData();
     const rawPosts = postIds.map(id => dbPosts[id])
       .filter(post => !post.deleted);
-    let selectedPosts; 
+    let selectedPosts;
     if (query) {
       const fuse = new Fuse(rawPosts, fuseOptions);
       // return matching
@@ -306,18 +186,6 @@ function addComment (postId, commentId) {
   const post = posts[postId];
   if (!post) return;
   post.comments.unshift(commentId);
-}
-
-/**
- * @description Add comment to post
- * @param {string} postId 
- * @param {string} commentId 
- */
-function removeComment (postId, commentId) {
-  const posts = getData(); 
-  const post = posts[postId];
-  if (!post) return;
-  post.comments = post.comments.filter(id => id !== commentId);
 }
 
 /**
@@ -395,5 +263,4 @@ module.exports = {
   edit,
   getAll,
   addComment,
-  removeComment,
 };

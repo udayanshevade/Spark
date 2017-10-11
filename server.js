@@ -310,7 +310,6 @@ app.delete('/posts/thread/:id/delete', (req, res) => {
           comments.disableByPost(post)
         ).then(
           (data) => {
-            user.removePost(data.author, data.id);
             res.send(data)
           },
           handleErrorFn(res, errors)
@@ -474,8 +473,6 @@ app.delete('/comments/:id', (req, res) => {
       comments.disable(req.sessionToken, req.params.id)
         .then(
           (data) => {
-            posts.removeComment(data.postId, data.id);
-            user.removeComment(data.author, data.id);
             res.send(data);
           },
           handleErrorFn(res, errors)
@@ -582,8 +579,8 @@ app.get('/user/:userId/comments', (req, res) => {
       offset,
       limit
     ).then((data) => {
-        // send results
-        res.send(data);
+      // send results
+      res.send(data);
     });
   });
 });

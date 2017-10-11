@@ -108,7 +108,7 @@ const PostPreview = ({
                   plain
                   path={`/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}`}
                   className="options-tray__button"
-                  label={`${comments.length} comments`}
+                  label={`${comments.length} comment${comments.length === 1 ? '' : 's'}`}
                 />
             }
             {

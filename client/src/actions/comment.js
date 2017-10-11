@@ -69,8 +69,8 @@ export const commentCreateNew = formData => async(dispatch, getState) => {
       const parent = newPostComments[parentIndex];
       parent.children.unshift(newCommentData.id);
     }
-    await dispatch(postUpdateComments(newPostComments));
-    await dispatch(userAddComment(newCommentData.id));
+    dispatch(postUpdateComments(newPostComments));
+    dispatch(userAddComment(newCommentData.id));
   }
   return true;
 };

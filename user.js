@@ -15,19 +15,7 @@ const db = {
       id: 'user',
       created: 1468166872634,
       comments: ['894tuq4ut84ut8v4t8wun89g', '8tu4bsun805n8un48ve89'],
-      posts: [
-        '8xf0y6ziyjabvozdd253nd',
-        '6ni6ok3ym7mf1p33lnez',
-        'llgj1kasd78f1ptk1nz1',
-        'llgj1kjg278f1ptk1nz1',
-        'kqgj1kasd78f66fagnz1',
-        'plg1dausd78fa11dauz1',
-        'kogj1kasas171ptk1aj1',
-        'hggjgy32d78faaas1nf4',
-        'mlgjgfwh1d78f1ack1123',
-        'ghjea8asd78f1pj42171',
-        'haj871asd78f1pjgs713',
-      ],
+      posts: ['8xf0y6ziyjabvozdd253nd', '6ni6ok3ym7mf1p33lnez', 'llgj1kasd78f1ptk1nz1'],
       categories: [],
       votesGiven: {},
       commentVotesReceived: {
@@ -213,17 +201,6 @@ function addPost (userId, postId) {
   user.profile.posts.push(postId);
 }
 
-/**
- * @description Remove post id reference
- * @param {string} userId
- * @param {string} postId
- */
-function removePost (userId, postId) {
-  const users = getData();
-  const { profile } = users[userId];
-  profile.posts.splice(profile.posts.indexOf(postId));
-}
-
 
 /**
  * @description Track comment id reference
@@ -234,17 +211,6 @@ function addComment (userId, commentId) {
   const users = getData();
   const user = users[userId];
   user.profile.comments.push(commentId);
-}
-
-/**
- * @description Remove comment id reference
- * @param {string} userId
- * @param {string} commentId
- */
-function removeComment (userId, commentId) {
-  const users = getData();
-  const { profile } = users[userId];
-  profile.comments.splice(profile.comments.indexOf(commentId));
 }
 
 /**
@@ -369,9 +335,7 @@ module.exports = {
   create,
   update,
   addPost,
-  removePost,
   addComment,
-  removeComment,
   updatePostScore,
   updateCommentScore,
   writeUserVote,

@@ -94,8 +94,7 @@ function get (commentId) {
 function getByIds (commentIds, criterion, direction, offset, limit) {
   return new Promise((res) => {
     const dbComments = getData();
-    const rawComments = commentIds.map(id => dbComments[id])
-      .filter(comment => !comment.deleted);
+    const rawComments = commentIds.map(id => dbComments[id]);
     const selectedComments = getSortedList(rawComments, criterion);
     const depleted = offset + limit > selectedComments.length - 1;
     const commentsList = getRestrictedList(selectedComments, direction, offset, limit);
