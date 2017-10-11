@@ -34,6 +34,7 @@ const PostPreview = ({
   deleted,
   postDelete,
   postUpdateCreateData,
+  profileSetPreviewActive,
 }) => (
   <Box
     direction="row"
@@ -107,6 +108,11 @@ const PostPreview = ({
                 <Button
                   plain
                   path={`/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}`}
+                  onClick={() => {
+                    if (profileSetPreviewActive) {
+                      profileSetPreviewActive(false);
+                    }
+                  }}
                   className="options-tray__button"
                   label={`${comments.length} comment${comments.length === 1 ? '' : 's'}`}
                 />

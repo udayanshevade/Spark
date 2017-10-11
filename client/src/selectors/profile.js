@@ -39,7 +39,7 @@ export const getProfileVotesGivenHistory = createSelector(
     if (voteIds.length) {
       for (const voteId of voteIds) {
         const vote = votesGiven[voteId];
-        votesData[vote].value += 1;
+        if (vote) votesData[vote].value += 1;
       }
     }
     const series = Object.keys(votesData).map(type => votesData[type]);

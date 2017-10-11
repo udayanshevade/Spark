@@ -25,6 +25,7 @@ import {
   profileGetPosts,
   profileSetUser,
   profilePostsSelectSortCriterion,
+  profileSetPreviewActive,
 } from '../../actions/profile';
 import { userRecordVote } from '../../actions/user';
 import { postDelete, postUpdateCreateData } from '../../actions/post';
@@ -74,6 +75,7 @@ const PostHistory = ({
               postUpdateCreateData={actions.postUpdateCreateData}
               votesGiven={votesGiven}
               username={username}
+              profileSetPreviewActive={actions.profileSetPreviewActive}
               {...post}
             />
           ))
@@ -140,6 +142,7 @@ const mapDispatchToProps = dispatch => ({
     postDelete,
     postUpdateCreateData,
     profileGetPosts,
+    profileSetPreviewActive,
   }, dispatch),
 })
 
