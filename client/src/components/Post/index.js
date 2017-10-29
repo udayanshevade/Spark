@@ -13,7 +13,9 @@ import NewComment from '../UpdateComment/NewComment';
 import Comments from '../Comments';
 import Loading from '../Loading';
 import {
-  postGetDetails,
+  postGetData,
+  postGetComment,
+  postGetComments,
   postToggleShowFull,
   postEmpty,
   postSetLoading,
@@ -34,17 +36,27 @@ class Post extends Component {
   
   newCommentId = getRandomID()
 
-  componentDidMount() {
-    const { data, match } = this.props;
-    if (!(data && data.id === match.params.id)) {
-      this.props.actions.postGetDetails(this.props.match.params.id);
+  getCommentData = async(id, commentId) => {
+    const { actions } = this.props;
+    actions.postSetLoading(true);
+    if (commentId) {
+      await actions.postGetComment(commentId);
     } else {
-      this.props.actions.postSetLoading(false);
+      await actions.postGetComments(id);
     }
+    actions.postSetLoading(false);
   }
-  componentWillUnmount() {
-    this.props.actions.postEmpty();
+
+  async componentDidMount() {
+    const { actions, data, match } = this.props;
+    const { id, commentId } = match.params;
+    if (!(data && data.id === id)) {
+      actions.postEmpty();
+      await actions.postGetData(id);
+    }
+    await this.getCommentData(id, commentId);
   }
+
   render() {
     const {
       data,
@@ -56,8 +68,9 @@ class Post extends Component {
       votesGiven,
       loading,
       username,
+      commentView,
     } = this.props;
-    if (loading) {
+    if (loading || !data) {
       return <Loading />;
     } else if (!data) {
       return <Redirect to="/" />;
@@ -97,12 +110,15 @@ class Post extends Component {
           username={username}
           {...data}
         />
-        <NewComment
-          randomFormID={this.newCommentId}
-          postId={data.id}
-          initialValues={this.blankComment}
-        />
-        <Comments threadView />
+        {
+          !commentView &&
+            <NewComment
+              randomFormID={this.newCommentId}
+              postId={data.id}
+              initialValues={this.blankComment}
+            />
+        }
+        <Comments threadView commentView={commentView} />
       </Box>
     );
   }
@@ -121,7 +137,9 @@ const mapStateToProps = ({ user, post, responsive, navbar }) => ({
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
-    postGetDetails,
+    postGetData,
+    postGetComment,
+    postGetComments,
     profileSetUser,
     postToggleShowFull,
     postEmpty,

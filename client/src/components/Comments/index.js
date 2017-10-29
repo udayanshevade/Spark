@@ -13,6 +13,7 @@ import { userRecordVote } from '../../actions/user';
 import {
   postSelectSortCriterion,
   postGetComments,
+  postUpdateComments,
 } from '../../actions/post';
 import { commentDelete } from '../../actions/comment';
 import { profileSetUser } from '../../actions/profile';
@@ -29,6 +30,7 @@ export const CommentsContainer = ({
   votesGiven,
   username,
   threadView,
+  commentView,
   ...filterProps,
 }) => {
   let commentsEl;
@@ -47,11 +49,14 @@ export const CommentsContainer = ({
   } else {
     commentsEl = (
       <Section pad={{ vertical: 'medium' }} className="comments-section">
-        <FilterBar
-          width={width}
-          {...filterProps}
-          selectSortCriterion={actions.postSelectSortCriterion}
-        />
+        {
+          !commentView &&
+            <FilterBar
+              width={width}
+              {...filterProps}
+              selectSortCriterion={actions.postSelectSortCriterion}
+            />
+        }
         <Comments
           width={width}
           comments={comments}
@@ -63,6 +68,7 @@ export const CommentsContainer = ({
           votesGiven={votesGiven}
           username={username}
           threadView={threadView}
+          commentView={commentView}
           commentDelete={actions.commentDelete}
         />
         {
@@ -70,10 +76,14 @@ export const CommentsContainer = ({
             <Footer justify="center">
               <Button
                 plain
-                label="Load more"
-                onClick={() => {
-                  actions.postGetComments(postId);
-                }}
+                label={!commentView ? 'Load more' : null}
+                path={commentView ? `/posts/thread/${postId}/` : null}
+                onClick={!commentView
+                  ? () => {
+                    actions.postGetComments(postId);
+                  }
+                  : null
+                }
               />
             </Footer>
         }
@@ -113,6 +123,7 @@ const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     postSelectSortCriterion,
     postGetComments,
+    postUpdateComments,
     profileSetUser,
     userRecordVote,
     commentDelete,

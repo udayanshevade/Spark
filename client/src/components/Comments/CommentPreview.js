@@ -32,6 +32,7 @@ class CommentPreview extends Component {
       votesGiven,
       username,
       threadView,
+      commentView,
       commentDelete,
       ...comment,
     } = this.props;
@@ -58,6 +59,7 @@ class CommentPreview extends Component {
           width={width}
           votes={votes}
           id={id}
+          postId={postId}
           votesGiven={votesGiven}
           author={author}
           username={username}
@@ -68,6 +70,7 @@ class CommentPreview extends Component {
           setEditMode={this.setEditMode}
           setReplyMode={this.setReplyMode}
           threadView={threadView}
+          commentView={commentView}
           applyVote={applyVote}
           commentDelete={commentDelete}
         />

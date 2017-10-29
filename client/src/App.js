@@ -35,7 +35,11 @@ class AppComponent extends Component {
         <Route exact path="/" component={Main} />
         <Route path="/" component={loginActive ? Login : null} />
         <Route path="/" component={Profile} />
-        <Route path="/posts/thread/:id" component={Post} />
+        <Route exact path="/posts/thread/:id/:title?" component={Post} />
+        <Route
+          path="/posts/:id/comment/:commentId"
+          render={routeProps => <Post commentView {...routeProps} />}
+        />
         <Route
           path="/posts/new"
           render={(props) => {

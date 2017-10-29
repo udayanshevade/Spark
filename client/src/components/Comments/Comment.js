@@ -13,6 +13,7 @@ const Comment = ({
   width,
   votes,
   id,
+  postId,
   votesGiven,
   author,
   username,
@@ -23,6 +24,7 @@ const Comment = ({
   setEditMode,
   setReplyMode,
   threadView,
+  commentView,
   applyVote,
   commentDelete,
 }) => (
@@ -33,6 +35,7 @@ const Comment = ({
     reverse={width < 500}
     pad={{ horizontal: 'small', vertical: 'none' }}
     className="preview-list-item__inner"
+    id={`comment-${id}`}
   >
     {
       !deleted &&
@@ -64,7 +67,13 @@ const Comment = ({
           align="start"
         >
           <Paragraph
-            className={`card-description ${deleted ? 'card-description--deleted' : ''}`}
+            className={`card-description ${deleted
+              ? 'card-description--deleted'
+              : ''
+            } ${commentView
+              ? 'comment-list-item--highlighted'
+              : ''
+            }`}
           >
             {deleted ? 'deleted' : body || null}
           </Paragraph>
@@ -93,7 +102,13 @@ const Comment = ({
             <Button
               plain
               label="link"
-              path={`/comments/${id}`}
+              path={`/posts/${postId}/comment/${id}`}
+              className="options-tray__button"
+            />
+            <Button
+              plain
+              label="thread"
+              path={`/posts/thread/${postId}/`}
               className="options-tray__button"
             />
             {

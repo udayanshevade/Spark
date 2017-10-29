@@ -38,6 +38,54 @@ const db = {
     deleted: false,
     postDeleted: false,
   },
+  "8tu41yvak05n8uqalek29": {
+    id: '8tu41yvak05n8uqalek29',
+    postId: "8xf0y6ziyjabvozdd253nd",
+    parentId: null,
+    ancestorId: null,
+    children: ['afwk38qa905n8u1ska938'],
+    timestamp: 1469479767190,
+    body: 'Comments are love.',
+    author: 'user',
+    votes: {
+      upVote: 1,
+      downVote: 6.
+    },
+    deleted: false,
+    postDeleted: false,
+  },
+  "afwk38qa905n8u1ska938": {
+    id: 'afwk38qa905n8u1ska938',
+    postId: "8xf0y6ziyjabvozdd253nd",
+    parentId: '8tu41yvak05n8uqalek29',
+    ancestorId: '8tu41yvak05n8uqalek29',
+    children: [],
+    timestamp: 1489219767117,
+    body: 'Comments are life.',
+    author: 'user',
+    votes: {
+      upVote: 1,
+      downVote: 6.
+    },
+    deleted: false,
+    postDeleted: false,
+  },
+  "i1sahasj1ie9auqfka9s0": {
+    id: 'i1sahasj1ie9auqfka9s0',
+    postId: "8xf0y6ziyjabvozdd253nd",
+    parentId: null,
+    ancestorId: null,
+    children: [],
+    timestamp: 1469479767190,
+    body: 'You merely adopted the comments section. I was born in it. Molded by it.',
+    author: 'user',
+    votes: {
+      upVote: 1,
+      downVote: 6.
+    },
+    deleted: false,
+    postDeleted: false,
+  },
 };
 
 /**
@@ -77,13 +125,26 @@ function getByPost (postId, criterion, direction, offset, limit) {
  */
 function get (commentId) {
   return new Promise((res) => {
-    const comments = getData();
-    res(
-      comments[commentId].deleted || comments[commentId].postDeleted
-        ? {}
-        : comments[commentId]      
-      );
+    res(getChain([], [commentId]));
   });
+}
+
+/**
+ * @description Recursively fetches a chain of comment children
+ */
+function getChain (chain, commentIds) {
+  const dbComments = getData();
+  commentIds.forEach((id) => {
+    const comment = dbComments[id];
+    if (comment) {
+      chain.push(comment);
+      const children = comment.children;
+      if (children.length) {
+        getChain(chain, children);
+      }
+    }
+  });
+  return chain;
 }
 
 /**

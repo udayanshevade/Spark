@@ -4,6 +4,7 @@ import { appShowTipWithText } from './app';
 import { userUpdateVotes, userAddPost } from './user';
 
 const APIbaseURL = '/posts';
+const commentsURL = '/comments';
 const categoriesURL = '/categories';
 
 export const postSetLoading = loading => ({
@@ -74,18 +75,20 @@ export const postGetComments = postId => async(dispatch, getState) => {
   const res = await Requests.get({ url, headers });
   if (!res.error) {
     const { comments, depleted } = res;
-    const newComments = [...oldComments, ...comments];
+    const newComments = offset ? [...oldComments, ...comments] : [...comments];
     dispatch(postUpdateComments(newComments));
     dispatch(postCommentsUpdateDepleted(depleted));
     dispatch(postCommentsUpdateOffset(offset + limit));
   }
 };
 
-export const postGetDetails = postId => async(dispatch) => {
-  dispatch(postSetLoading(true));
-  await dispatch(postGetData(postId));
-  await dispatch(postGetComments(postId));
-  dispatch(postSetLoading(false));
+export const postGetComment = commentId => async(dispatch, getState) => {
+  const url = `${commentsURL}/${commentId}`;
+  const res = await Requests.get({ url });
+  const commentData = !res.error ? res : [];
+  dispatch(postCommentsUpdateDepleted(false));
+  dispatch(postCommentsUpdateOffset(0));
+  dispatch(postUpdateComments(commentData));
 };
 
 export const postToggleShowFull = () => ({

@@ -14,12 +14,17 @@ const Comments = ({
   username,
   threadView,
   commentDelete,
+  commentView,
 }) => (
   <Box pad={{ vertical: 'none' }} className="comments-container">
     <List className="comment-list">
       {
         comments.map((comment, i) => (
-          <ListItem key={`comment-list-item-${i}`} pad={{ horizontal: 'small' }} className="comment-list-item">
+          <ListItem
+            key={`comment-list-item-${i}`}
+            pad={{ horizontal: 'small' }}
+            className="comment-list-item"
+          >
             <CommentPreview
               width={width}
               profileSetUser={profileSetUser}
@@ -29,6 +34,7 @@ const Comments = ({
               username={username}
               threadView={threadView}
               commentDelete={commentDelete}
+              commentView={commentView}
               {...comment}
             />
           </ListItem>

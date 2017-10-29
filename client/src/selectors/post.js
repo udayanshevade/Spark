@@ -25,6 +25,7 @@ const structureComments = (ancestorIds, rawComments) => {
   const comments = [];
   for (const ancestorId of ancestorIds) {
     const comment = rawComments[ancestorId];
+    if (!comment) break;
     const childCommentIds = comment.children;
     const newComment = {
       ...comment,

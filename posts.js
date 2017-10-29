@@ -15,7 +15,7 @@ const db = {
     body: 'Everyone says so after all.',
     author: 'user',
     category: 'react',
-    comments: ['894tuq4ut84ut8v4t8wun89g', '8tu4bsun805n8un48ve89'],
+    comments: ['894tuq4ut84ut8v4t8wun89g', '8tu4bsun805n8un48ve89', '8tu41yvak05n8uqalek29', 'afwk38qa905n8u1ska938', 'i1sahasj1ie9auqfka9s0'],
     votes: {
       upVote: 11,
       downVote: 5,

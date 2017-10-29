@@ -197,6 +197,10 @@
   border-left: 2px solid rgba(50, 50, 50, 0.2);
 }
 
+.comment-list-item--highlighted {
+  background: #ffc;
+}
+
 .new-comment {
   background: white;
 }

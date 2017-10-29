@@ -27,7 +27,7 @@ export const initialState = {
       direction: 'desc',
     }],
   },
-  loading: true,
+  loading: false,
   creating: false,
   showFull: false,
   bodyCharLim: 90,
