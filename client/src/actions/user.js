@@ -111,13 +111,13 @@ export const userResetLoginForm = () => ({
 });
 
 export const userSubscribeCategory = category => async(dispatch, getState) => {
-  const { user } = getState();
-  if (!user.user) {
+  const { user: { user } } = getState();
+  if (!user) {
     const tipText = 'Login to subscribe.';
     dispatch(appShowTipWithText(tipText, 'footer-login-button'));
     return;
   }
-  const { subscriptions, sessionToken, profile } = user.user;
+  const { subscriptions, sessionToken, profile } = user;
   const { id: userId } = profile;
   const newSubscriptions = [...subscriptions];
   const subscriptionIndex = subscriptions.indexOf(category);
@@ -136,7 +136,7 @@ export const userSubscribeCategory = category => async(dispatch, getState) => {
     body: { userId },
   });
   if (res.success) {
-    dispatch(userUpdateData({ subscriptions: newSubscriptions }));
+    dispatch(userUpdateData({ ...user, subscriptions: newSubscriptions }));
     dispatch(categoriesUpdateSubscribers(category, res.success));
   }
 };

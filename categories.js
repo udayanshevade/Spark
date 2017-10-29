@@ -57,7 +57,10 @@ const fuseOptions = {
   keys: ['name'],
 };
 
-const fuse = new Fuse(Object.values(getData()), fuseOptions);
+const getFuseObject = (dbVals) => {
+  const fuse = new Fuse(dbVals, fuseOptions);
+  return fuse;
+};
 
 /**
  * @description Gets all (matching) categories
@@ -67,6 +70,7 @@ function getAll (query) {
     const db = getData();
     let categories = Object.values(db);
     if (query) {
+      const fuse = getFuseObject(categories);
       // return matching
       categories = fuse.search(query);
     }

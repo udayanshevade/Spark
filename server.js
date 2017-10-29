@@ -194,13 +194,13 @@ app.post('/categories/create', (req, res) => {
 app.get('/categories/suggestions/:query*?', (req, res) => {
   const errors = { 500: serverErrorMsg };
   categories.getAll(req.params.query)
-  .then(
-    (data) => {
-      const categories = data.map(cat => cat.name);
-      res.send(categories);
-    },
-    handleErrorFn(res, errors)
-  );
+    .then(
+      (data) => {
+        const categories = data.map(cat => cat.name);
+        res.send(categories);
+      },
+      handleErrorFn(res, errors)
+    );
 });
 
 /**

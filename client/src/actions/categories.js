@@ -85,15 +85,16 @@ export const categoriesSetSuggestionsSetTimeout = timeoutId => ({
 });
 
 export const categoriesCreateNew = data => async(dispatch, getState) => {
-  const { user: { user }, categories: { categories, categorySuggestions } } = getState();
-  if (!user) {
+  const { user, categories: { categories, categorySuggestions } } = getState();
+  if (!user.user) {
     dispatch(appShowTipWithText('Login to create a category', 'footer-login-button'));
     return;
   }
-  const { subscriptions, sessionToken, profile } = user;
+  const { subscriptions, sessionToken, profile } = user.user;
   const { id } = profile;
   const url = `${categoriesURL}/create`;
   if (data.name === categorySuggestions.results[0]) {
+    console.log('Category already exists');
     throw new SubmissionError({ name: 'Category exists' });
   }
   dispatch(categoriesSetIsCreating(true));
@@ -113,7 +114,9 @@ export const categoriesCreateNew = data => async(dispatch, getState) => {
     newSubscriptions.unshift(data.name);
     dispatch(categoriesSetActive(data.name));
     dispatch(categoriesUpdate(newCategories));
-    dispatch(userUpdateData({ subscriptions: newSubscriptions }));
+    dispatch(userUpdateData({ ...user, subscriptions: newSubscriptions }));
+  } else if (res.error) {
+    throw new SubmissionError({ name: res.error });
   }
   dispatch(categoriesSetIsCreating(false));
 };
