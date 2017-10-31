@@ -45,7 +45,7 @@ const Comment = ({
             applyVote(id, vote);
           }}
           vote={votesGiven ? votesGiven[id] : null}
-          showScore={author === username}
+          showScore
         />
     }
     <Card
