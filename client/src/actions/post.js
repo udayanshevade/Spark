@@ -44,7 +44,7 @@ export const postUpdateSortDirection = sortDirection => ({
 
 export const postSelectSortCriterion = ({ value, direction }) => (dispatch, getState) => {
   const { post } = getState();
-  const { selectedCriterion, sortDirection } = post;
+  const { comments: { selectedCriterion, sortDirection }, data } = post;
   if (selectedCriterion !== value) {
     dispatch(postUpdateSortCriterion(value));
   }
@@ -53,6 +53,7 @@ export const postSelectSortCriterion = ({ value, direction }) => (dispatch, getS
   }
   dispatch(postUpdateComments([]));
   dispatch(postCommentsUpdateOffset(0));
+  dispatch(postGetComments(data.id));
 };
 
 export const postGetData = postId => async(dispatch) => {

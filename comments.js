@@ -17,7 +17,7 @@ const db = {
     author: 'user',
     votes: {
       upVote: 6,
-      downVote: 1.
+      downVote: 1,
     },
     deleted: false,
     postDeleted: false,
@@ -33,7 +33,7 @@ const db = {
     author: 'user',
     votes: {
       upVote: 1,
-      downVote: 6.
+      downVote: 6,
     },
     deleted: false,
     postDeleted: false,
@@ -48,8 +48,8 @@ const db = {
     body: 'Comments are love.',
     author: 'user',
     votes: {
-      upVote: 1,
-      downVote: 6.
+      upVote: 11,
+      downVote: 3,
     },
     deleted: false,
     postDeleted: false,
@@ -64,8 +64,8 @@ const db = {
     body: 'Comments are life.',
     author: 'user',
     votes: {
-      upVote: 1,
-      downVote: 6.
+      upVote: 2,
+      downVote: 1,
     },
     deleted: false,
     postDeleted: false,
@@ -80,8 +80,8 @@ const db = {
     body: 'You merely adopted the comments section. I was born in it. Molded by it.',
     author: 'user',
     votes: {
-      upVote: 1,
-      downVote: 6.
+      upVote: 3,
+      downVote: 4,
     },
     deleted: false,
     postDeleted: false,
