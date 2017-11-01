@@ -57,6 +57,16 @@ class Post extends Component {
     await this.getCommentData(id, commentId);
   }
 
+  async componentWillReceiveProps(nextProps) {
+    const { match } = this.props;
+    const { match: nextMatch } = nextProps;
+    const { id, commentId } = match.params;
+    const { commentId: nextCommentId } = nextMatch.params;
+    if (commentId && nextCommentId && !(commentId === nextCommentId)) {
+      await this.getCommentData(id, nextCommentId);
+    }
+  }
+
   render() {
     const {
       data,
@@ -69,6 +79,7 @@ class Post extends Component {
       loading,
       username,
       commentView,
+      match,
     } = this.props;
     if (loading || !data) {
       return <Loading />;
@@ -118,7 +129,7 @@ class Post extends Component {
               initialValues={this.blankComment}
             />
         }
-        <Comments threadView commentView={commentView} />
+        <Comments commentId={match.params.commentId} threadView commentView={commentView} />
       </Box>
     );
   }

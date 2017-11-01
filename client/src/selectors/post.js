@@ -1,10 +1,12 @@
 import { createSelector } from 'reselect';
 
 const getPostComments = post => post.comments.comments;
+const getCommentId = (post, commentId) => commentId;
 
 export const getAncestorComments = createSelector(
-  getPostComments,
-  comments => {
+  [getPostComments, getCommentId],
+  (comments, commentId) => {
+    if (commentId) return [commentId];
     const ancestorIds = comments.filter(comment => !comment.ancestorId).map(comment => comment.id);
     return ancestorIds;
   }  

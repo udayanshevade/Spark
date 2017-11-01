@@ -106,11 +106,11 @@ CommentsContainer.propTypes = {
   username: PropTypes.string,
 };
 
-const mapStateToProps = ({ user, post, responsive }) => ({
+const mapStateToProps = ({ user, post, responsive }, { commentId }) => ({
   postId: post.data.id,
   loading: post.loading,
   depleted: post.comments.depleted,
-  comments: getStructuredComments(post),
+  comments: getStructuredComments(post, commentId),
   sortCriteria: post.comments.criteria,
   sortDirection: post.comments.sortDirection,
   selectedCriterion: post.comments.selectedCriterion,

@@ -88,17 +88,6 @@ const Comment = ({
             pad={{ vertical: 'small' }}
             responsive={false}
           >
-            {
-              author === username &&
-                <Button
-                  plain
-                  label={deleted ? 'restore' : 'delete'}
-                  className="options-tray__button"
-                  onClick={() => {
-                    commentDelete(id);
-                  }}
-                />
-            }
             <Button
               plain
               label="link"
@@ -127,6 +116,17 @@ const Comment = ({
                   label="reply"
                   className="options-tray__button"
                   onClick={() => { setReplyMode(true); }}
+                />
+            }
+            {
+              author === username &&
+                <Button
+                  plain
+                  label={deleted ? 'restore' : 'delete'}
+                  className="options-tray__button"
+                  onClick={() => {
+                    commentDelete(id);
+                  }}
                 />
             }
           </Box>
