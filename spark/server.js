@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const express = require('express');
+const { Pool } = require('pg');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const cors = require('cors');
@@ -18,6 +19,15 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(multer().single());
 
+const pool = new Pool({
+  username: 'vagrant',
+  database: 'spark',
+  password: 'password',
+});
+
+pool.on('error', (err, client) => {
+  console.log('Unexpected error', err);
+});
 
 app.get('/', (req, res) => {
   const help = `
@@ -160,6 +170,13 @@ const authErrorMsg = 'Log in to perform this action.';
  */
 app.get('/categories/get/:query*?', (req, res) => {
   const errors = { 500: serverErrorMsg };
+  pool.query('SELECT * from categories')
+    .then((res) => {
+      console.log(res);
+    })
+    .catch((e) => {
+      console.log(e);
+    });
   categories.getAll(req.params.query)
   .then(
     (data) => res.send(data),
