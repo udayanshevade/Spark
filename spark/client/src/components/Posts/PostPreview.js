@@ -17,7 +17,7 @@ const PostPreview = ({
   url,
   author,
   body,
-  timestamp,
+  created,
   votes,
   id,
   comments,
@@ -71,7 +71,16 @@ const PostPreview = ({
       }
       heading={
         <Anchor
-          href={url}
+          href={
+            url.startsWith('http://') || url.startsWith('https://')
+              ? url
+              : `http://${url}`
+          }
+          onClick={() => {
+            if (profileSetPreviewActive) {
+              profileSetPreviewActive(false);
+            }
+          }}
           path={!url ? `/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}` : null}
           className={`list-item-link-container${url ? ' list-item--link-out' : ''}`}
         >
@@ -93,7 +102,7 @@ const PostPreview = ({
             iconHide={!threadView}
           />
           <Timestamp
-            value={(new Date(+timestamp)).toISOString()}
+            value={(new Date(created)).toISOString()}
             fields="date"
             className="post-timestamp"
           />
@@ -114,7 +123,7 @@ const PostPreview = ({
                     }
                   }}
                   className="options-tray__button"
-                  label={`${comments.length} comment${comments.length === 1 ? '' : 's'}`}
+                  label={`${comments} comment${comments === 1 ? '' : 's'}`}
                 />
             }
             {
@@ -122,14 +131,11 @@ const PostPreview = ({
                 <Button
                   plain
                   className="options-tray__button"
-                  label={deleted ? 'deleted' : 'delete'}
-                  onClick={
-                    deleted
-                      ? null
-                      : () => {
-                          postDelete(id);
-                        }
-                  }
+                  label={deleted ? 'restore' : 'delete'}
+                  onClick={() => {
+                    const shouldDelete = deleted ? 'restore' : 'delete';
+                    postDelete(id, author, shouldDelete);
+                  }}
                 />
             }
             {
@@ -141,6 +147,9 @@ const PostPreview = ({
                   path={`/posts/edit/${id}`}
                   onClick={postUpdateCreateData
                     ? () => {
+                      if (profileSetPreviewActive) {
+                        profileSetPreviewActive(false);
+                      }
                       postUpdateCreateData({
                         title,
                         url,
@@ -166,8 +175,8 @@ PostPreview.propTypes = {
   url: PropTypes.string,
   id: PropTypes.string,
   body: PropTypes.string,
-  comments: PropTypes.arrayOf(PropTypes.string),
-  timestamp: PropTypes.number,
+  comments: PropTypes.number,
+  created: PropTypes.string,
   author: PropTypes.string,
   votes: PropTypes.shape({
     upVote: PropTypes.number,

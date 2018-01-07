@@ -13,7 +13,7 @@ Vagrant.configure(VAGRANTFILE_VERSION) do |config|
 
   # Every Vagrant development environment requires a box. You can search for
   # boxes at https://atlas.hashicorp.com/search.
-  config.vm.box = "hashicorp/precise64"
+  config.vm.box = "bento/ubuntu-14.04"
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -49,11 +49,6 @@ Vagrant.configure(VAGRANTFILE_VERSION) do |config|
   #   # Customize the amount of memory on the VM:
   #   vb.memory = "1024"
   # end
-
-  config.vm.provider "virtualbox" do |v|
-    v.customize ["setextradata", :id, "VBoxInternal2/SharedFoldersEnableSymlinksCreate/v-root", "1"]
-  end
-
   #
   # View the documentation for the provider you are using for more
   # information on available options.

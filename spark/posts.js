@@ -6,70 +6,6 @@ const {
 } = require('./utils');
 const uuidv4 = require('uuid/v4');
 
-const db = {
-  "8xf0y6ziyjabvozdd253nd": {
-    id: '8xf0y6ziyjabvozdd253nd',
-    timestamp: 1498454400220,
-    title: 'Udacity is the best place to learn React',
-    url: 'https://www.udacity.com',
-    body: 'Everyone says so after all.',
-    author: 'user',
-    category: 'react',
-    comments: ['894tuq4ut84ut8v4t8wun89g', '8tu4bsun805n8un48ve89', '8tu41yvak05n8uqalek29', 'afwk38qa905n8u1ska938', 'i1sahasj1ie9auqfka9s0'],
-    votes: {
-      upVote: 11,
-      downVote: 5,
-    },
-    deleted: false, 
-  },
-  "6ni6ok3ym7mf1p33lnez": {
-    id: '6ni6ok3ym7mf1p33lnez',
-    timestamp: 1468479767190,
-    title: 'Learn Redux in 10 minutes!',
-    url: null,
-    body: 'Just kidding. It takes more than 10 minutes to learn technology.',
-    author: 'user',
-    category: 'redux',
-    comments: [],
-    votes: {
-      upVote: 10,
-      downVote: 5,
-    },
-    deleted: false,
-  },
-  "llgj1kasd78f1ptk1nz1": {
-    id: 'llgj1kasd78f1ptk1nz1',
-    timestamp: 1459735617190,
-    title: 'Redux is easy!',
-    url: null,
-    body: 'But practice makes perfect.',
-    author: 'user',
-    category: 'redux',
-    comments: [],
-    votes: {
-      upVote: 19,
-      downVote: 10,
-    },
-    deleted: false,
-  },
-}
-
-/**
- * @description Access database
- */
-function getData () {
-  const data = db;
-  return data;
-}
-
-/**
- * @description Get posts array
- */
-function getPostsList () {
-  const db = getData();
-  return Object.values(db).filter(post => !post.deleted);
-}
-
 const fuseOptions = {
   keys: [{
     name: 'title',
@@ -84,183 +20,264 @@ const fuseOptions = {
 };
 
 /**
- * @description Get all posts
- * @returns {array} all post data
- */
-function getAll (query, criterion, direction, offset = 0, limit = 10) {
-  return new Promise((res) => {
-    const rawPosts = getPostsList();
-    let posts = [];
-    if (query) {
-      const fuse = new Fuse(rawPosts, fuseOptions);
-      // return matching
-      posts = fuse.search(query);
-    } else {
-      posts = getSortedList(rawPosts, criterion);
-    }
-    const depleted = offset + limit > posts.length - 1;
-    const postsList = getRestrictedList(posts, direction, offset, limit);
-    res({ posts: postsList, depleted });
-  });
-}
-
-/**
  * @description Get a specific post by id
  * @param {string} id
  * @returns {object} post details 
  */
-function get (postId) {
-  return new Promise((res) => {
-    const posts = getData();
-    res(
-      posts[postId]
-        ? posts[postId]
-        : {}
-    );
-  });
+async function get (pool, postId) {
+  try {
+    const postQueryText = `SELECT DISTINCT
+        post_id,
+        title,
+        url,
+        body,
+        category,
+        author,
+        created,
+        deleted,
+        sum(CASE WHEN vote = 'upVote' AND target_id = post_id THEN 1 ELSE 0 END) OVER (PARTITION BY post_id) as upvote,
+        sum(CASE WHEN vote = 'downVote' AND target_id = post_id THEN 1 ELSE 0 END) OVER (PARTITION BY post_id) as downvote
+      FROM posts LEFT JOIN votes
+      ON post_id = target_id
+      WHERE post_id = $1`;
+    const postQueryVal = [postId];
+    const data = await pool.query(postQueryText, postQueryVal);
+    const { rows } = data;
+    if (!rows) return { error: 500 };
+    const row = rows[0];
+    if (!row) return {};
+    return {
+      id: row.post_id,
+      title: row.title,
+      url: row.url,
+      body: row.body,
+      category: row.category,
+      author: row.author,
+      created: row.created,
+      deleted: row.deleted,
+      votes: {
+        upVote: +row.upvote,
+        downVote: +row.downvote,
+      },
+    };
+  } catch (e) {
+    console.error(e);
+    return { error: 500 };
+  }
 }
 
 /**
- * @description Get posts by array of ids
- * @param {array} postIds
- * @returns {array} batch of posts by ids
+ * @description Get post as constrained
  */
-function getByIds (query, postIds, criterion, direction, offset, limit) {
-  return new Promise((res) => {
-    const dbPosts = getData();
-    const rawPosts = postIds.map(id => dbPosts[id])
-      .filter(post => !post.deleted);
-    let selectedPosts;
+async function getPosts (pool, constraint, query, criterion, direction, offset = 0, limit = 10) {
+  try {
+    const postsQueryPrefix = `WITH basic_posts AS (
+      SELECT
+        posts.post_id,
+        title,
+        url,
+        posts.body,
+        category,
+        posts.author,
+        posts.created,
+        posts.deleted,
+        count(comment_id) as comments
+      FROM posts
+      LEFT JOIN comments USING (post_id)
+      WHERE`;
+    const postsQuerySuffix = `NOT posts.deleted
+        GROUP BY post_id
+      ) SELECT DISTINCT
+        post_id,
+        url,
+        body,
+        title,
+        category,
+        author,
+        created,
+        deleted,
+        comments,
+        sum(CASE WHEN vote = 'upVote' AND target_id = post_id THEN 1 ELSE 0 END) OVER (PARTITION BY post_id) as upvote,
+        sum(CASE WHEN vote = 'downVote' AND target_id = post_id THEN 1 ELSE 0 END) OVER (PARTITION BY post_id) as downvote
+      FROM basic_posts LEFT JOIN votes
+      ON post_id = target_id`;
+    let dbRes;
+    if (!constraint) {
+      const postsQueryText = `${postsQueryPrefix} ${postsQuerySuffix}`;
+      dbRes = await pool.query(postsQueryText);
+    } else {
+      const postsQueryFragment = `${constraint.key} = $1 AND`;
+      const postsQueryText = `${postsQueryPrefix} ${postsQueryFragment} ${postsQuerySuffix}`;
+      dbRes = await pool.query(postsQueryText, [constraint.value]);
+    }
+    const { rows } = dbRes;
+    if (!rows) return { error: 500 };
+    let selectedPosts = rows.map(row => ({
+      id: row.post_id,
+      url: row.url,
+      body: row.body,
+      title: row.title,
+      category: row.category,
+      author: row.author,
+      created: row.created,
+      deleted: row.deleted,
+      comments: +row.comments,
+      votes: {
+        upVote: +row.upvote,
+        downVote: +row.downvote,
+      },
+    }));
     if (query) {
-      const fuse = new Fuse(rawPosts, fuseOptions);
-      // return matching
+      const fuse = new Fuse(selectedPosts, fuseOptions);
       selectedPosts = fuse.search(query);
     } else {
-      selectedPosts = getSortedList(rawPosts, criterion);
+      selectedPosts = getSortedList(selectedPosts, criterion);
     }
     const depleted = offset + limit > selectedPosts.length - 1;
-    const postsList = getRestrictedList(selectedPosts, direction, offset, limit);
-    res({ posts: postsList, depleted });
-  });
+    const posts = getRestrictedList(selectedPosts, direction, offset, limit);
+    return { posts, depleted };
+  } catch (e) {
+    console.error(e);
+    return { error: 500 };
+  }
 }
 
-/**
- * @description Add a new post object
- * @param {string} sessionToken - action validation
- * @param {object} post - contains post details 
- */
-function add (sessionToken, post) {
-  return new Promise((res, reject) => {
-    verifySessionToken(sessionToken, post.author)
-        .then(data => {
-          const posts = getData();
-          const id = uuidv4();
-          posts[id] = {
-            id,
-            timestamp: Date.now(),
-            title: post.title,
-            url: post.url || '',
-            body: post.body || '',
-            category: post.category,
-            author: post.author,
-            comments: [],
-            votes: {
-              upVote: 1,
-              downVote: 0,
-            },
-            deleted: false,
-          };
-          res(posts[id]);
-        })
-        .catch(err => reject(err));
-  });
-}
-
-/**
- * @description Add comment to post
- * @param {string} postId 
- * @param {string} commentId 
- */
-function addComment (postId, commentId) {
-  const posts = getData(); 
-  const post = posts[postId];
-  if (!post) return;
-  post.comments.unshift(commentId);
-}
-
-/**
- * @description Vote on a post
- * @param {string} sessionToken
- * @param {string} postId
- * @param {string} option, i.e. 'upVote'/'downVote'
- */
-function vote (postId, option, previousVote) {
-  return new Promise((res, reject) => {
-    const posts = getData();
-    post = posts[postId];
-    if (previousVote && previousVote === option) {
-      console.log(`Duplicated vote on post: ${postId}.`);
-      reject(403);
-      return;
+async function add (client, post) {
+  let response;
+  try {
+    await client.query('BEGIN');
+    const postId = uuidv4();
+    // Add post
+    const postAddText = `INSERT INTO posts (
+      post_id, title, category, author, url, body)
+      VALUES($1, $2, $3, $4, $5, $6)
+      RETURNING post_id as id,
+        title,
+        category,
+        author,
+        url,
+        body,
+        deleted,
+        created,
+        0 as comments`;
+    const postAddVals = [
+      postId,
+      post.title,
+      post.category,
+      post.author,
+      post.url,
+      post.body,
+    ];
+    const { rows } = await client.query(postAddText, postAddVals);
+    const postVoteText = 'INSERT INTO votes VALUES($1, $2, $3)';
+    const postVoteVals = [post.author, postId, 'upVote'];
+    const res = await client.query(postVoteText, postVoteVals);
+    await client.query('COMMIT');
+    response = rows[0];
+    response.votes = {
+      upVote: 1,
+      downVote: 0,
+    };
+  } catch (e) {
+    console.error(e);
+    if (e.message.indexOf('foreign key constraint "posts_category_fkey"') > -1) {
+      console.log('error of interest');
+      response = { error: 403.1 };
+    } else {
+      console.log('Unknown error');
+      response = { error: 500 };
     }
-    if (option) {
-      post.votes[option] += 1;
-    }
-    if (previousVote && previousVote !== option) {
-      post.votes[previousVote] -= 1;
-    }
-    res(post);
-  });
+  } finally {
+    client.release();
+    return response;
+  }
 }
 
-/**
- * @description 'Delete' a post
- * @param {string} sessionToken
- * @param {string} postId
- */
-function disable (sessionToken, postId, userId) {
-    return new Promise((res, reject) => {
-      verifySessionToken(sessionToken, userId)
-          .then(data => {
-            const posts = getData();
-            posts[postId].deleted = true;
-            res(posts[postId]);
-          });
-    }).catch(err => reject(err));
+async function deletePost (client, params) {
+  let response;
+  console.log(params.delete);
+  try {
+    await client.query('BEGIN');
+    let postDeleteText;
+    switch (params.delete) {
+      case 'restore':
+        postDeleteText = 'UPDATE posts SET deleted = false WHERE post_id = $1';
+        break;
+      default:
+        postDeleteText = 'UPDATE posts SET deleted = true WHERE post_id = $1';
+        break;
+    }
+    await client.query(postDeleteText, [params.id]);
+    await client.query('COMMIT');
+    response = { success: `Post ${params.delete}d` };
+  } catch (e) {
+    console.error(e);
+    client.query('ROLLBACK');
+    response = { error: 500 };
+  } finally {
+    client.release();
+    return response;
+  }
 }
 
-/**
- * @description Edit a post
- * @param {string} sessionToken
- * @param {string} postId
- * @param {string} post - updated details
- */
-function edit (sessionToken, postId, editedPost) {
-  const posts = getData();
-  return new Promise((res, reject) => {
-    verifySessionToken(sessionToken, posts[postId].author)
-      .then(data => {
-        const currentPost = posts[postId];
-        const { category: newCategory } = editedPost;
-        const oldCategory = currentPost.category !== newCategory
-          ? currentPost.category
-          : null;
-        Object.keys(editedPost).forEach((prop) => {
-          currentPost[prop] = editedPost[prop];
-        });
-        res({ data: posts[postId], oldCategory });
-      }).catch(err => reject(err));
-  });
+async function edit (client, postId, body) {
+  let response;
+  try {
+    await client.query('BEGIN');
+    const changedColumns = Object.keys(body);
+    const changedLen = changedColumns.length;
+    const updatePostText = `UPDATE posts
+      SET ${changedColumns.map((k, n) => `${k} = $${n + 1}`)}
+      FROM (
+        SELECT
+          p.title,
+          p.url,
+          p.body,
+          p.category,
+          p.author,
+          p.created,
+          p.deleted,
+          sum(CASE WHEN vote = 'upVote' AND target_id = post_id THEN 1 ELSE 0 END) OVER (PARTITION BY post_id) as upvote,
+          sum(CASE WHEN vote = 'downVote' AND target_id = post_id THEN 1 ELSE 0 END) OVER (PARTITION BY post_id) as downvote
+        FROM posts AS p LEFT JOIN votes AS v
+        ON post_id = target_id
+      ) AS votes_post
+      WHERE post_id = $${changedLen + 1}
+      RETURNING posts.title,
+        posts.url,
+        posts.body,
+        posts.category,
+        posts.author,
+        posts.created,
+        posts.deleted,
+        upvote,
+        downvote`;
+    const updatePostVals = changedColumns.map(k => body[k]);
+    updatePostVals.push(postId);
+    const { rows } = await client.query(updatePostText, updatePostVals);
+    const row = rows[0];
+    const { upvote, downvote, ...data} = row;
+    data.votes = {
+      upVote: +upvote,
+      downVote: +downvote,
+    };
+    data.id = postId;
+    response = { data };
+    await client.query('COMMIT');
+  } catch (e) {
+    await client.query('ROLLBACK');
+    console.error(e);
+    response = { error: 500 };
+  } finally {
+    client.release();
+    return response;
+  }
 }
 
 module.exports = {
   get,
-  getByIds,
-  getAll,
+  getPosts,
   add,
-  vote,
-  disable,
+  deletePost,
   edit,
-  getAll,
-  addComment,
 };

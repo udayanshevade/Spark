@@ -11,7 +11,7 @@ export const validate = (values) => {
       errors.name = 'Required';
     } else if (name && name.length > lengths.name) {
       errors.name = 'Too long';
-    } else if (name && !/^[a-zA-Z0-9]+$/i.test(name)) {
+    } else if (name && !(/^[a-zA-Z0-9_]+$/i.test(name))) {
       errors.name = 'Invalid character';
     }
     if (blurb && blurb.length > lengths.blurb) {

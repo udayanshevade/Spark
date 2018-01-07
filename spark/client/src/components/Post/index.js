@@ -14,8 +14,9 @@ import Comments from '../Comments';
 import Loading from '../Loading';
 import {
   postGetData,
-  postGetComment,
+  postGetCommentThread,
   postGetComments,
+  postGetComment,
   postToggleShowFull,
   postEmpty,
   postSetLoading,
@@ -31,7 +32,6 @@ class Post extends Component {
   blankComment = {
     body: '',
     parentId: null,
-    ancestorId: null,
   }
   
   newCommentId = getRandomID()
@@ -40,7 +40,7 @@ class Post extends Component {
     const { actions } = this.props;
     actions.postSetLoading(true);
     if (commentId) {
-      await actions.postGetComment(commentId);
+      await actions.postGetCommentThread(commentId);
     } else {
       await actions.postGetComments(id);
     }
@@ -65,6 +65,10 @@ class Post extends Component {
     if (commentId && nextCommentId && !(commentId === nextCommentId)) {
       await this.getCommentData(id, nextCommentId);
     }
+  }
+
+  async componentWillUnmount() {
+    await this.props.actions.postEmpty();
   }
 
   render() {
@@ -129,7 +133,13 @@ class Post extends Component {
               initialValues={this.blankComment}
             />
         }
-        <Comments commentId={match.params.commentId} threadView commentView={commentView} />
+        <Comments
+          commentId={match.params.commentId}
+          threadView
+          commentView={commentView}
+          postGetComment={actions.postGetComment}
+          postGetComments={actions.postGetComments}
+        />
       </Box>
     );
   }
@@ -149,8 +159,9 @@ const mapStateToProps = ({ user, post, responsive, navbar }) => ({
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     postGetData,
-    postGetComment,
+    postGetCommentThread,
     postGetComments,
+    postGetComment,
     profileSetUser,
     postToggleShowFull,
     postEmpty,

@@ -195,6 +195,7 @@
   padding-right: 0;
   padding-bottom: 0.75em;
   border-left: 2px solid rgba(50, 50, 50, 0.2);
+  background: white;
 }
 
 .comment-list-item--highlighted {
@@ -343,6 +344,10 @@
 
 .subscribe-button {
   color: #865CD6;
+}
+
+.load-button {
+  font-size: 1em;
 }
 
 @media screen and (min-width: 500px) {

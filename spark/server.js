@@ -1,16 +1,16 @@
 require('dotenv').config();
-
 const express = require('express');
-const { Pool } = require('pg');
 const bodyParser = require('body-parser');
 const multer = require('multer');
 const cors = require('cors');
+const clone = require('clone');
 const config = require('./config');
 const categories = require('./categories');
 const posts = require('./posts');
 const comments = require('./comments');
 const user = require('./user');
-const { handleErrorFn } = require('./utils');
+const { handleErrorFn, verifySessionToken } = require('./utils');
+const pool = require('./db');
 
 const app = express();
 
@@ -18,16 +18,6 @@ app.use(express.static('public'));
 app.use(cors());
 app.use(bodyParser.json());
 app.use(multer().single());
-
-const pool = new Pool({
-  username: 'vagrant',
-  database: 'spark',
-  password: 'password',
-});
-
-pool.on('error', (err, client) => {
-  console.log('Unexpected error', err);
-});
 
 app.get('/', (req, res) => {
   const help = `
@@ -102,7 +92,6 @@ app.get('/', (req, res) => {
         author: String
         postId: Should match a post id in the database.
         parentId: Should match a post id in the database
-        ancestorId: Should match a comment id
 
     GET /comments/:id
       USAGE:
@@ -165,441 +154,515 @@ app.use((req, res, next) => {
 const serverErrorMsg = 'An error occurred on our part.';
 const authErrorMsg = 'Log in to perform this action.';
 
+const defaultError = { 500: serverErrorMsg };
+
 /**
  * @description Get all (matching) categories
  */
-app.get('/categories/get/:query*?', (req, res) => {
+app.get('/categories/get/:query*?', async(req, res) => {
   const errors = { 500: serverErrorMsg };
-  pool.query('SELECT * from categories')
-    .then((res) => {
-      console.log(res);
-    })
-    .catch((e) => {
-      console.log(e);
-    });
-  categories.getAll(req.params.query)
-  .then(
-    (data) => res.send(data),
-    handleErrorFn(res, errors)
-  );
+  const errorFn = handleErrorFn(res, errors);
+  try {
+    const data = await categories.getAll(pool, req.params.query);
+    if (data.error) {
+      errorFn(data.error);
+    } else {
+      res.send(data);
+    }
+  } catch (e) {
+    console.error(e);
+    errorFn(500);
+  }
 });
 
 /**
- * @description Get all (matching) categories
+ * @description Get a specific category
  */
-app.get('/categories/category/:category', (req, res) => {
-  const errors = { 500: serverErrorMsg, 403: 'Category does not exist' };
-  categories.get(req.params.category)
-    .then(
-      (data) => res.send(data),
-      handleErrorFn(res, errors)
-    );
+app.get('/categories/category/:category', async(req, res) => {
+  const errors = clone(defaultError);
+  const errorFn = handleErrorFn(res, errors);
+  try {
+    const data = await categories.get(pool, req.params.category);
+    if (data.error) {
+      errorFn(data.error);
+    } else {
+      res.send(data);
+    }
+  } catch (e) {
+    console.error(e);
+    errorFn(500);
+  }
 });
 
-app.post('/categories/create', (req, res) => {
-  const errors = { 500: serverErrorMsg, 403: 'Category exists' };
-  categories.add(req.sessionToken, req.body)
-    .then(
-      data => res.send(data),
-      handleErrorFn(res, errors)
-    );
+app.post('/categories/create', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[401] = authErrorMsg;
+  errors[403] = 'Category exists';
+  const errorFn = handleErrorFn(res, errors);
+  try {
+    const client = await pool.getClient();
+    const verified = verifySessionToken(req.sessionToken, req.body.user);
+    if (!verified) {
+      errorFn(401);
+      return;
+    }
+    const result = await categories.create(client, req.body);
+    if (result.error) {
+      errorFn(result.error);
+    } else {
+      res.send(result);
+    }
+  } catch (e) {
+    console.error(e);
+    errorFn(500);
+  }
 });
 
 /**
  * @description Get (matching) categories names
  */
-app.get('/categories/suggestions/:query*?', (req, res) => {
-  const errors = { 500: serverErrorMsg };
-  categories.getAll(req.params.query)
-    .then(
-      (data) => {
-        const categories = data.map(cat => cat.name);
-        res.send(categories);
-      },
-      handleErrorFn(res, errors)
-    );
+app.get('/categories/suggestions/:query*?', async(req, res) => {
+  const errors = clone(defaultError);
+  const errorFn = handleErrorFn(res, errors);
+  const data = await categories.getAll(pool, req.params.query, true);
+  if (data.error) {
+    errorFn(data.error);
+  } else {
+    const categories = data.map(cat => cat.name);
+    res.send(categories);
+  }
 });
 
 /**
  * @description Get posts for a category
  */
-app.get('/categories/category/:category/posts/:query*?', (req, res) => {
-  const errors = { 500: serverErrorMsg, 403: 'Category does not exist' };
+app.get('/categories/category/:category/posts/:query*?', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[403] = 'Category does not exist';
+  const errorFn = handleErrorFn(res, errors);
   const { criterion, offset, limit, direction } = req.headers;
-  categories.getCategoryPosts(req.params.category)
-    .then(
-      postIds => posts.getByIds(
-        req.params.query,
-        postIds,
-        criterion,
-        direction,
-        offset,
-        limit
-      )
-        .then(
-          (data) => res.send(data),
-          handleErrorFn(res, errors)
-        ),
-        handleErrorFn(res, errors)
-    );
+  const { category, query } = req.params;
+  const data = await posts.getPosts(
+    pool,
+    { key: 'category', value: category },
+    query,
+    criterion,
+    direction,
+    offset,
+    limit
+  );
+  if (data.error) {
+    errorFn(data.error);
+  } else {
+    res.send(data);
+  }
 });
 
 /**
  * @description Subscribe to a category
  */
-app.put('/categories/subscribe/:category/:update', (req, res) => {
-  const errors = { 500: serverErrorMsg, 403: 'Subscription update failed.' };
-  const { category: reqCategory, update: reqUpdate } = req.params;
-  user.subscribe(req.sessionToken, req.body.userId, reqCategory, reqUpdate)
-    .then(
-      (data) => {
-        let response = {};
-        if (data) {
-          categories.updateSubscription(data);
-          response = { success: data.option };
-        }
-        res.send(response);
-      },
-      handleErrorFn(res, errors)
-    );
+app.put('/categories/subscribe/:category/:update', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[403] = 'Subscription update failed.';
+  errors[401] = authErrorMsg;
+  const errorFn = handleErrorFn(res, errors);
+  const verified = verifySessionToken(req.sessionToken, req.body.userId);
+  if (!verified) {
+    errorFn(401);
+    return;
+  }
+  try {
+    const client = await pool.getClient();
+    const subscribeResult = await categories.subscribe(client, req.params, req.body);
+    if (subscribeResult.error) {
+      errorFn(subscribeResult.error);
+    } else {
+      res.send(subscribeResult);
+    }
+  } catch (e) {
+    console.error(e);
+    errorFn(500);    
+  }
 });
 
 /**
  * @description Get all posts
  */
-app.get('/posts/get/:query*?', (req, res) => {
-  const errors = { 500: serverErrorMsg };
+app.get('/posts/get/:query*?', async(req, res) => {
+  const errors = clone(defaultError);
+  const errorFn = handleErrorFn(res, errors);
   const { criterion, offset, limit, direction } = req.headers;
-  posts.getAll(req.params.query, criterion, direction, offset, limit)
-    .then(
-      (data) => res.send(data),
-      handleErrorFn(res, errors)
-    );
+  const data = await posts.getPosts(
+    pool,
+    null,
+    req.params.query,
+    criterion,
+    direction,
+    offset,
+    limit
+  );
+  if (data.error) {
+    errorFn(500);
+  } else {
+    res.send(data);
+  }
 });
 
 /**
  * @description Get a specific post
  */
-app.get('/posts/thread/:id', (req, res) => {
-  const errors = { 500: serverErrorMsg };
-  posts.get(req.params.id)
-    .then(
-      (data) => res.send(data),
-      handleErrorFn(res, errors)
-    );
+app.get('/posts/thread/:id', async(req, res) => {
+  const errors = clone(defaultError);
+  const errorFn = handleErrorFn(res, errors);
+  const data = await posts.get(pool, req.params.id);
+  if (data.error) {
+    errorFn(500);
+  } else {
+    res.send(data);
+  }
 });
 
 /**
  * @description Add a post
  */
-app.post('/posts', (req, res) => {
-    if (!req.sessionToken) {
-      res.status(401).send({ error: authErrorMsg });
-    } else {
-      const errors = { 500: serverErrorMsg, 401: authErrorMsg };
-      posts.add(req.sessionToken, req.body)
-        .then(
-          (data) => {
-            // record new post in user profile
-            user.addPost(data.author, data.id);
-            // add post to category
-            categories.addPost(data.category,   data.id);
-            // add default upvote from author
-            user.writeUserVote(data.author, data.id, 'upVote');
-            res.send(data);
-          },
-          handleErrorFn(res, errors)
-        );
-    }
+app.post('/posts', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[401] = authErrorMsg;
+  const badRequestError = 'Bad request.';
+  errors[403.1] = `${badRequestError} Category does not exist.`;
+  const errorFn = handleErrorFn(res, errors);
+  const verified = verifySessionToken(req.sessionToken, req.body.author);
+  if (!verified) {
+    errorFn(401);
+    return;
+  }
+  let client;
+  try {
+    client = await pool.getClient();
+  } catch (e) {
+    console.error(e);
+    errorFn(500);
+  }
+  const result = await posts.add(client, req.body);
+  if (!result || result.error) {
+    errorFn(result ? result.error : 500);
+  } else {
+    res.send(result);
+  }
 });
 
 /**
  * @description Delete a post
  */
-app.delete('/posts/thread/:id/delete', (req, res) => {
-    if (!req.sessionToken) {
-      res.status(401).send({ error: authErrorMsg });
+app.delete('/posts/thread/:id/:author/:delete', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[401] = authErrorMsg;
+  const errorFn = handleErrorFn(res, errors);
+  const { user } = req.headers;
+  const verified = verifySessionToken(req.sessionToken, user);
+  if (user !== req.params.author && !verified) {
+    errorFn(401);
+    return;
+  }
+  try {
+    const client = await pool.getClient();
+    const result = await posts.deletePost(client, req.params);
+    if (result.error) {
+      errorFn(result.error);
     } else {
-      const errors = { 500: serverErrorMsg, 401: authErrorMsg };
-      const { userId } = req.body;
-      posts.disable(req.sessionToken, req.params.id, userId)
-        .then((post) =>
-          comments.disableByPost(post)
-        ).then(
-          (data) => {
-            res.send(data)
-          },
-          handleErrorFn(res, errors)
-        );
+      res.send(result);
     }
+  } catch (e) {
+    console.error(e);
+    errorFn(500);
+  }
 });
 
 /**
- * @description Vote on a post
+ * @description Vote on a post or comment
  */
-app.put('/posts/thread/:id/vote', (req, res) => {
-  if (!req.sessionToken) {
-    res.status(401).send({ error: authErrorMsg });
-  } else {
-    const errors = { 500: serverErrorMsg, 401: authErrorMsg, 403: 'Duplicated vote.' };
-    const { option, voterId } = req.body;
-    const voteId = req.params.id;
-    // update record of voter
-    user.updateUserVote(req.sessionToken, voterId, voteId, option)
-      .then((updatedOption, oldOption) => {
-        posts.vote(voteId, updatedOption, oldOption)
-          .then(
-            (data) => {
-              // update post score of post author
-              user.updatePostScore(data.author, updatedOption, oldOption);
-              res.send({});
-            },
-            handleErrorFn(res, errors)
-          );
-      }, handleErrorFn(res, errors));
+app.put('/votes/:id/vote', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[401] = authErrorMsg;
+  const errorFn = handleErrorFn(res, errors);
+  const { option, voterId } = req.body;
+  const verified = verifySessionToken(req.sessionToken, voterId);
+  if (!verified) {
+    errorFn(401);
+    return;
+  }
+  const target = req.params.id;
+  // update record of voter
+  try {
+    const client = await pool.getClient();
+    const result = await user.vote(client, voterId, target, option);
+    if (result.error) {
+      errorFn(result.error);
+    } else {
+      res.send(result);
+    }
+  } catch (e) {
+    console.error(e);
+    errorFn(500);
   }
 });
 
 /**
  * @description Edit a post
  */
-app.put('/posts/thread/:id/edit', (req, res) => {
-  if (!req.sessionToken) {
-    res.status(401).send({ error: authErrorMsg });
-  } else {
-    const errors = { 500: serverErrorMsg, 401: authErrorMsg };
-    posts.edit(req.sessionToken, req.params.id, req.body)
-      .then(
-        ({ data, oldCategory }) => {
-          console.log(oldCategory);
-          if (oldCategory) {
-            categories.switchPostCategory(data.id, data.category, oldCategory);
-          }
-          res.send(data);
-        },
-        handleErrorFn(res, errors)
-      );
+app.put('/posts/thread/:id/:author/edit', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[401] = authErrorMsg;
+  const errorFn = handleErrorFn(res, errors);
+  const verified = verifySessionToken(req.sessionToken, req.params.author);
+  if (!verified) {
+    errorFn(401);
+    return;
+  }
+  try {
+    const client = await pool.getClient();
+    const result = await posts.edit(client, req.params.id, req.body);
+    if (result.error) {
+      errorFn(result.error);
+    } else {
+      res.send(result);
+    }
+  } catch (e) {
+    console.error(e);
+    errorFn(500);
   }
 });
 
 /**
- * @description Get all post comments
+ * @description Get post comments
  */
-app.get('/posts/thread/:id/comments', (req, res) => {
-  const errors = { 500: serverErrorMsg };
+app.get('/posts/thread/:id/comments', async(req, res) => {
+  const errors = clone(defaultError);
+  const errorFn = handleErrorFn(res, errors);
   const { criterion, offset, limit, direction } = req.headers;
-  comments.getByPost(
-    req.params.id,
+  const data = await comments.getComments(
+    pool,
+    { key: 'post_id', value: req.params.id },
     criterion,
     direction,
+    false,
     offset,
     limit
-  )
-    .then(
-      (data) => res.send(data),
-      handleErrorFn(res, errors)
-    );
+  );
+  if (data.error) {
+    errorFn(data.error);
+  } else {
+    res.send(data);
+  }
 });
 
 /**
- * @description Get a specific comment
+ * @description Get a specific comment lineage
  */
-app.get('/comments/:id', (req, res) => {
-  const errors = { 500: serverErrorMsg, 401: authErrorMsg };
-  comments.get(req.params.id)
-    .then(
-      (data) => res.send(data),
-      handleErrorFn(res, errors)
-    );
+app.get('/comments/:id/:descendantsOnly*?', async(req, res) => {
+  const errors = clone(defaultError);
+  const errorFn = handleErrorFn(res, errors);
+  const { offset, limit } = req.headers;
+  const data = await comments.getComments(
+    pool,
+    { key: 'comment_id', value: req.params.id },
+    'best',
+    'desc',
+    req.params.descendantsOnly === 'children',
+    offset,
+    limit,
+  );
+  if (data.error) {
+    errorFn(data.error);
+  } else {
+    res.send(data);
+  }
 });
 
 /*
  * @description Add a new comment
  */
-app.post('/comments', (req, res) => {
-  if (!req.sessionToken) {
-    res.status(401).send({ error: authErrorMsg });
-  } else {
-    const errors = { 500: serverErrorMsg, 401: authErrorMsg }
-    comments.add(req.sessionToken, req.body)
-      .then(
-        (data) => {
-          posts.addComment(data.postId, data.id);
-          // record new post in user profile
-          user.addComment(data.author, data.id);
-          // add default upvote from author
-          user.writeUserVote(data.author, data.id, 'upVote');
-          res.send(data);
-        },
-        handleErrorFn(res, errors)
-      );
+app.post('/comments', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[401] = authErrorMsg;
+  const errorFn = handleErrorFn(res, errors);
+  const verified = verifySessionToken(req.sessionToken, req.body.author);
+  if (!verified) {
+    errorFn(401);
+    return;
+  }
+  try {
+    const client = await pool.getClient();
+    const result = await comments.add(client, req.body);
+    if (result.error) {
+      errorFn(result.error);
+    } else {
+      res.send(result);
+    }
+  } catch (e) {
+    console.error(e);
+    errorFn(500);
   }
 });
 
 /**
  * @description Edit a specific comment
  */
-app.put('/comments/:id/edit', (req, res) => {
-  if (!req.sessionToken) {
-    res.status(401).send({ error: authErrorMsg });
-  } else {
-    const errors = { 500: serverErrorMsg, 401: authErrorMsg };
-    comments.edit(req.sessionToken, req.params.id, req.body)
-      .then(
-        (data) => res.send(data),
-        handleErrorFn(res, errors)
-      );
+app.put('/comments/:id/:author/edit', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[401] = authErrorMsg;
+  const errorFn = handleErrorFn(res, errors);
+  const verified = verifySessionToken(req.sessionToken, req.params.author);
+  if (!verified) {
+    errorFn(401);
+    return;
   }
-});
-
-/**
- * @description Vote on a comment
- */
-app.put('/comments/:id/vote', (req, res) => {
-  if (!req.sessionToken) {
-    res.status(401).send({ error: authErrorMsg });
-  } else {
-    const errors = { 500: serverErrorMsg, 401: authErrorMsg, 403: 'Duplicated vote.' };
-    const voteId = req.params.id;
-    const { option, voterId } = req.body;
-    // update record of voter
-    user.updateUserVote(req.sessionToken, voterId, voteId, option)
-      .then((updatedOption, oldOption) => {
-        // use the resulting vote option
-        comments.vote(voteId, updatedOption)
-          .then(
-            (data) => {
-              // update comment score of author
-              user.updateCommentScore(data.author, updatedOption);
-              res.send({});
-            },
-            handleErrorFn(res, errors)
-          );
-      }, handleErrorFn(res, errors));
-  }
-});
-
-/**
- * @description Delete a specific comment
- */
-app.delete('/comments/:id', (req, res) => {
-    if (!req.sessionToken) {
-      res.status(401).send({ error: authErrorMsg });
+  try {
+    const client = await pool.getClient();
+    const result = await comments.edit(client, req.params.id, req.body.body);
+    if (result.error) {
+      errorFn(result.error);
     } else {
-      const errors = { 500: serverErrorMsg, 401: authErrorMsg };
-      comments.disable(req.sessionToken, req.params.id)
-        .then(
-          (data) => {
-            res.send(data);
-          },
-          handleErrorFn(res, errors)
-        );
+      res.send(result);
     }
+  } catch (e) {
+    console.error(e);
+    errorFn(500);
+  }
+});
+
+/**
+ * @description Delete a comment
+ */
+app.delete('/comments/:id/:author/:delete', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[401] = authErrorMsg;
+  const errorFn = handleErrorFn(res, errors);
+  const { user } = req.headers;
+  const verified = verifySessionToken(req.sessionToken, user);
+  if (user !== req.params.author && !verified) {
+    errorFn(401);
+    return;
+  }
+  try {
+    const client = await pool.getClient();
+    const result = await comments.deleteComment(client, req.params.id, req.params.delete);
+    if (result.error) {
+      errorFn(result.error);
+    } else {
+      res.send(result);
+    }
+  } catch (e) {
+    console.error(e);
+    errorFn(500);
+  }
 });
 
 /**
  * @description Get a user profile
  */
-app.get('/user/:userId/profile', (req, res) => {
-  const errors = { 500: serverErrorMsg, 403: 'User does not exist.' };
-  user.getProfile(req.params.userId)
-    .then(
-      (data) => res.send(data),
-      handleErrorFn(res, errors)
-    );
-});
-
-/**
- * @description Check if a username is available
- */
-app.get('/user/:userId/check', (req, res) => {
-  const errors = { 403: 'User already exists.', 500: serverErrorMsg };
-  user.checkUserExists(req.params.userId)
-    .then(
-      (data) => res.send(data),
-      handleErrorFn(res, errors)
-    );
+app.get('/user/:userId/profile', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[403] = 'User does not exist.';
+  const errorFn = handleErrorFn(res, errors);
+  const profileRes = await user.getProfile(pool, req.params.userId);
+  if (profileRes.error) {
+    errorFn(profileRes.error);
+  } else {
+    res.send(profileRes);
+  }
 });
 
 /**
  * @description User login
  */
-app.post('/user/:userId/login', (req, res) => {
-  const errors = { 403: 'Incorrect password.', 500: serverErrorMsg };
-  user.login(req.params.userId, req.body.password)
-    .then(
-      (data) => res.send(data),
-      handleErrorFn(res, errors));
+app.post('/user/:userId/login', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[403.1] = 'User does not exist';
+  errors[403.2] = 'Incorrect password';
+  const errorFn = handleErrorFn(res, errors);
+  try {
+    const client = await pool.getClient();
+    if (!client) errorFn(500);
+    const userData = await user.login(client, req.params.userId, req.body.password);
+    if (userData.error) {
+      errorFn(userData.error);
+    } else {
+      res.send(userData);
+    }
+  } catch (e) {
+    console.error(e);
+    errorFn(500);
+  }
 });
 
 /**
  * @description Create a new user
  */
-app.post('/user/:userId/signup', (req, res) => {
-  const errors = { 403: 'User already exists.', 500: 'An error occurred on our part.' };
-  user.create(req.params.userId, req.body)
-    .then(
-      (data) => res.send(data),
-      handleErrorFn(res, errors));
-});
-
-/**
- * @description Update user fields
- */
-app.put('/user/:userId/update', (req, res) => {
-    if (!req.sessionToken) {
-      res.status(401).send({ error: authErrorMsg });
+app.post('/user/:userId/signup', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[403] = 'User already exists';
+  const errorFn = handleErrorFn(res, errors);
+  try {
+    const client = await pool.getClient();
+    if (!client) errorFn(500);
+    const data = await user.create(client, req.params.userId, req.body);
+    if (data.error) {
+      errorFn(data.error);
     } else {
-      const errors = { 500: serverErrorMsg, 401: authErrorMsg };
-      user.update(req.sessionToken, req.params.userId, req.body)
-        .then(
-          data => res.send(data),
-          handleErrorFn(res, errors)
-        );
+      res.send(data);
     }
+  } catch (e) {
+    console.error(e);
+    errorFn(500);
+  }
 });
 
 /**
  * @description Get posts by user
  */
-app.get('/user/:userId/posts', (req, res) => {
+app.get('/user/:userId/posts', async(req, res) => {
+  const errors = clone(defaultError);
+  const errorFn = handleErrorFn(res, errors);
   const { criterion, offset, limit, direction } = req.headers;
-  // get post ids by user
-  user.getPosts(req.params.userId).then(postIds => {
-    // get post data by post ids
-    posts.getByIds(
-      null,
-      postIds,
-      criterion,
-      direction,
-      offset,
-      limit
-    ).then((data) => {
-      res.send(data);
-    });
-  })
-  .catch(err => res.send({ error: serverErrorMsg }));
+  // get posts by user
+  const data = await posts.getPosts(
+    pool,
+    { key: 'posts.author', value: req.params.userId },
+    null,
+    criterion,
+    direction,
+    offset,
+    limit
+  );
+  if (data.error) {
+    errorFn(data.error);
+  } else {
+    res.send(data);
+  }
 });
 
 /**
  * @description Get comments by user
  */
-app.get('/user/:userId/comments', (req, res) => {
-  const { criterion, offset, limit, direction } = req.headers;
+app.get('/user/:userId/comments', async(req, res) => {
+  const errors = clone(defaultError);
+  const errorFn = handleErrorFn(res, errors);
+  const { criterion, direction, offset, limit } = req.headers;
   // get comment ids by user
-  user.getComments(req.params.userId).then((commentIds) => {
-    // get comment data by comment ids
-    comments.getByIds(
-      commentIds,
-      criterion,
-      direction,
-      offset,
-      limit
-    ).then((data) => {
-      // send results
-      res.send(data);
-    });
-  });
+  const data = await comments.getUserComments(
+    pool,
+    req.params.userId,
+    criterion,
+    direction,
+    offset,
+    limit
+  );
+  if (data.error) {
+    errorFn(500);
+  } else {
+    res.send(data);
+  }
 });
 
 app.listen(config.port, () => {

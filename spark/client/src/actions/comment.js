@@ -1,13 +1,25 @@
 import { SubmissionError } from 'redux-form';
+import * as types from './types';
 import Requests from '../requests';
 import { appShowTipWithText } from './app';
-import { postUpdateComments } from './post';
 import { userAddComment } from './user';
 
 const APIbaseURL = '/comments';
 
+export const commentEditData = (commentId, vals, postId) => ({
+  type: types.COMMENT_EDIT_DATA,
+  commentId,
+  vals,
+  postId,
+});
+
+export const commentAddNew = commentData => ({
+  type: types.COMMENT_ADD_NEW,
+  commentData,
+});
+
 export const commentUpdate = formData => async(dispatch, getState) => {
-  const { user, post } = getState();
+  const { user } = getState();
   if (!user.user) {
     dispatch(appShowTipWithText('Login to edit comments.', 'footer-login-button'));
     return;
@@ -20,34 +32,28 @@ export const commentUpdate = formData => async(dispatch, getState) => {
   if (!newComment.body) {
     throw new SubmissionError({ body: 'Nothing here' });
   }
-  const { sessionToken } = user.user;
-  const url = `${APIbaseURL}/${id}/edit`;
-  const newCommentData = await Requests.put({
+  const { sessionToken, profile: userData } = user.user;
+  const url = `${APIbaseURL}/${id}/${userData.id}/edit`;
+  const res = await Requests.put({
     url,
     headers: { sessionToken },
     body: newComment,
   });
-  if (newCommentData.error) return false;
-  const { data: postData, comments: { comments: postComments } } = post;
-  if (postData && postData.id === postId) {
-    const newPostComments = [...postComments];
-    const oldIndex = newPostComments.findIndex(comment => comment.id === id);
-    newPostComments.splice(oldIndex, 1, newCommentData);
-    await dispatch(postUpdateComments(newPostComments));
-  }
+  if (res.error) return false;
+  dispatch(commentEditData(id, { body: newComment.body }, postId));
   return true;
 };
 
 export const commentCreateNew = formData => async(dispatch, getState) => {
-  const { user, post } = getState();
+  const { user } = getState();
   if (!user.user) {
     dispatch(appShowTipWithText('Login to comment.', 'footer-login-button'));
     return;
   }
-  const { sessionToken, profile } = user.user;
+  const { sessionToken, profile: userData } = user.user;
   const newComment = {
     ...formData,
-    author: profile.id,
+    author: userData.id,
   };
   if (!newComment.body) {
     throw new SubmissionError({ body: 'Nothing here' });
@@ -58,41 +64,26 @@ export const commentCreateNew = formData => async(dispatch, getState) => {
     body: newComment,
   });
   if (newCommentData.error) return false;
-  const { data: postData, comments: { comments: postComments } } = post;
-  if (postData && postData.id === formData.postId) {
-    const newPostComments = [...postComments];
-    newPostComments.unshift(newCommentData);
-    if (newCommentData.parentId) {
-      const parentIndex = newPostComments.findIndex(
-        comment => comment.id === newCommentData.parentId
-      );
-      const parent = newPostComments[parentIndex];
-      parent.children.unshift(newCommentData.id);
-    }
-    dispatch(postUpdateComments(newPostComments));
-    dispatch(userAddComment(newCommentData.id));
-  }
+  dispatch(commentAddNew(newCommentData));
+  dispatch(userAddComment(newCommentData.id));
   return true;
 };
 
-export const commentDelete = commentId => async(dispatch, getState) => {
-  const { user, post } = getState();
+export const commentDelete = (commentId, deleted, author, postId) => async(dispatch, getState) => {
+  const { user } = getState();
   if (!user.user) {
     dispatch(appShowTipWithText('Login to delete comments.', 'footer-login-button'));
     return;
   }
-  const { sessionToken } = user.user;
-  const url = `${APIbaseURL}/${commentId}`;
-  const deleted = await Requests.delete({
+  const { sessionToken, profile: userData } = user.user;
+  const url = `${APIbaseURL}/${commentId}/${author}/${deleted ? 'restore' : 'delete'}`;
+  const res = await Requests.delete({
     url,
-    headers: { sessionToken },
+    headers: {
+      sessionToken,
+      user: userData.id,
+    },
   });
-  if (deleted.error) return;
-  const { data: postData, comments: { comments: postComments } } = post;
-  if (postData && postData.id === deleted.postId) {
-    const newPostComments = [...postComments];
-    const oldIndex = newPostComments.findIndex(comment => comment.id === commentId);
-    newPostComments.splice(oldIndex, 1, deleted);
-    await dispatch(postUpdateComments(newPostComments));
-  }
+  if (res.error) return;
+  dispatch(commentEditData(commentId, { deleted: !deleted }, postId));
 };

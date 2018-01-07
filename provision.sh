@@ -1,6 +1,9 @@
 # install environment dependencies
+sudo echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -c | awk '{print $2}')-pgdg main" > /etc/apt/sources.list.d/pgdg.list
+sudo apt-key adv --keyserver keyserver.ubuntu.com --recv 7FCC7D46ACCC4CF8
+
 apt-get -qqy update
-apt-get -qqy install postgresql curl git
+apt-get -qqy install postgresql-9.5 curl git
 # setup database
 su postgres -c "psql -c \"CREATE ROLE vagrant WITH CREATEDB LOGIN PASSWORD 'password';\""
 su vagrant -c "createdb spark"

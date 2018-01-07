@@ -1,15 +1,18 @@
 import { createSelector } from 'reselect';
+import { getSortedList, getRestrictedList } from '../utils';
 
 const getPostComments = post => post.comments.comments;
 const getCommentId = (post, commentId) => commentId;
+const getPostCommentsCriterion = post => post.comments.selectedCriterion;
+const getPostCommentsDirection = post => post.comments.sortDirection;
 
 export const getAncestorComments = createSelector(
   [getPostComments, getCommentId],
   (comments, commentId) => {
     if (commentId) return [commentId];
-    const ancestorIds = comments.filter(comment => !comment.ancestorId).map(comment => comment.id);
-    return ancestorIds;
-  }  
+    const rootIds = comments.filter(comment => !comment.parentId).map(comment => comment.id);
+    return rootIds;
+  }
 );
 
 export const getRawComments = createSelector(
@@ -23,10 +26,10 @@ export const getRawComments = createSelector(
   }
 );
 
-const structureComments = (ancestorIds, rawComments) => {
+const structureComments = (rootIds, rawComments) => {
   const comments = [];
-  for (const ancestorId of ancestorIds) {
-    const comment = rawComments[ancestorId];
+  for (const rootId of rootIds) {
+    const comment = rawComments[rootId];
     if (!comment) break;
     const childCommentIds = comment.children;
     const newComment = {
@@ -42,9 +45,16 @@ const structureComments = (ancestorIds, rawComments) => {
 };
 
 export const getStructuredComments = createSelector(
-  [getAncestorComments, getRawComments],
-  (ancestors, rawComments) => {
-    const sortedComments = structureComments(ancestors, rawComments);
-    return sortedComments;
+  [
+    getAncestorComments,
+    getRawComments,
+    getPostCommentsCriterion,
+    getPostCommentsDirection,
+  ],
+  (ancestors, rawComments, criterion, direction) => {
+    const structuredComments = structureComments(ancestors, rawComments);
+    const sortedComments = getSortedList(structuredComments, criterion);
+    const orderedComments = getRestrictedList(sortedComments, direction, 0, sortedComments.length);
+    return orderedComments;
   }
 );

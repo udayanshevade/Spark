@@ -16,16 +16,14 @@ const generateSessionToken = (userId, expiresIn = 3600) => jwt.sign({ userId }, 
  * @param {string} dbUserId - to verify if sessionToken matches the pertinent user id
  */
 function verifySessionToken (sessionToken, dbUserId) {
-  return new Promise((res, reject) => {
-    jwt.verify(sessionToken, config.JWT_SECRET, (err, decoded) => {
-      if (err) {
-        // reject with invalid authentication status code
-        reject(401);
-      } else {
-        res(decoded);
-      }
-    });
-  });
+  if (!sessionToken) return false;
+  try {
+    const decoded = jwt.verify(sessionToken, config.JWT_SECRET);
+    return decoded.userId === dbUserId;
+  } catch (e) {
+    console.error(e);
+    return false;
+  }
 }
 
 /**
@@ -71,7 +69,7 @@ function getConfidenceWeight(pos, n) {
  * @param {array} unsorted - raw array of items to sort
  */
 function getWeightedSort (unsorted) {
-  sorted = unsorted.sort((
+  const sorted = unsorted.sort((
     { votes: { upVote: aUpVote, downVote: aDownVote }},
     { votes: { upVote: bUpVote, downVote: bDownVote }}
   ) => {
@@ -89,7 +87,7 @@ function getWeightedSort (unsorted) {
  * @param {array} unsorted - raw array of items to sort
  */
 function getHotSort (unsorted) {
-  sorted = unsorted.sort((
+  const sorted = unsorted.sort((
     { id: aId, timestamp: aTimestamp, votes: { upVote: aUpVote, downVote: aDownVote }},
     { id: bId, timestamp: bTimestamp, votes: { upVote: bUpVote, downVote: bDownVote }}
   ) => {
@@ -135,6 +133,7 @@ function getSortedList (list, criterion) {
       sorted = list;
     }
   }
+  console.log(sorted);
   return sorted;
 }
 

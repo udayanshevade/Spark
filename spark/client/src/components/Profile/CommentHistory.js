@@ -32,8 +32,8 @@ import { commentDelete } from '../../actions/comment';
 const CommentHistory = ({
   width,
   comments,
-  commentVotesReceivedMax,
-  commentVotesReceivedSeries,
+  commentsVotesReceivedMax,
+  commentsVotesReceivedSeries,
   selectSortCriterion,
   netScore,
   setUser,
@@ -54,8 +54,8 @@ const CommentHistory = ({
     >
       <Value value={netScore} label="score" className="profile-vote-score-value" />
       <VotesMeter
-        maxCount={commentVotesReceivedMax}
-        votesSeries={commentVotesReceivedSeries}
+        maxCount={commentsVotesReceivedMax}
+        votesSeries={commentsVotesReceivedSeries}
       />
     </Box>
     <Box pad={{ vertical: 'none' }} className="profile-details-list-container">
@@ -117,8 +117,8 @@ const commentProps = PropTypes.arrayOf(
 
 CommentHistory.propTypes = {
   width: PropTypes.number,
-  commentVotesReceivedSeries: seriesProps,
-  commentVotesReceivedMax: PropTypes.number,
+  commentsVotesReceivedSeries: seriesProps,
+  commentsVotesReceivedMax: PropTypes.number,
   comments: commentProps,
   netScore: PropTypes.string,
   username: PropTypes.string,

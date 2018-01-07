@@ -21,26 +21,12 @@ import Loading from '../Loading';
 import { validate, warn } from './validation';
 
 class UpdatePost extends Component {
-  state = {
-    shouldRedirect: false,
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (this.props.isUpdating && nextProps.postData && !nextProps.isUpdating) {
-      this.setState({ shouldRedirect: true });
-    }
-  }
-
   componentWillUnmount() {
-    this.setState({ shouldRedirect: false });
-    this.props.actions.postResetCreateData();
-  }
-
-  render() {
-    if (this.state.shouldRedirect) {
-      const { id, title } = this.props.postData;
-      return <Redirect to={`/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}`} />
+    if (this.props.submitStatus === 'success') {
+      this.props.actions.postSetSubmitStatus('pending');
     }
+  }
+  render () {
     const {
       handleSubmit,
       updateSelectInput,
@@ -50,9 +36,17 @@ class UpdatePost extends Component {
       isMobile,
       navTitle,
       suggestions,
-      heading,
+      updateType,
       touch,
+      postData,
+      submitStatus,
+      formVals,
     } = this.props;
+    if (submitStatus === 'success') {
+      const { id, title } = postData;
+      return <Redirect to={`/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}`} />;
+    }
+    const { title, url, body, category } = formVals;
     return isUpdating
       ? <Loading />
       : (
@@ -72,7 +66,7 @@ class UpdatePost extends Component {
             className="create-post-form"
           >
             <Header>
-              <Heading className="new-post-create-title">{heading}</Heading>
+              <Heading className="new-post-create-title">{`${updateType} post`}</Heading>
             </Header>
             <FormFields>
               <Field
@@ -107,15 +101,25 @@ class UpdatePost extends Component {
                 }}
                 options={suggestions}
                 help={
-                  <Anchor
-                    reverse
-                    primary
-                    path="/categories/create"
-                    icon={<ArrowNext size="xsmall" />}
-                    className="next-link"
-                  >
-                    create one
-                  </Anchor>
+                  !suggestions.length &&
+                    <Anchor
+                      reverse
+                      primary
+                      path="/categories/create"
+                      onClick={() => {
+                        actions.postUpdateCreateData({
+                          title,
+                          url,
+                          body,
+                          category,
+                        });
+                        actions.postSetUpdating(true);
+                      }}
+                      icon={<ArrowNext size="xsmall" />}
+                      className="next-link"
+                    >
+                      create one
+                    </Anchor>
                 }
                 placeholder="Where to post, e.g. react"
                 touch={() => {
@@ -135,7 +139,7 @@ class UpdatePost extends Component {
         </Section>
       );
   }
-}
+};
 
 UpdatePost.propTypes = {
   navTitle: PropTypes.string,

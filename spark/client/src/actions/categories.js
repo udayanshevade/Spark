@@ -1,6 +1,7 @@
-import { SubmissionError } from 'redux-form';
+import { change, reset, SubmissionError } from 'redux-form';
 import * as types from './types';
 import { appShowTipWithText } from './app';
+import { postSetCreating } from './post';
 import { postsLoadData } from './posts';
 import { userUpdateData } from './user';
 import Requests from '../requests';
@@ -84,8 +85,13 @@ export const categoriesSetSuggestionsSetTimeout = timeoutId => ({
   timeoutId,
 });
 
+export const categoriesSetSubmitStatus = submitStatus => ({
+  type: types.CATEGORIES_SET_SUBMIT_STATUS,
+  submitStatus,
+});
+
 export const categoriesCreateNew = data => async(dispatch, getState) => {
-  const { user, categories: { categories, categorySuggestions } } = getState();
+  const { user, categories: { categories, categorySuggestions }, post } = getState();
   if (!user.user) {
     dispatch(appShowTipWithText('Login to create a category', 'footer-login-button'));
     return;
@@ -93,6 +99,8 @@ export const categoriesCreateNew = data => async(dispatch, getState) => {
   const { subscriptions, sessionToken, profile } = user.user;
   const { id } = profile;
   const url = `${categoriesURL}/create`;
+  // pre-emptive check to see if category exists,
+  // prevents additional roundtrip
   if (data.name === categorySuggestions.results[0]) {
     console.log('Category already exists');
     throw new SubmissionError({ name: 'Category exists' });
@@ -114,11 +122,17 @@ export const categoriesCreateNew = data => async(dispatch, getState) => {
     newSubscriptions.unshift(data.name);
     dispatch(categoriesSetActive(data.name));
     dispatch(categoriesUpdate(newCategories));
-    dispatch(userUpdateData({ ...user, subscriptions: newSubscriptions }));
+    dispatch(userUpdateData({ ...user.user, subscriptions: newSubscriptions }));
+    dispatch(categoriesSetSubmitStatus('success'));
+    dispatch(categoriesSetIsCreating(false));
+    if (post.creating) {
+      dispatch(postSetCreating(false));
+      dispatch(change('postCreateNew', 'category', data.name));
+      dispatch(reset('categoryCreateNew'));
+    }
   } else if (res.error) {
     throw new SubmissionError({ name: res.error });
   }
-  dispatch(categoriesSetIsCreating(false));
 };
 
 const categoriesGetCategoryData = async(category) => {
@@ -167,8 +181,12 @@ export const categoriesUpdateSubscribers = (category, option) => (dispatch, getS
   const oldCategory = categories[index];
   const updatedCategory = {
     ...oldCategory,
-    subscribers: oldCategory.subscribers + updateBy,
+    subscribers: +oldCategory.subscribers + updateBy,
   };
   newCategories.splice(index, 1, updatedCategory);
   dispatch(categoriesUpdate(newCategories));
-}
+};
+
+export const categoriesResetCreateData = () => ({
+  type: types.CATEGORIES_RESET_CREATE_DATA,
+});

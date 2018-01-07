@@ -87,7 +87,7 @@ export const profileGetPosts = profile => async(dispatch, getState) => {
     const newPosts = [ ...oldPosts, ...posts ];
     dispatch(profileUpdatePosts(newPosts));
     dispatch(profileUpdateDepleted(depleted, 'posts'));
-    dispatch(profileUpdateOffset(offset + limit, 'posts'));
+    dispatch(profileUpdateOffset(offset + posts.length, 'posts'));
   }
   dispatch(profileSetLoading(false, 'posts'));
 };
@@ -115,6 +115,7 @@ export const profileGetComments = profile => async(dispatch, getState) => {
     const newComments = [ ...oldComments, ...comments ];
     dispatch(profileUpdateComments(newComments));
     dispatch(profileUpdateDepleted(depleted, 'comments'));
+    dispatch(profileUpdateOffset(offset + comments.length, 'comments'));
   }
   dispatch(profileSetLoading(false, 'comments'));
 };

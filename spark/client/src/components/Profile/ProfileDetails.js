@@ -17,10 +17,10 @@ import {
   getProfileTimeSinceCreation,
   getProfileVotesGivenHistory,
   getProfileVotesGivenCount,
-  getProfilePostVotesReceived,
-  getProfilePostVotesReceivedCount,
-  getProfileCommentVotesReceived,
-  getProfileCommentVotesReceivedCount,
+  getProfilePostsVotesReceived,
+  getProfilePostsVotesReceivedCount,
+  getProfileCommentsVotesReceived,
+  getProfileCommentsVotesReceivedCount,
 } from '../../selectors/profile';
 
 const ProfileDetails = ({
@@ -30,10 +30,10 @@ const ProfileDetails = ({
   height,
   username,
   timeSinceCreation,
-  postVotesReceivedMax,
-  postVotesReceivedSeries,
-  commentVotesReceivedMax,
-  commentVotesReceivedSeries,
+  postsVotesReceivedMax,
+  postsVotesReceivedSeries,
+  commentsVotesReceivedMax,
+  commentsVotesReceivedSeries,
   votesGivenMax,
   votesGivenSeries,
 }) => (
@@ -53,24 +53,24 @@ const ProfileDetails = ({
               height={height}
               votesGivenMax={votesGivenMax}
               votesGivenSeries={votesGivenSeries}
-              postVotesReceivedMax={postVotesReceivedMax}
-              postVotesReceivedSeries={postVotesReceivedSeries}
-              commentVotesReceivedMax={commentVotesReceivedMax}
-              commentVotesReceivedSeries={commentVotesReceivedSeries}
+              postsVotesReceivedMax={postsVotesReceivedMax}
+              postsVotesReceivedSeries={postsVotesReceivedSeries}
+              commentsVotesReceivedMax={commentsVotesReceivedMax}
+              commentsVotesReceivedSeries={commentsVotesReceivedSeries}
             />
           </Tab>
           <Tab title="Posts">
             <PostHistory
               width={width}
-              postVotesReceivedMax={postVotesReceivedMax}
-              postVotesReceivedSeries={postVotesReceivedSeries}
+              postsVotesReceivedMax={postsVotesReceivedMax}
+              postsVotesReceivedSeries={postsVotesReceivedSeries}
             />
           </Tab>
           <Tab title="Comments">
             <CommentHistory
               width={width}
-              commentVotesReceivedMax={commentVotesReceivedMax}
-              commentVotesReceivedSeries={commentVotesReceivedSeries}
+              commentsVotesReceivedMax={commentsVotesReceivedMax}
+              commentsVotesReceivedSeries={commentsVotesReceivedSeries}
             />
           </Tab>
         </Tabs>
@@ -90,10 +90,10 @@ const mapStateToProps = ({ profile, responsive }) => ({
   timeSinceCreation: getProfileTimeSinceCreation(profile),
   votesGivenMax: getProfileVotesGivenCount(profile),
   votesGivenSeries: getProfileVotesGivenHistory(profile),
-  postVotesReceivedMax: getProfilePostVotesReceivedCount(profile),
-  postVotesReceivedSeries: getProfilePostVotesReceived(profile),
-  commentVotesReceivedMax: getProfileCommentVotesReceivedCount(profile),
-  commentVotesReceivedSeries: getProfileCommentVotesReceived(profile),
+  postsVotesReceivedMax: getProfilePostsVotesReceivedCount(profile),
+  postsVotesReceivedSeries: getProfilePostsVotesReceived(profile),
+  commentsVotesReceivedMax: getProfileCommentsVotesReceivedCount(profile),
+  commentsVotesReceivedSeries: getProfileCommentsVotesReceived(profile),
   height: responsive.height,
   width: responsive.width,
 });

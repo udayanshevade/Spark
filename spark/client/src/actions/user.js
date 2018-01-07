@@ -2,41 +2,44 @@ import * as types from './types';
 import Requests from '../requests';
 import { appShowTipWithText } from './app';
 import { categoriesUpdateSubscribers } from './categories';
+import { postResetCreateData } from './post';
 
 const userBaseURL = '/user';
-const commentBaseURL = '/comments';
-const postBaseURL = '/posts/thread';
 const categoriesURL = '/categories';
-
-const votePaths = {
-  comments: commentBaseURL,
-  posts: postBaseURL,
-};
+const votesURL = '/votes';
 
 export const userSetLoggingIn = isLoggingIn => ({
   type: types.USER_SET_LOGGING_IN,
   isLoggingIn,
 });
 
+export const userSetLoginError = loginError => ({
+  type: types.USER_SET_LOGIN_ERROR,
+  loginError,
+});
+
 export const userLogin = ({ username, password }) => async(dispatch, getState) => {
   if (username && password) {
     dispatch(userSetLoggingIn(true));
     const { loginForm } = getState().user;
-    const userData = await Requests.post({
+    const res = await Requests.post({
       url: `${userBaseURL}/${username}/${loginForm}`,
       body: { password },
     });
-    if (userData.sessionToken) {
-      dispatch(userUpdateData(userData));
-      dispatch(userSetLoggingIn(false));
+    if (res.error) {
+      dispatch(userSetLoginError([res.error]));
+    } else if (res.sessionToken) {
+      dispatch(userUpdateData(res));
       dispatch(userSetLoggedIn(true));
+      dispatch(userSetLoginError([]));
       dispatch(userSetLoginActive(false));
     }
+    dispatch(userSetLoggingIn(false));
   }
 };
 
 export const userRecordVote = (target, id, voted) => async(dispatch, getState) => {
-  const url = `${votePaths[target]}/${id}/vote`;
+  const url = `${votesURL}/${id}/vote`;
   const { user } = getState();
   if (!user.user) {
     const tipText = 'Login to vote, share or comment.';
@@ -83,6 +86,7 @@ export const userUpdateData = user => ({
 
 export const userLogout = () => (dispatch) => {
   dispatch(userSetLoggedIn(false));
+  dispatch(postResetCreateData());
   dispatch(userUpdateData(null));
 };
 
@@ -137,6 +141,6 @@ export const userSubscribeCategory = category => async(dispatch, getState) => {
   });
   if (res.success) {
     dispatch(userUpdateData({ ...user, subscriptions: newSubscriptions }));
-    dispatch(categoriesUpdateSubscribers(category, res.success));
+    dispatch(categoriesUpdateSubscribers(category, update));
   }
 };

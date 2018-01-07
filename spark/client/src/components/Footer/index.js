@@ -9,6 +9,7 @@ import LoginIcon from 'grommet/components/icons/base/Login';
 import LogoutIcon from 'grommet/components/icons/base/Logout';
 import UserIcon from 'grommet/components/icons/base/ContactInfo';
 import { userLogout, userSetLoginActive } from '../../actions/user';
+import { postResetCreateData } from '../../actions/post';
 import { profileSetUser } from '../../actions/profile';
 import { appShowTipWithText } from '../../actions/app';
 import { getUsername } from '../../selectors/user';
@@ -22,7 +23,9 @@ const AppFooter = ({ width, loggedIn, actions, username, isMobile }) =>  (
       path={loggedIn ? '/posts/new' : null}
       onClick={
         loggedIn
-          ? null
+          ? () => {
+            actions.postResetCreateData();
+          }
           : () => {
             actions.appShowTipWithText(
               'Login to submit a new post.',
@@ -75,6 +78,7 @@ const mapStateToProps = ({ user, responsive }) => ({
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     userLogout,
+    postResetCreateData,
     userSetLoginActive,
     profileSetUser,
     appShowTipWithText,

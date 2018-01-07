@@ -1,10 +1,12 @@
 import React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { change as changeFieldValue } from 'redux-form';
+import { change as changeFieldValue, formValueSelector } from 'redux-form';
 import PropTypes from 'prop-types';
 import UpdatePost from './UpdatePost';
 import {
+  postSetCreating,
+  postSetSubmitStatus,
   postCreateNew,
   postGetCategorySuggestions,
   postUpdateCreateData,
@@ -14,6 +16,7 @@ import { getIsMobile } from '../../selectors/responsive';
 
 const NewPost = ({
   postData,
+  submitStatus,
   initialValues,
   actions: {
     postCreateNew,
@@ -26,17 +29,20 @@ const NewPost = ({
   categorySuggestions: {
     results: suggestions,
   },
+  formVals,
 }) => (
   <UpdatePost
     form="postCreateNew"
     actions={actions}
     onSubmit={postCreateNew}
+    submitStatus={submitStatus}
     postData={postData}
     isUpdating={isCreating}
+    formVals={formVals}
     isMobile={isMobile}
     navTitle={navTitle}
     suggestions={suggestions}
-    heading="new post"
+    updateType="new"
     initialValues={initialValues}
     updateSelectInput={(val) => {
       postUpdateCategoryValue('postCreateNew', 'category', val);
@@ -57,17 +63,28 @@ NewPost.propTypes = {
   }),
 };
 
-const mapStateToProps = ({ post, navbar, responsive }) => ({
+const selector = formValueSelector('postCreateNew');
+
+const mapStateToProps = ({ post, navbar, responsive, ...state }) => ({
+  submitStatus: post.submitStatus,
   postData: post.data,
   initialValues: post.createData,
   categorySuggestions: post.categorySuggestions,
   isCreating: post.creating,
   navTitle: navbar.title,
   isMobile: getIsMobile(responsive),
+  formVals: {
+    title: selector(state, 'title'),
+    url: selector(state, 'url'),
+    body: selector(state, 'body'),
+    category: selector(state, 'category'),
+  },
 });
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
+    postSetUpdating: postSetCreating,
+    postSetSubmitStatus,
     postCreateNew,
     postGetCategorySuggestions,
     postUpdateCreateData,

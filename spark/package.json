@@ -4,7 +4,7 @@
   "description": "A server for the Udacity Reddit Clone project for ReactND",
   "main": "index.js",
   "scripts": {
-    "server": "nodemon server.js --watch spark",
+    "server": "nodemon -L server.js --watch spark/ --ignore 'spark/client/**/*'",
     "client": "node start-client.js"
   },
   "author": "David Harris",

@@ -1,10 +1,12 @@
 import React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { change as changeFieldValue } from 'redux-form';
+import { change as changeFieldValue, formValueSelector } from 'redux-form';
 import PropTypes from 'prop-types';
 import UpdatePost from './UpdatePost';
 import {
+  postSetCreating,
+  postSetSubmitStatus,
   postEdit,
   postGetCategorySuggestions,
   postUpdateCreateData,
@@ -14,6 +16,7 @@ import { getIsMobile } from '../../selectors/responsive';
 
 const EditPost = ({
   postData,
+  submitStatus,
   initialValues,
   actions: {
     postEdit,
@@ -27,6 +30,7 @@ const EditPost = ({
     results: suggestions,
   },
   match,
+  formVals,
 }) => (
   <UpdatePost
     form="postCreateNew"
@@ -35,11 +39,13 @@ const EditPost = ({
       postEdit(match.params.id, form);
     }}
     postData={postData}
+    submitStatus={submitStatus}
     isUpdating={isCreating}
+    formVals={formVals}
     isMobile={isMobile}
     navTitle={navTitle}
     suggestions={suggestions}
-    heading="edit post"
+    updateType="edit"
     initialValues={initialValues}
     updateSelectInput={(val) => {
       postUpdateCategoryValue('postCreateNew', 'category', val);
@@ -60,17 +66,28 @@ EditPost.propTypes = {
   }),
 };
 
-const mapStateToProps = ({ post, navbar, responsive }) => ({
+const selector = formValueSelector('postCreateNew');
+
+const mapStateToProps = ({ post, navbar, responsive, ...state }) => ({
   postData: post.data,
+  submitStatus: post.submitStatus,
   initialValues: post.createData,
   categorySuggestions: post.categorySuggestions,
   isCreating: post.creating,
   navTitle: navbar.title,
   isMobile: getIsMobile(responsive),
+  formVals: {
+    title: selector(state, 'title'),
+    url: selector(state, 'url'),
+    body: selector(state, 'body'),
+    category: selector(state, 'category'),
+  },
 });
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
+    postSetUpdating: postSetCreating,
+    postSetSubmitStatus,
     postEdit,
     postGetCategorySuggestions,
     postUpdateCreateData,

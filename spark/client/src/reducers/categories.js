@@ -1,11 +1,18 @@
 import * as types from '../actions/types';
 
+const initialValues = {
+  name: '',
+  blurb: '',
+  private: false,
+};
+
 export const initialState = {
   query: '',
+  submitStatus: 'pending',
   categories: [],
   loading: false,
   active: '',
-  emptyValues: {
+  initialValues: {
     name: '',
     blurb: '',
     private: false,
@@ -29,6 +36,13 @@ const categories = (state = initialState, action) => {
       return {
         ...state,
         query,
+      };
+    }
+    case types.CATEGORIES_SET_SUBMIT_STATUS: {
+      const { submitStatus } = action;
+      return {
+        ...state,
+        submitStatus,
       };
     }
     case types.CATEGORIES_SET_LOADING:
@@ -88,6 +102,14 @@ const categories = (state = initialState, action) => {
       return {
         ...state,
         blurbExpanded,
+      };
+    }
+    case types.CATEGORIES_RESET_CREATE_DATA: {
+      return {
+        ...state,
+        initialValues: {
+          ...initialValues,
+        },
       };
     }
     default:

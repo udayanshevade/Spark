@@ -52,11 +52,11 @@ export const getProfileVotesGivenCount = createSelector(
   voteHistory => (voteHistory ? voteHistory[0].value + voteHistory[1].value : null)
 );
 
-export const getProfileCommentVotesReceived = createSelector(
+export const getProfileCommentsVotesReceived = createSelector(
   getProfileData,
   (profile) => {
     if (!profile) return null;
-    const { commentVotesReceived: votes } = profile;
+    const { commentsVotesReceived: votes } = profile;
     const series = [{
         label: 'Upvotes',
         value: Math.abs(votes.upVote),
@@ -70,11 +70,11 @@ export const getProfileCommentVotesReceived = createSelector(
   }
 );
 
-export const getProfileCommentVotesReceivedCount = createSelector(
+export const getProfileCommentsVotesReceivedCount = createSelector(
   getProfileData,
   profile => {
     if (!profile) return null;
-    const { commentVotesReceived: votes } = profile;
+    const { commentsVotesReceived: votes } = profile;
     return Math.abs(votes.upVote) + Math.abs(votes.downVote);
   }
 );
@@ -83,10 +83,10 @@ export const getProfileCommentsNetScore = createSelector(
   getProfileData,
   profile => {
     if (!profile) return null;
-    const { commentVotesReceived: votes } = profile;
+    const { commentsVotesReceived: votes } = profile;
     const score = votes.upVote + votes.downVote;
     if (!score) {
-      return score;
+      return `${score}`;
     } else if (score < 0) {
       return `-${score}`;
     } else {
@@ -95,11 +95,11 @@ export const getProfileCommentsNetScore = createSelector(
   }
 );
 
-export const getProfilePostVotesReceived = createSelector(
+export const getProfilePostsVotesReceived = createSelector(
   getProfileData,
   (profile) => {
     if (!profile) return null;
-    const { postVotesReceived: votes } = profile;
+    const { postsVotesReceived: votes } = profile;
     const series = [{
         label: 'Upvotes',
         value: Math.abs(votes.upVote),
@@ -113,11 +113,11 @@ export const getProfilePostVotesReceived = createSelector(
   }
 );
 
-export const getProfilePostVotesReceivedCount = createSelector(
+export const getProfilePostsVotesReceivedCount = createSelector(
   getProfileData,
   profile => {
     if (!profile) return null;
-    const { postVotesReceived: votes } = profile;
+    const { postsVotesReceived: votes } = profile;
     return Math.abs(votes.upVote) + Math.abs(votes.downVote);
   }
 );
@@ -126,10 +126,10 @@ export const getProfilePostsNetScore = createSelector(
   getProfileData,
   profile => {
     if (!profile) return null;
-    const { postVotesReceived: votes } = profile;
+    const { postsVotesReceived: votes } = profile;
     const score = votes.upVote + votes.downVote;
     if (!score) {
-      return score;
+      return `${score}`;
     } else if (score < 0) {
       return `-${score}`;
     } else {

@@ -6,10 +6,10 @@ import Box from 'grommet/components/Box';
 import Heading from 'grommet/components/Heading';
 
 const VoteHistory = ({
-  postVotesReceivedMax,
-  postVotesReceivedSeries,
-  commentVotesReceivedMax,
-  commentVotesReceivedSeries,
+  postsVotesReceivedMax,
+  postsVotesReceivedSeries,
+  commentsVotesReceivedMax,
+  commentsVotesReceivedSeries,
   votesGivenMax,
   votesGivenSeries,
   height,
@@ -20,14 +20,14 @@ const VoteHistory = ({
       <VotesMeter
         label="Posts"
         units="votes"
-        maxCount={postVotesReceivedMax}
-        votesSeries={postVotesReceivedSeries}
+        maxCount={postsVotesReceivedMax}
+        votesSeries={postsVotesReceivedSeries}
       />
       <VotesMeter
         label="Comments"
         units="votes"
-        maxCount={commentVotesReceivedMax}
-        votesSeries={commentVotesReceivedSeries}
+        maxCount={commentsVotesReceivedMax}
+        votesSeries={commentsVotesReceivedSeries}
       />
     </Box>
     {
@@ -52,10 +52,10 @@ const seriesProps = PropTypes.arrayOf(
 );
 
 VoteHistory.propTypes = {
-  postVotesReceivedMax: PropTypes.number,
-  postVotesReceivedSeries: seriesProps,
-  commentVotesReceivedMax: PropTypes.number,
-  commentVotesReceivedSeries: seriesProps,
+  postsVotesReceivedMax: PropTypes.number,
+  postsVotesReceivedSeries: seriesProps,
+  commentsVotesReceivedMax: PropTypes.number,
+  commentsVotesReceivedSeries: seriesProps,
   votesGivenMax: PropTypes.number,
   votesGivenSeries: seriesProps,
   height: PropTypes.number,

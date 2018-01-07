@@ -7,6 +7,7 @@ import LoginForm from 'grommet/components/LoginForm';
 import Button from 'grommet/components/Button';
 import {
   userLogin,
+  userSetLoginError,
   userSetLoginActive,
   userSelectLoginForm,
   userResetLoginForm,
@@ -17,18 +18,20 @@ class Login extends Component {
     this.props.actions.userResetLoginForm();
   }
   render() {
-    const { defaultValues, actions, loginActive, loginForm, isLoggingIn } = this.props;
+    const { defaultValues, actions, loginActive, loginForm, isLoggingIn, errors } = this.props;
     const isLogin = loginForm === 'login';
     return (
       <Layer
         closer
         hidden={!loginActive}
         onClose={() => {
+          actions.userSetLoginError([]);
           actions.userSetLoginActive(false);
         }}
       >
         <LoginForm
           defaultValues={defaultValues}
+          errors={errors}
           onSubmit={isLoggingIn ? null : actions.userLogin}
           title={loginForm}
           secondaryText={
@@ -66,11 +69,13 @@ const mapStateToProps = ({ user }) => ({
   loginActive: user.loginActive,
   loginForm: user.loginForm,
   defaultValues: user.defaultValues,
+  errors: user.loginError,
 });
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     userLogin,
+    userSetLoginError,
     userSetLoginActive,
     userSelectLoginForm,
     userResetLoginForm,

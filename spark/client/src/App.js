@@ -67,7 +67,18 @@ class AppComponent extends Component {
           }}
         />
         <Route path="/categories/category/:category" component={Category} />
-        <Route path="/categories/create" component={NewCategory} />
+        <Route
+          path="/categories/create"
+          render={(props) => {
+            let el;
+            if (!loggedIn) {
+              el = <Redirect to={{ pathname: '/' }} />
+              actions.userSetLoginActive(true);
+            } else {
+              el = <NewCategory />;
+            }
+            return el;
+          }} />
         <Footer />
         {
           tipTarget &&

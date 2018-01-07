@@ -1,288 +1,356 @@
-const {
-  verifySessionToken,
-  getSortedList,
-  getRestrictedList,
-} = require('./utils');
 const uuidv4 = require('uuid/v4');
 
-const db = {
-  "894tuq4ut84ut8v4t8wun89g": {
-    id: '894tuq4ut84ut8v4t8wun89g',
-    postId: "8xf0y6ziyjabvozdd253nd",
-    parentId: null,
-    ancestorId: null,
-    children: ['8tu4bsun805n8un48ve89'],
-    timestamp: 1468166872634,
-    body: 'Hi there! I am a COMMENT.',
-    author: 'user',
-    votes: {
-      upVote: 6,
-      downVote: 1,
-    },
-    deleted: false,
-    postDeleted: false,
+/* sample schema
+{
+  id: '894tuq4ut84ut8v4t8wun89g',
+  postId: "8xf0y6ziyjabvozdd253nd",
+  parentId: null,
+  children: ['8tu4bsun805n8un48ve89'],
+  created: 1468166872634,
+  body: 'Hi there! I am a COMMENT.',
+  author: 'user',
+  votes: {
+    upVote: 6,
+    downVote: 1,
   },
-  "8tu4bsun805n8un48ve89": {
-    id: '8tu4bsun805n8un48ve89',
-    postId: "8xf0y6ziyjabvozdd253nd",
-    parentId: '894tuq4ut84ut8v4t8wun89g',
-    ancestorId: '894tuq4ut84ut8v4t8wun89g',
-    children: [],
-    timestamp: 1469479767190,
-    body: 'Comments. Are. Cool.',
-    author: 'user',
-    votes: {
-      upVote: 1,
-      downVote: 6,
-    },
-    deleted: false,
-    postDeleted: false,
-  },
-  "8tu41yvak05n8uqalek29": {
-    id: '8tu41yvak05n8uqalek29',
-    postId: "8xf0y6ziyjabvozdd253nd",
-    parentId: null,
-    ancestorId: null,
-    children: ['afwk38qa905n8u1ska938'],
-    timestamp: 1469479767190,
-    body: 'Comments are love.',
-    author: 'user',
-    votes: {
-      upVote: 11,
-      downVote: 3,
-    },
-    deleted: false,
-    postDeleted: false,
-  },
-  "afwk38qa905n8u1ska938": {
-    id: 'afwk38qa905n8u1ska938',
-    postId: "8xf0y6ziyjabvozdd253nd",
-    parentId: '8tu41yvak05n8uqalek29',
-    ancestorId: '8tu41yvak05n8uqalek29',
-    children: [],
-    timestamp: 1489219767117,
-    body: 'Comments are life.',
-    author: 'user',
-    votes: {
-      upVote: 2,
-      downVote: 1,
-    },
-    deleted: false,
-    postDeleted: false,
-  },
-  "i1sahasj1ie9auqfka9s0": {
-    id: 'i1sahasj1ie9auqfka9s0',
-    postId: "8xf0y6ziyjabvozdd253nd",
-    parentId: null,
-    ancestorId: null,
-    children: [],
-    timestamp: 1469479767190,
-    body: 'You merely adopted the comments section. I was born in it. Molded by it.',
-    author: 'user',
-    votes: {
-      upVote: 3,
-      downVote: 4,
-    },
-    deleted: false,
-    postDeleted: false,
-  },
-};
+  deleted: false,
+},
+*/
 
-/**
- * @description Access database
- */
-function getData () {
-  const data = db;
-  return data;
-}
+const buildRecursiveCommentQuery = (
+  constraint,
+  sort,
+  dir,
+  rootLim,
+  lim,
+  descendantsOnly,
+  depth
+) => (
+  `WITH RECURSIVE root_comments AS (
+    SELECT
+      comment_id,
+      parent_id,
+      post_id,
+      body,
+      author,
+      created,
+      deleted,
+      sum(CASE WHEN vote = 'upVote' AND target_id = comment_id THEN 1 ELSE 0 END) OVER (PARTITION BY comment_id) as upvote,
+      sum(CASE WHEN vote = 'downVote' AND target_id = comment_id THEN 1 ELSE 0 END) OVER (PARTITION BY comment_id) as downvote
+    FROM comments LEFT JOIN votes ON comment_id = target_id
+    ${constraint === 'post_id' ? 'WHERE post_id = $1' : ''}
+  ), ancestor_comments AS (
+    SELECT * FROM root_comments
+      WHERE ${constraint === 'post_id' ? `parent_id IS NULL` : 'comment_id = $1'}
+      ${sort} ${dir} ${rootLim}
+  ), limited_comments AS (
+    SELECT * FROM ancestor_comments ${lim}
+  ), comments_by_constraint AS (
+    SELECT
+      comment_id,
+      null parent_id,
+      post_id,
+      body,
+      author,
+      created,
+      deleted,
+      upvote,
+      downvote,
+      0 depth
+    FROM limited_comments
+      UNION
+    SELECT
+      root_comments.comment_id,
+      root_comments.parent_id,
+      root_comments.post_id,
+      root_comments.body,
+      root_comments.author,
+      root_comments.created,
+      root_comments.deleted,
+      root_comments.upvote,
+      root_comments.downvote,
+      ancestor_children.depth + 1 AS depth
+    FROM (
+      SELECT root_comments.parent_id,
+        comments_by_constraint.depth
+      FROM root_comments, comments_by_constraint
+      WHERE root_comments.parent_id = comments_by_constraint.comment_id
+      AND comments_by_constraint.depth < ${depth}
+    ) AS ancestor_children, root_comments
+    WHERE ancestor_children.parent_id = root_comments.parent_id
+), result_comments AS (
+  SELECT * FROM comments_by_constraint
+  UNION SELECT
+    comment_id,
+    parent_id,
+    post_id,
+    body,
+    author,
+    created,
+    deleted,
+    upvote,
+    downvote,
+    0 AS depth
+  FROM ancestor_comments
+) SELECT DISTINCT
+    a.comment_id,
+    a.parent_id,
+    a.post_id,
+    a.body,
+    a.author,
+    a.created,
+    a.deleted,
+    a.upvote,
+    a.downvote,
+    a.depth,
+    (CASE WHEN a.depth < ${depth - 1} THEN true ELSE count(b.comment_id) OVER (PARTITION BY a.comment_id) = 0 END) AS depleted,
+    (CASE WHEN a.depth < ${depth - 1} THEN array_remove(array_agg(b.comment_id) OVER (PARTITION BY a.comment_id), NULL) ELSE NULL END) AS children
+  FROM result_comments AS a
+    LEFT JOIN comments AS b
+    ON a.comment_id = b.parent_id
+    ${descendantsOnly ? 'WHERE a.depth > 0' : ''}`
+);
 
-/**
- * @description Get all comments belonging to a post
- * @param {string} postId
- * @returns {array} comment objects with a shared post
- */
-function getByPost (postId, criterion, direction, offset, limit) {
-  return new Promise((res) => {
-    const dbComments = getData();
-    const rawComments = Object.values(dbComments)
-      .filter(c => c.postId === postId && !c.parentId);
-    const sortedComments = getSortedList(rawComments, criterion);
-    const depleted = offset + limit > rawComments.length - 1;
-    const comments = getRestrictedList(sortedComments, direction, offset, limit);
-    for (const comment of comments) {
-      for (const childId of comment.children) {
-        comments.push(dbComments[childId]);
-      }
+function getCommentSortFragment (criterion) {
+  const z = 1.96;
+  const z2 = Math.pow(z, 2);
+  const total = '(root_comments.upvote + root_comments.downvote)';
+  const phat = `(root_comments.upvote / ${total})`;
+  const confidenceStatementPrefix = `ORDER BY (CASE WHEN root_comments.upvote = 0 AND root_comments.downvote = 0 THEN 1 ELSE ((${phat} + (${z2} / (2 * ${total})))
+      - (${z} * sqrt(((${phat} * (1 - ${phat})) + (${z2} / (4 * ${total}))) / ${total}))) / (1 + (${z2} / ${total}))`;
+  const confidenceStatementSuffix = 'END)';
+  const milsToHours = 3600;
+  const timeFactor = 2;
+  const timeElapsed = `EXTRACT(epoch FROM created) / ${milsToHours}`;
+  const hotSortFragment = `(1 / power(${timeElapsed} + 2, ${timeFactor}))`;
+  let commentsSortFragment = '';
+  switch (criterion) {
+    case 'score': {
+      commentsSortFragment = 'ORDER BY (root_comments.upvote - root_comments.downvote)';
+      break;
     }
-    res({ comments, depleted });
-  });
-}
-
-/**
- * @description Get a specific comment by id
- * @param {string} 
- * @returns {object} comment details
- */
-function get (commentId) {
-  return new Promise((res) => {
-    res(getChain([], [commentId]));
-  });
-}
-
-/**
- * @description Recursively fetches a chain of comment children
- */
-function getChain (chain, commentIds) {
-  const dbComments = getData();
-  commentIds.forEach((id) => {
-    const comment = dbComments[id];
-    if (comment) {
-      chain.push(comment);
-      const children = comment.children;
-      if (children.length) {
-        getChain(chain, children);
-      }
+    case 'new': {
+      commentsSortFragment = 'ORDER BY created';
+      break;
     }
-  });
-  return chain;
+    case 'best': {
+      commentsSortFragment = `${confidenceStatementPrefix} ${confidenceStatementSuffix}`;
+      break;
+    }
+    case 'hot': {
+      commentsSortFragment = `${confidenceStatementPrefix} + ${hotSortFragment} ${confidenceStatementSuffix}`;
+      break;
+    }
+    default: {
+      commentsSortFragment = '';
+    }
+  }
+  return commentsSortFragment;
 }
 
 /**
- * @description Get posts by array of ids
- * @param {array} postIds
- * @returns {array} batch of posts by ids
+ * @description Get chain of comments as constrained
+ * can be by post_id, user_id, or parent_id
  */
-function getByIds (commentIds, criterion, direction, offset, limit) {
-  return new Promise((res) => {
-    const dbComments = getData();
-    const rawComments = commentIds.map(id => dbComments[id]);
-    const selectedComments = getSortedList(rawComments, criterion);
-    const depleted = offset + limit > selectedComments.length - 1;
-    const commentsList = getRestrictedList(selectedComments, direction, offset, limit);
-    res({ comments: commentsList, depleted });
-  });
-}
-
-/**
- * @description Add a new comment object
- * @param {string} sessionToken - action validation
- * @param {object} comment - contains comment details 
- */
-function add (sessionToken, comment) {
-  return new Promise((res, reject) => {
-    verifySessionToken(sessionToken, comment.author)
-      .then(data => {
-        const comments = getData();
-        const id = uuidv4();
-        comments[id] = {
-          id,
-          timestamp: Date.now(),
-          body: comment.body,
-          author: comment.author,
-          postId: comment.postId,
-          parentId: comment.parentId !== 'null' ? comment.parentId : null,
-          ancestorId: comment.ancestorId !== 'null' ? comment.ancestorId : null,
-          children: [],
-          votes: {
-            upVote: 1,
-            downVote: 0,
-          },
-          deleted: false,
-          postDeleted: false,
-        };
-
-        if (comment.parentId !== 'null') {
-          comments[comment.parentId].children.push(id);
+async function getComments (
+  pool,
+  constraint,
+  criterion,
+  direction,
+  descendantsOnly,
+  offset = 0,
+  limit = 10
+) {
+  const depth = 6;
+  let commentsResult = { error: 500 };
+  try {
+    const commentsSortFragment = getCommentSortFragment(criterion);
+    const directionFragment = direction === 'desc' ? 'DESC' : 'ASC';
+    const rootOffsetFragment = `LIMIT $2 OFFSET $3`;
+    const offsetFragment = `LIMIT $4`;
+    const commentsQueryText = buildRecursiveCommentQuery(
+      constraint.key,
+      commentsSortFragment,
+      directionFragment,
+      rootOffsetFragment,
+      offsetFragment,
+      descendantsOnly,
+      depth
+    );
+    const commentsQueryVals = [constraint.value, limit + 1, offset, limit];
+    const { rows: rawComments } = await pool.query(commentsQueryText, commentsQueryVals);
+    if (!rawComments) {
+        return commentsResult;
+    } else {
+      let depleted = true;
+      let count = 0;
+      let limited = true;
+      const comments = rawComments.filter(c => {
+        if (!c.parent_id) {
+          limited = count < limit;
+          count += 1;
+          if (!limited && depleted) {
+            depleted = false;
+          }
         }
-
-        res(comments[id]);
-    }).catch(err => reject(err));
-  });
-}
-
-/**
- * @description Vote on a comment
- * @param {string} sessionToken
- * @param {string} commentId
- * @param {string} option, i.e. 'upVote'/'downVote'
- */
-function vote (commentId, option, previousVote) {
-  return new Promise((res, reject) => {
-    const comments = getData();
-    comment = comments[commentId];
-    if (previousVote && previousVote === option) {
-      console.log(`Duplicated vote on comment: ${commentId}.`);
-      reject(403);
-      return;
+        return (!c.parent_id && limited) || c.parent_id;
+      }).map((raw) => ({
+        id: raw.comment_id,
+        children: raw.children || [],
+        parentId: raw.parent_id,
+        postId: raw.post_id,
+        created: raw.created,
+        body: raw.body,
+        author: raw.author,
+        votes: {
+          upVote: +raw.upvote,
+          downVote: +raw.downvote,
+        },
+        deleted: raw.deleted,
+        depleted: raw.depleted,
+        depth: raw.depth,
+      }));
+      return { comments, depleted };
     }
-    if (option) {
-      comment.votes[option] += 1;
+  } catch (e) {
+    console.error(e);
+    return commentsResult;
+  }
+}
+
+async function add (client, details) {
+  let response = { error: 500 };
+  try {
+    await client.query('BEGIN');
+    const addCommentText = `INSERT INTO comments
+      (comment_id, parent_id, post_id, body, author)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *`;
+    const commentId = uuidv4();
+    const { postId, parentId: rawParentId, body, author } = details;
+    const parentId = rawParentId === 'null' ? null : rawParentId;
+    const addCommentVals = [commentId, parentId, postId, body, author];
+    res = await client.query(addCommentText, addCommentVals);
+    const addAuthorVoteText = 'INSERT INTO votes VALUES($1, $2, $3)';
+    const addAuthorVoteVals = [author, commentId, 'upVote'];
+    await client.query(addAuthorVoteText, addAuthorVoteVals);
+    await client.query('COMMIT');
+    if (res.rows.length) {
+      const commentData = res.rows[0];
+      response = {
+        author: commentData.author,
+        postId: commentData.post_id,
+        parentId: commentData.parent_id,
+        body: commentData.body,
+        id: commentId,
+        deleted: commentData.deleted,
+        created: commentData.created,
+        votes: {
+          upVote: 1,
+          downVote: 0,
+        },
+        children: [],
+      };
     }
-    if (previousVote && previousVote !== option) {
-      comment.votes[previousVote] -= 1;
-    }
-    res(comment);
-  });
+  } catch (e) {
+    console.error(e);
+    await client.query('ROLLBACK');
+  } finally {
+    client.release();
+    return response;
+  }
 }
 
-/**
- * @description Disable a comment if its post is disabled
- * @param {string} sessionToken
- * @param {object} disabled post object
- */
-function disableByPost (post) {
-  return new Promise((res, reject) => {
-    const comments = getData();
-    keys = Object.keys(comments);
-    filtered_keys = keys.filter(key => comments[key].postId === post.id);
-    filtered_keys.forEach(key => comments[key].postDeleted = true);
-    res(post);
-  });
+async function edit (client, id, body) {
+  let response = { errors: 500 };
+  try {
+    await client.query('BEGIN');
+    const commentEditText = 'UPDATE comments SET body = $1 WHERE comment_id = $2';
+    const commentEditVals = [body, id];
+    await client.query(commentEditText, commentEditVals);
+    await client.query('COMMIT');
+    response = { success: 'Comment edited' };
+  } catch (e) {
+    console.error(e);
+    await client.query('ROLLBACK');
+  } finally {
+    client.release();
+    return response;
+  }
 }
 
-/**
- * @description Disable a specific comment
- * @param {string} sessionToken
- * @param {string} commentId
- */
-function disable (sessionToken, commentId) {
-  const comments = getData();
-  return new Promise((res, reject) => {
-    verifySessionToken(sessionToken, comments[commentId].author)
-      .then(data => {
-        const commentToDisable = comments[commentId];
-        commentToDisable.deleted = !commentToDisable.deleted;
-        res(comments[commentId]);
-      }).catch(err => reject(err));
-    });
+async function deleteComment (client, id, shouldDelete) {
+  let response = { errors: 500 };
+  try {
+    await client.query('BEGIN');
+    const commentDeleteText = `UPDATE comments SET deleted = $1
+      WHERE comment_id = $2`;
+    const doDelete = shouldDelete === 'delete';
+    const commentDeleteVals = [doDelete, id];
+    await client.query(commentDeleteText, commentDeleteVals);
+    await client.query('COMMIT');
+    response = { success: `Comment ${shouldDelete === 'delete' ? 'deleted' : 'restored'}` };
+  } catch (e) {
+    console.error(e);
+    await client.query('ROLLBACK');
+  } finally {
+    client.release();
+    return response;
+  }
 }
 
-/**
- * @description Edit a specific comment
- * @param {string} sessionToken
- * @param {string} commentId - updated comment id
- * @param {object} updatedComment - updated comment details
- */
-function edit (sessionToken, commentId, updatedComment) {
-  const comments = getData();
-  return new Promise((res, reject) => {
-    verifySessionToken(sessionToken, comments[commentId].author)
-      .then(data => {
-        Object.keys(updatedComment).forEach((prop) => {
-          comments[commentId][prop] = updatedComment[prop];
-        });
-        res(comments[commentId]);
-      }).catch(err => reject(err))
-  });
+async function getUserComments (
+  client,
+  user,
+  criterion,
+  direction,
+  offset = 0,
+  limit = 10
+) {
+  try {
+    const commentsQueryText = `SELECT
+        comment_id,
+        parent_id,
+        post_id,
+        body,
+        author,
+        created,
+        deleted,
+        sum(CASE WHEN vote = 'upVote' AND target_id = comment_id THEN 1 ELSE 0 END) OVER (PARTITION BY comment_id) as upvote,
+        sum(CASE WHEN vote = 'downVote' AND target_id = comment_id THEN 1 ELSE 0 END) OVER (PARTITION BY comment_id) as downvote
+      FROM comments
+      LEFT JOIN votes ON comment_id = target_id
+      WHERE author = $1
+      ORDER BY $2${direction === 'desc' ? ' DESC' : ''}
+      LIMIT $3 OFFSET $4`;
+    const commentsQueryVals = [user, 'created', limit, offset];
+    const { rows } = await client.query(commentsQueryText, commentsQueryVals);
+    if (!rows) return { error: 500 };
+    const depleted = offset + limit > rows.length - 1;
+    const comments = rows.map(r => ({
+      id: r.comment_id,
+      parentId: r.parent_id,
+      postId: r.post_id,
+      body: r.body,
+      author: r.author,
+      created: r.created,
+      deleted: r.deleted,
+      votes: {
+        upVote: +r.upvote,
+        downVote: +r.downvote,
+      },
+    }));
+    return { comments, depleted };
+  } catch (e) {
+    console.error(e);
+    return { error: 500 };
+  }
 }
 
 module.exports = {
-  get,
-  getByIds,
-  getByPost,
+  getComments,
+  getUserComments,
   add,
-  vote,
-  disableByPost,
-  disable,
   edit,
+  deleteComment,
 };

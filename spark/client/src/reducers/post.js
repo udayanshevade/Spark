@@ -5,7 +5,7 @@ export const initialState = {
   comments: {
     comments: [],
     offset: 0,
-    limit: 50,
+    limit: 10,
     depleted: false,
     selectedCriterion: 'best',
     sortDirection: 'desc',
@@ -36,6 +36,7 @@ export const initialState = {
     timeoutId: null,
     timeoutLength: 750,
   },
+  submitStatus: 'pending',
   createData: {
     title: '',
     url: '',
@@ -108,6 +109,54 @@ const post = (state = initialState, action) => {
         },
       };
     }
+    case types.COMMENT_EDIT_DATA: {
+      const { commentId, vals, postId } = action;
+      const { comments: { comments: oldComments }, data } = state;
+      let newState = state;
+      if (data && data.id === postId) {
+        const oldIndex = oldComments.findIndex(c => c.id === commentId);
+        if (oldIndex > -1) {
+          const newComments = [...oldComments];
+          const newComment = { ...oldComments[oldIndex] };
+          Object.keys(vals).forEach((val) => {
+            newComment[val] = vals[val];
+          });
+          newComments.splice(oldIndex, 1, newComment);
+          newState = {
+            ...state,
+            comments: {
+              ...state.comments,
+              comments: newComments,
+            },
+          };
+        }
+      }
+      return newState;
+    }
+    case types.COMMENT_ADD_NEW: {
+      const { commentData } = action;
+      const { data, comments: { comments: oldComments } } = state;
+      let newState = state;
+      if (data && data.id === commentData.postId) {
+        const newComments = [...oldComments];
+        newComments.push(commentData);
+        const parentIndex = newComments.findIndex(c => c.id === commentData.parentId);
+        if (parentIndex > -1) {
+          const editedParent = { ...oldComments[parentIndex] };
+          editedParent.children = [...editedParent.children];
+          editedParent.children.unshift(commentData.id);
+          newComments.splice(parentIndex, 1, editedParent);
+        }
+        newState = {
+          ...state,
+          comments: {
+            ...state.comments,
+            comments: newComments,
+          },
+        };
+      }
+      return newState;
+    }
     case types.POST_TOGGLE_SHOW_FULL: {
       const showFull = !state.showFull;
       return { ...state, showFull };
@@ -149,7 +198,8 @@ const post = (state = initialState, action) => {
           const votes = { ...oldItem.votes };
           if (option) {
             votes[option] += 1;
-          } else if (previousVote && previousVote !== option) {
+          }
+          if (previousVote && previousVote !== option) {
             votes[previousVote] -= 1;
           }
           const newItem = { ...oldItem, votes };
@@ -190,10 +240,18 @@ const post = (state = initialState, action) => {
       const { createData } = action;
       return {
         ...state,
+        submitStatus: 'pending',
         createData: {
           ...state.createData,
           ...createData,
         },
+      };
+    }
+    case types.POST_SET_SUBMIT_STATUS: {
+      const { submitStatus } = action;
+      return {
+        ...state,
+        submitStatus,
       };
     }
     case types.POST_EDIT_DATA: {

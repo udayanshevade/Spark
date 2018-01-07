@@ -33,14 +33,15 @@ import { postDelete, postUpdateCreateData } from '../../actions/post';
 const PostHistory = ({
   width,
   posts,
-  postVotesReceivedMax,
-  postVotesReceivedSeries,
+  postsVotesReceivedMax,
+  postsVotesReceivedSeries,
   actions,
   netScore,
   votesGiven,
   username,
   depleted,
   loading,
+  bodyCharLim,
   ...sortProps,
 }) => (
   <Section responsive align="center" pad="small">
@@ -51,8 +52,8 @@ const PostHistory = ({
     >
       <Value value={netScore} label="score" className="profile-vote-score-value" />
       <VotesMeter
-        maxCount={postVotesReceivedMax}
-        votesSeries={postVotesReceivedSeries}
+        maxCount={postsVotesReceivedMax}
+        votesSeries={postsVotesReceivedSeries}
       />
     </Box>
     <Box pad={{ vertical: 'none' }} className="profile-details-list-container">
@@ -76,6 +77,7 @@ const PostHistory = ({
               votesGiven={votesGiven}
               username={username}
               profileSetPreviewActive={actions.profileSetPreviewActive}
+              bodyCharLim={bodyCharLim}
               {...post}
             />
           ))
@@ -115,14 +117,14 @@ const postProps = PropTypes.arrayOf(
 
 PostHistory.propTypes = {
   width: PropTypes.number,
-  postVotesReceivedSeries: seriesProps,
-  postVotesReceivedMax: PropTypes.number,
+  postsVotesReceivedSeries: seriesProps,
+  postsVotesReceivedMax: PropTypes.number,
   posts: postProps,
   netScore: PropTypes.string,
   username: PropTypes.string,
 };
 
-const mapStateToProps = ({ user, profile }) => ({
+const mapStateToProps = ({ user, profile, post }) => ({
   sortCriteria: profile.sortCriteria,
   depleted: getProfilePostsDepleted(profile),
   loading: getProfilePostsLoading(profile),
@@ -132,6 +134,7 @@ const mapStateToProps = ({ user, profile }) => ({
   netScore: getProfilePostsNetScore(profile),
   votesGiven: getUserVotesGiven(user),
   username: getUsername(user),
+  bodyCharLim: post.bodyCharLim,
 });
 
 const mapDispatchToProps = dispatch => ({

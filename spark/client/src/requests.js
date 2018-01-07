@@ -7,8 +7,16 @@ const Requests = {
 
 const handleRequest = async(request) => {
   const response = await buildRequest(request)();
-  const json = await response.json();
-  return json;
+  if (!response.ok && !response.json) {
+    return { error: 'Request failed' };
+  }
+  try {
+    const json = await response.json();
+    return json;
+  } catch (e) {
+    console.error(e);
+    return { error: 'Request failed' };
+  }
 };
 
 const buildRequest = ({ url, method = 'GET', ...request}) => {

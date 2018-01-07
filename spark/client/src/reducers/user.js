@@ -11,6 +11,7 @@ export const initialState = {
     username: '',
     password: '',
   },
+  loginError: [],
 };
 
 const user = (state = initialState, action) => {
@@ -29,6 +30,10 @@ const user = (state = initialState, action) => {
     case types.USER_UPDATE_DATA: {
       const { user } = action;
       return { ...state, user };
+    }
+    case types.USER_SET_LOGIN_ERROR: {
+      const { loginError } = action;
+      return { ...state, loginError };
     }
     case types.USER_SET_LOGIN_ACTIVE: {
       const { loginActive } = action;
@@ -75,15 +80,14 @@ const user = (state = initialState, action) => {
           ...state.user,
           profile: {
             ...state.user.profile,
-            comments: [...state.user.profile.comments].unshift(commentId),
             votesGiven: {
               ...state.user.profile.votesGiven,
               [commentId]: 'upVote',
             },
-            commentVotesReceived: {
-              ...state.user.profile.commentVotesReceived,
-              upVote: state.user.profile.commentVotesReceived.upVote + 1,
-            }
+            commentsVotesReceived: {
+              ...state.user.profile.commentsVotesReceived,
+              upVote: state.user.profile.commentsVotesReceived.upVote + 1,
+            },
           },
         };
       }

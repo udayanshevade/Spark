@@ -1,11 +1,14 @@
+import { reset, SubmissionError } from 'redux-form';
 import * as types from './types';
 import Requests from '../requests';
 import { appShowTipWithText } from './app';
-import { userUpdateVotes, userAddPost } from './user';
+import { userUpdateVotes } from './user';
+import { postsUpdateOffset } from './posts';
 
 const APIbaseURL = '/posts';
 const commentsURL = '/comments';
 const categoriesURL = '/categories';
+const categoryError = 'Category does not exist';
 
 export const postSetLoading = loading => ({
   type: types.POST_SET_LOADING,
@@ -15,6 +18,11 @@ export const postSetLoading = loading => ({
 export const postUpdateData = data => ({
   type: types.POST_UPDATE_DATA,
   data,
+});
+
+export const postSetSubmitStatus = submitStatus => ({
+  type: types.POST_SET_SUBMIT_STATUS,
+  submitStatus,
 });
 
 export const postUpdateComments = comments => ({
@@ -79,17 +87,35 @@ export const postGetComments = postId => async(dispatch, getState) => {
     const newComments = offset ? [...oldComments, ...comments] : [...comments];
     dispatch(postUpdateComments(newComments));
     dispatch(postCommentsUpdateDepleted(depleted));
-    dispatch(postCommentsUpdateOffset(offset + limit));
+    dispatch(postCommentsUpdateOffset(offset + comments.filter(c => !c.parentId).length));
   }
 };
 
-export const postGetComment = commentId => async(dispatch, getState) => {
-  const url = `${commentsURL}/${commentId}`;
-  const res = await Requests.get({ url });
-  const commentData = !res.error ? res : [];
-  dispatch(postCommentsUpdateDepleted(false));
-  dispatch(postCommentsUpdateOffset(0));
-  dispatch(postUpdateComments(commentData));
+export const postGetCommentThread = commentId => async(dispatch, getState) => {
+  await dispatch(postCommentsUpdateDepleted(false));
+  await dispatch(postCommentsUpdateOffset(0));
+  await dispatch(postUpdateComments([]));
+  dispatch(postGetComment(commentId, ''));
+};
+
+export const postGetComment = (commentId, descendantsOnly, offset = 0, limit = 10) => async(dispatch, getState) => {
+  const { post } = getState();
+  const { comments: oldComments } = post.comments;
+  const url = `${commentsURL}/${commentId}/${descendantsOnly}`;
+  const headers = { offset, limit };
+  const res = await Requests.get({ url, headers });
+  const comments = !res.error ? res.comments : [];
+  const newComments = [...oldComments, ...comments];
+  const parentIndex = newComments.findIndex((c) => c.id === commentId);
+  const updatedComment = { ...newComments[parentIndex] };
+  updatedComment.depleted = true;
+  updatedComment.children = comments.filter(c => c.parentId === commentId).map(c => c.id);
+  newComments.splice(parentIndex, 1, updatedComment);
+  dispatch(postUpdateComments(newComments));
+  return {
+    offset: offset + updatedComment.children.length,
+    depleted: res.depleted,
+  };
 };
 
 export const postToggleShowFull = () => ({
@@ -118,17 +144,23 @@ export const postCreateNew = rawData => async(dispatch, getState) => {
     ...rawData,
     author: profile.id,
   };
-  const data = await Requests.post({
+  const res = await Requests.post({
     url: APIbaseURL,
     headers: { sessionToken },
-    body: { ...postData },
+    body: postData,
   });
-  if (!data.error) {
-    await dispatch(userUpdateVotes(data.id, 'upVote', null, 'posts', true));
-    await dispatch(postUpdateData(data));
-    dispatch(userAddPost(data.id));
+  if (!res.error) {
+    await dispatch(userUpdateVotes(res.id, 'upVote', null, 'posts', true));
+    await dispatch(postUpdateData(res));
+    dispatch(postResetCreateData());
+    dispatch(postSetSubmitStatus('success'));
+    dispatch(postSetCreating(false));
+    dispatch(postsUpdateOffset(0));
+    dispatch(reset('postCreateNew'));
+  } else if (res.error.indexOf(categoryError) > -1) {
+    dispatch(postSetCreating(false));
+    throw new SubmissionError({ category: 'Category does not exist.' });
   }
-  dispatch(postSetCreating(false));
 };
 
 export const postUpdateCategorySuggestions = results => ({
@@ -180,18 +212,20 @@ export const postEditData = (postId, vals) => ({
   vals,
 });
 
-export const postDelete = postId => async(dispatch, getState) => {
+export const postDelete = (postId, author, shouldDelete) => async(dispatch, getState) => {
   const { user } = getState();
   if (!user.user) return;
   const { sessionToken, profile } = user.user;
   const res = await Requests.delete({
-    url: `${APIbaseURL}/thread/${postId}/delete`,
-    headers: { sessionToken },
-    body: { userId: profile.id },
+    url: `${APIbaseURL}/thread/${postId}/${author}/${shouldDelete}`,
+    headers: {
+      sessionToken,
+      user: profile.id,
+    },
   });
   if (!res.error) {
-    const newVals = { deleted: true };
-    dispatch(postEditData(postId, newVals))
+    const newVals = { deleted: shouldDelete === 'delete' };
+    dispatch(postEditData(postId, newVals));
   }
 };
 
@@ -201,16 +235,23 @@ export const postEdit = (postId, editedData) => async(dispatch, getState) => {
     dispatch(appShowTipWithText('Login to submit a new post.', 'footer-login-button'));
     return;
   }
-  const { sessionToken } = user.user;
+  const { sessionToken, profile } = user.user;
   dispatch(postSetCreating(true));
-  const data = await Requests.put({
-    url: `${APIbaseURL}/thread/${postId}/edit`,
+  const res = await Requests.put({
+    url: `${APIbaseURL}/thread/${postId}/${profile.id}/edit`,
     headers: { sessionToken },
-    body: { ...editedData },
+    body: editedData,
   });
-  if (!data.error) {
-    dispatch(postUpdateData(data));
-    dispatch(postEditData(postId, editedData));
+  if (!res.error) {
+    dispatch(postUpdateData(res.data));
+    dispatch(postEditData(postId, res.data));
+    dispatch(postResetCreateData());
+    dispatch(postSetSubmitStatus('success'));
+    dispatch(postSetCreating(false));
+    dispatch(reset('postCreateNew'));
+  } else if (res.error.indexOf(categoryError) > -1) {
+    dispatch(postSetCreating(false));
+    throw new SubmissionError({ category: 'Category does not exist.' });
   }
   dispatch(postSetCreating(false));
 };

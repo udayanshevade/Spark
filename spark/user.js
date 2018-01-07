@@ -1,9 +1,5 @@
 const clone = require('clone');
-const {
-  generateSessionToken,
-  verifySessionToken,
-
-} = require('./utils');
+const { generateSessionToken } = require('./utils');
 
 const db = {
   "user": {
@@ -18,11 +14,11 @@ const db = {
       posts: ['8xf0y6ziyjabvozdd253nd', '6ni6ok3ym7mf1p33lnez', 'llgj1kasd78f1ptk1nz1'],
       categories: [],
       votesGiven: {},
-      commentVotesReceived: {
+      commentsVotesReceived: {
         upVote: 6,
         downVote: -5,
       },
-      postVotesReceived: {
+      postsVotesReceived: {
         upVote: 21,
         downVote: -5,
       },
@@ -36,82 +32,72 @@ const newVotesReceived = {
 };
 
 // Default profile data object for a new user
-const newUserProfileData = {
+const newUserData = {
   comments: [],
   posts: [],
   categories: [],
   votesGiven: {},
-  commentVotesReceived: clone(newVotesReceived),
-  postVotesReceived: clone(newVotesReceived),
+  commentsVotesReceived: clone(newVotesReceived),
+  postsVotesReceived: clone(newVotesReceived),
 };
-
-/**
- * @description Access database
- */
-function getData () {
-  const data = db;
-  return data;
-}
 
 /**
  * @description Retrieve user profile data
  * @param {string} userId
  */
-function getProfile (userId) {
-  return new Promise((res, reject) => {
-    const users = getData();
-    const user = users[userId];
-    if (!user) {
-      reject(403);
-    } else {
-      const { profile } = users[userId];
-      res(profile);
-    }
-  });
-}
-
-/**
- * @description Retrieve user posts
- * @param {string} userId
- * @returns {array} Post ids for the specified user
- */
-function getPosts (userId) {
-  return new Promise((res) => {
-    const users = getData();
-    const { profile } = users[userId];
-    const { posts } = profile;
-    res(posts);
-  });
-}
-
-/**
- * @description Retrieve user comments
- * @param {string} userId
- * @returns {array} Comment ids for the specified user
- */
-function getComments (userId) {
-  return new Promise((res) => {
-    const users = getData();
-    const { profile } = users[userId];
-    const { comments } = profile;
-    res(comments);
-  });
-}
-
-/**
- * @description Check if username available
- * @param {string} userId
- * @returns {string} string if available
- */
-function checkUserExists (userId) {
-  return new Promise((res, reject) => {
-    const users = getData();
-    if (users[userId]) {
-      reject(403);
-    } else {
-      res({ success: 'Username is available.' });
-    }
-  });
+async function getProfile (client, userId) {
+  try {
+    const profile = { id: userId };
+    const userQueryText = 'SELECT created FROM users WHERE user_id = $1';
+    const userQueryVal = [userId];
+    const { rows: queriedUsers } = await client.query(userQueryText, userQueryVal);
+    const user = queriedUsers[0];
+    if (!user) return { error: 403 };
+    profile.created = user.created;
+    const profileVotesText = `
+      WITH post_votes AS (
+        SELECT voter_id, target_id, vote FROM votes, posts
+        WHERE votes.target_id = posts.post_id
+        AND voter_id = $1
+      ), comment_votes AS (
+        SELECT voter_id, target_id, vote FROM votes, comments
+        WHERE votes.target_id = comments.comment_id
+        AND voter_id = $1
+      ), all_votes AS (
+        SELECT * FROM post_votes UNION SELECT * FROM comment_votes
+      ) SELECT
+        'postsVotesReceived' as type,
+        sum(CASE WHEN vote = 'upVote' THEN 1 ELSE 0 END) as upVotes,
+        sum(CASE WHEN vote = 'downVote' THEN 1 ELSE 0 END) as downVotes
+      FROM post_votes
+      UNION
+      SELECT
+        'commentsVotesReceived' as type,
+        sum(CASE WHEN vote = 'upVote' THEN 1 ELSE 0 END) as upvotes,
+        sum(CASE WHEN vote = 'downVote' THEN 1 ELSE 0 END) as downvotes
+      FROM comment_votes;
+    `;
+    const { rows: votesRes } = await client.query(profileVotesText, userQueryVal);
+    if (!votesRes || votesRes.length !== 2) return { error: 500 };
+    votesRes.forEach((voteRes) => {
+      profile[voteRes.type] = {
+        upVote: +voteRes.upvotes,
+        downVote: +voteRes.downvotes,
+      };
+    });
+    profile.votesGiven = {};
+    const votesGivenText = `SELECT target_id, vote FROM votes WHERE voter_id = $1`;
+    const votesGivenVal = [userId];
+    const { rows: votesGivenRes } = await client.query(votesGivenText, votesGivenVal);
+    if (!votesRes) return { error: 500 };
+    votesGivenRes.forEach(({ target_id: target, vote }) => {
+      profile.votesGiven[target] = vote;
+    });
+    return profile;
+  } catch (e) {
+    console.error(e);
+    return { error: 500 };
+  }
 }
 
 /**
@@ -120,20 +106,40 @@ function checkUserExists (userId) {
  * @param {string} password
  * @returns {object} Access token, user profile details
  */
-function login (userId, password) {
-  return new Promise((res, reject) => {
-    const users = getData();
-    const user = users[userId];
-    if (!user) reject(403);
-    const { password: dbPassword, profile, subscriptions } = user;
-    if (password === dbPassword) {
-      const sessionToken = generateSessionToken(userId);
-      users[userId].sessionToken = sessionToken;
-      res({ sessionToken, profile, subscriptions });
-    } else {
-      reject(403);
-    }
-  });
+async function login (client, userId, password) {
+  try {
+    await client.query('BEGIN');
+    // find user
+    const loginText = 'SELECT session_token, password FROM users WHERE user_id = $1';
+    const loginVals = [userId];
+    const userDetails = await client.query(loginText, loginVals);
+    const { rows: users } = userDetails;
+    const user = users[0];
+    if (!user) return { error: 403.1 };
+    const { password: dbPassword } = user;
+    if (password !== dbPassword) return { error: 403.2 };
+    // if password verifies
+    const sessionToken = generateSessionToken(userId);
+    const sessionTokenText = `UPDATE users SET session_token = $1 WHERE user_id = $2`;
+    const sessionTokenVals = [sessionToken, userId];
+    // write session token to db
+    await client.query(sessionTokenText, sessionTokenVals);
+    // get user data
+    const profile = await getProfile(client, userId);
+    const subscriptionsText = 'SELECT category FROM category_subscriptions WHERE user_id = $1';
+    const subscriptionsVal = [userId];
+    const { rows: subscriptionsRows } = await client.query(subscriptionsText, subscriptionsVal);
+    if (!subscriptionsRows) return { error: 500 };
+    const subscriptions = subscriptionsRows.map(s => s.category);
+    await client.query('COMMIT');
+    return { sessionToken, profile, subscriptions };
+  } catch (e) {
+    await client.query('ROLLBACK');
+    console.error(e);
+    return { error: 500 };
+  } finally {
+    client.release();
+  }
 }
 
 /**
@@ -141,204 +147,74 @@ function login (userId, password) {
  * @param {string} userId
  * @param {object} newData - password (req), email (opt)
  */
-function create (id, newData) {
-  return new Promise((res, reject) => {
-    const users = getData();
-    const user = users[id];
-    if (user) {
-      reject(403);
-    } else {
-      const { password, email } = newData;
-      const newUser = {
-        password: password,
-        profile: Object.assign(
-          {
-            id: id,
-            created: Date.now(),
-          }, 
-          clone(newUserProfileData),
-        ),
-      };
-      if (email) newUser.email = email;
-      const sessionToken = generateSessionToken(id);
-      newUser.sessionToken = sessionToken;
-      // write to database
-      users[id] = newUser;
-      res(users[id]);
+async function create (client, id, newData) {
+  try {
+    await client.query('BEGIN');
+    const userQueryText = `SELECT EXISTS(SELECT user_id FROM users WHERE user_id = $1) as exists`;
+    const userQueryVal = [id];
+    const { rows: users } = await client.query(userQueryText, userQueryVal);
+    if (users[0].exists) return { error: 403 };
+    const { password, email } = newData;
+    const userCreateText = `INSERT INTO users VALUES($1, $2, $3${email ? ', $4' : ''})`;
+    const sessionToken = generateSessionToken(id);
+    const userCreateVals = [id, password, sessionToken];
+    if (email) userCreateVals.push(email);
+    const created = await client.query(userCreateText, userCreateVals);
+    const createdUser = {
+      sessionToken,
+      profile: Object.assign(
+        { created, id },
+        clone(newUserData),
+      ),
+      subscriptions: [],
+    };
+    if (email) createdUser.email = email;
+    await client.query('COMMIT');
+    return createdUser;
+  } catch (e) {
+    client.query('ROLLBACK');
+    console.error(e);
+    return { error: 500 };
+  } finally {
+    client.release();
+  }
+}
+
+/**
+ * @description Add user vote
+ * @param {string} voterId - user_id of voter
+ * @param {string} target - post or comment
+ * @param {string} option - vote
+ */
+async function vote (client, voterId, target, option) {
+  let response;
+  try {
+    await client.query('BEGIN');
+    let voteOpt = option;
+    if (option === 'null') {
+      voteOpt = null;
     }
-  });
-}
-
-/**
- * @description Update user meta data
- * @param {string} sessionToken - for user validation
- * @param {string} userId
- * @param {object} updatedData - password, email
- */
-function update (sessionToken, userId, updatedData) {
-  return new Promise((res, reject) => {
-    const users = getData();
-    const { sessionToken: dbSessionToken, id: dbUserId } = users[userId];
-    verifySessionToken(sessionToken, dbUserId)
-      .then(data => {
-        const { email, password, profile } = updatedData;
-        if (password) users[id].password = password;
-        if (email) users[id].email = email;
-        res({});
-      })
-      .catch(err => reject(err));
-  });
-}
-
-/**
- * @description Track post id reference
- * @param {string} userId
- * @param {string} postId
- */
-function addPost (userId, postId) {
-  const users = getData();
-  const user = users[userId];
-  user.profile.posts.push(postId);
-}
-
-
-/**
- * @description Track comment id reference
- * @param {string} userId
- * @param {string} commentId
- */
-function addComment (userId, commentId) {
-  const users = getData();
-  const user = users[userId];
-  user.profile.comments.push(commentId);
-}
-
-/**
- * @description Update user Post score
- * @param {string} userId
- * @param {string} vote option, i.e. 'upVote'/'downVote'
- */
-function updatePostScore (userId, option, previousVote) {
-  const users = getData();
-  const user = users[userId];
-  let delta = 0;
-  if ((!previousVote && option === 'upVote') ||
-    (!option && previousVote === 'downVote')) {
-    delta = 1;
-  } else if ((!previousVote && option === 'downVote') ||
-    (!option && previousVote === 'upVote')) {
-    delta = -1;
-  } else if (previousVote === 'downVote' && option ==='upVote') {
-    delta = 2;
-  } else if (previousVote === 'upVote' && option === 'downVote') {
-    delta = -2;
+    // vote upsert
+    const recordVoteText = `INSERT INTO votes VALUES($1, $2, $3)
+      ON CONFLICT (voter_id, target_id)
+      DO UPDATE SET vote = $3`;
+    const recordVoteVals = [voterId, target, voteOpt];
+    await client.query(recordVoteText, recordVoteVals);
+    await client.query('COMMIT');
+    response = {};
+  } catch (e) {
+    client.query('ROLLBACK');
+    console.error(e);
+    response = { error: 500 };
+  } finally {
+    client.release();
+    return response;
   }
-  user.profile.postVotesReceived[option] += delta;
-}
-
-/**
- * @description Update user Comment score
- * @param {string} userId
- * @param {string} vote option
- */
-function updateCommentScore (userId, option, previousVote) {
-  const users = getData();
-  const user = users[userId];
-  let delta = 0;
-  if ((!previousVote && option === 'upVote') ||
-    (!option && previousVote === 'downVote')) {
-    delta = 1;
-  } else if ((!previousVote && option === 'downVote') ||
-    (!option && previousVote === 'upVote')) {
-    delta = -1;
-  } else if (previousVote === 'downVote' && option ==='upVote') {
-    delta = 2;
-  } else if (previousVote === 'upVote' && option === 'downVote') {
-    delta = -2;
-  }
-  user.profile.commentVotesReceived[option] += delta;
-}
-
-/**
- * @description Initial vote for created post or comment
- */
-function writeUserVote (userId, voteId, opt) {
-  const option = opt === 'null' ? null : opt;
-  const users = getData();
-  const user = users[userId];
-  user.profile.votesGiven[voteId] = option;
-}
-
-/**
- * @description Add post to user votes
- * @param {string} userId
- * @param {string} vote option
- */
-function updateUserVote (sessionToken, userId, voteId, option) {
-  return new Promise((res, reject) => {
-    verifySessionToken(sessionToken, userId)
-      .then((data) => {
-        const users = getData();
-        const user = users[userId];
-        // query old vote record
-        const oldOption = user.profile.votesGiven[voteId];
-        // overwrite old option if one existed
-        writeUserVote(userId, voteId, option);
-        let newOption = option;
-        if (oldOption === option) {
-          newOption = null;
-        } else if (oldOption && option === 'null') {
-          newOption = oldOption === 'upVote' ? 'downVote' : 'upVote';
-        }
-        res(newOption, oldOption);
-      }).catch(err => reject(err));
-  });
-}
-
-/**
- * @description Add subscription
- * @param {string} sessionToken
- * @param {string} userId
- * @param {string} category
- */
-function subscribe (sessionToken, userId, category, option) {
-  return new Promise((res, reject) => {
-    verifySessionToken(sessionToken, userId)
-      .then((data) => {
-        const users = getData();
-        const user = users[userId];
-        switch (option) {
-          case 'unsubscribe': {
-            const subscriptionIndex = user.subscriptions.indexOf(category);
-            user.subscriptions.splice(subscriptionIndex, 1);
-            break;
-          }
-          case 'subscribe': {
-            user.subscriptions.unshift(category);
-            break;
-          }
-          default: {
-            return;
-          }
-        }
-        res({ category, option });
-      }).catch(err => reject(err));
-  });
 }
 
 module.exports = {
   getProfile,
-  getPosts,
-  getComments,
-  checkUserExists,
   login,
   create,
-  update,
-  addPost,
-  addComment,
-  updatePostScore,
-  updateCommentScore,
-  writeUserVote,
-  updateUserVote,
-  subscribe,
+  vote,
 };

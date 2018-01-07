@@ -9,6 +9,7 @@ import { validate, warn } from './validation';
 
 class UpdateComment extends Component {
   state = {
+    updating: false,
     comment: { ...this.props.comment },
   }
   commentReset = () => {
@@ -23,22 +24,27 @@ class UpdateComment extends Component {
       },
     });
   }
-  commentSubmit = async(formData) => {
+  commentSubmit = (formData) => {
     const { editing, setEditMode, setReplyMode, comment, onSubmit } = this.props;
-    const newCommentSuccess = await onSubmit({
-      ...comment,
-      ...formData,
-    });
-    if (newCommentSuccess) {
-      if (editing) {
-        setEditMode(false);
-      } else {
-        this.commentReset();
-        if (setReplyMode) {
-          setReplyMode(false);
+    this.setState({
+      updating: true,
+    }, async() => {
+      const newCommentSuccess = await onSubmit({
+        ...comment,
+        ...formData,
+      });
+      if (newCommentSuccess) {
+        if (editing) {
+          setEditMode(false);
+        } else {
+          this.commentReset();
+          if (setReplyMode) {
+            setReplyMode(false);
+          }
         }
       }
-    }
+      this.setState({ updating: false });
+    });
   }
   render() {
     const {
@@ -48,7 +54,7 @@ class UpdateComment extends Component {
       setEditMode,
       setReplyMode,
     } = this.props;
-    const updating = editing || replying;
+    const modifying = editing || replying;
     return (
       <Form
         onSubmit={handleSubmit(this.commentSubmit)}
@@ -69,23 +75,26 @@ class UpdateComment extends Component {
           className="new-comment-footer"
         >
           {
-            updating &&
+            modifying &&
               <Button
                 plain
                 label={editing ? 'cancel' : 'discard'}
-                onClick={() => {
-                  if (editing) {
-                    setEditMode(false);
-                  } else if (replying) {
-                    setReplyMode(false);
+                onClick={this.state.updating
+                  ? null
+                  : () => {
+                    if (editing) {
+                      setEditMode(false);
+                    } else if (replying) {
+                      setReplyMode(false);
+                    }
                   }
-                }}
+                }
               />
           }
           <Button
             plain
             label={editing ? 'edit' : 'comment'}
-            onClick={handleSubmit(this.commentSubmit)}
+            onClick={this.state.updating ? null : handleSubmit(this.commentSubmit)}
           />
         </Footer>
       </Form>

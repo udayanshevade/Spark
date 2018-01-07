@@ -20,7 +20,7 @@ const Comment = ({
   profileSetUser,
   body,
   deleted,
-  timestamp,
+  created,
   setEditMode,
   setReplyMode,
   threadView,
@@ -50,7 +50,7 @@ const Comment = ({
     }
     <Card
       flex
-      label={
+      label={(!deleted &&
         <div>
           <ProfileButton
             author={author}
@@ -58,7 +58,7 @@ const Comment = ({
             profileSetUser={profileSetUser}
           />
           <span>said:</span>
-        </div>
+        </div>) || null
       }
       description={
         <Box
@@ -78,7 +78,7 @@ const Comment = ({
             {deleted ? 'deleted' : body || null}
           </Paragraph>
           <Timestamp
-            value={(new Date(+timestamp)).toISOString()}
+            value={(new Date(created)).toISOString()}
             fields="date"
             className="comment-timestamp"
           />
@@ -110,7 +110,7 @@ const Comment = ({
                 />
             }
             {
-              threadView && username &&
+              threadView && username && !deleted &&
                 <Button
                   plain
                   label="reply"
@@ -125,7 +125,7 @@ const Comment = ({
                   label={deleted ? 'restore' : 'delete'}
                   className="options-tray__button"
                   onClick={() => {
-                    commentDelete(id);
+                    commentDelete(id, deleted, author, postId);
                   }}
                 />
             }
@@ -148,7 +148,7 @@ Comment.propTypes = {
   username: PropTypes.string,
   profileSetUser: PropTypes.func,
   body: PropTypes.string,
-  timestamp: PropTypes.number,
+  timestamp: PropTypes.string,
   setEditMode: PropTypes.func,
   threadView: PropTypes.bool,
   applyVote: PropTypes.func,

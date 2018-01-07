@@ -1,6 +1,4 @@
 const Fuse = require('fuse.js');
-const config = require('./config');
-const { verifySessionToken } = require('./utils');
 
 const db = {
   'react': {
@@ -32,27 +30,6 @@ const db = {
   }
 };
 
-/**
- * @description Access database
- */
-function getData () {
-  const data = db;
-  return data;
-}
-
-/**
- * @description Get specific category
- */
-function get (category) {
-  return new Promise((res, reject) => {
-    const db = getData();
-    if (!db[category]) {
-      reject(403);
-    }
-    res(db[category]);
-  });
-}
-
 const fuseOptions = {
   keys: ['name'],
 };
@@ -65,112 +42,109 @@ const getFuseObject = (dbVals) => {
 /**
  * @description Gets all (matching) categories
  */
-function getAll (query) {
-  return new Promise((res) => {
-    const db = getData();
-    let categories = Object.values(db);
+async function getAll (pool, query, namesOnly) {
+  const queryText = namesOnly
+    ? 'SELECT name FROM categories'
+    : `SELECT name, creator, private, blurb, COUNT(category) AS subscribers
+        FROM categories LEFT JOIN category_subscriptions ON name = category
+        GROUP BY categories.name`;
+  try {
+    const data = await pool.query(queryText);
+    const { rows: results } = data;
+    let categories = results;
     if (query) {
-      const fuse = getFuseObject(categories);
-      // return matching
+      const fuse = getFuseObject(results);
       categories = fuse.search(query);
     }
-    res(categories);
-  });
+    return categories;
+  } catch (e) {
+    console.error(e);
+    return { error: 500 };
+  }
 }
 
 /**
- * @description Get post ids per category
+ * @description Get specific category
  */
-function getCategoryPosts (cat) {
-  return new Promise((res, reject) => {
-    const db = getData();
-    const category = db[cat];
-    if (!category) reject(403);
-    const { posts } = category;
-    res(posts);
-  });
-}
-
-/**
- * @description Get post ids per category
- */
-function addPost (cat, postId) {
-  const db = getData();
-  const category = db[cat];
-  category.posts.unshift(postId);
-}
-
-/**
- * @description Change post category
- */
-function switchPostCategory (postId, newCategory, oldCategory) {
-  const db = getData();
-  db[oldCategory].posts = db[oldCategory].posts.filter(id => id !== postId);
-  db[newCategory].posts.unshift(postId);
-}
-
-/**
- * @description Adds a new category
- */
-function add (sessionToken, data) {
-  return new Promise((res, reject) => {
-    verifySessionToken(sessionToken, data.user)
-      .then(() => {
-        const db = getData();
-        if (db[data.name]) {
-          reject(403);
-        } else {
-          db[data.name] = {
-            creator: data.user,
-            name: data.name,
-            path: data.name,
-            blurb: data.blurb,
-            posts: [],
-            subscribers: 1,
-            private: data.private,
-          };
-          res({ success: 'Category added' });
-        }
-      })
-      .catch(err => reject(err));
-  });
-}
-
-/**
- * @description Updates category subscription
- */
-function updateSubscription ({ category, option }) {
-  return new Promise((res, reject) => {
-    const categories = getData();
-    if (!categories[category]) {
-      reject(403);
+async function get (pool, category) {
+  try {
+    const res = await pool.query(
+      `SELECT name, creator, private, blurb, COUNT(category) AS subscribers
+        FROM categories LEFT JOIN category_subscriptions ON name = category
+        WHERE name = $1
+        GROUP BY categories.name`,
+      [category]);
+    const { rows } = res;
+    if (!rows) {
+      return { error: 500 };
     } else {
-      let updateBy;
-      switch (option) {
-        case 'subscribe': {
-          updateBy = 1;
-          break;
-        }
-        case 'unsubscribe': {
-          updateBy = -1;
-          break;
-        }
-        default: {
-          updateBy = 0;
-          break;
-        }
-      }
-      categories[category].subscribers += updateBy;
+      return rows[0];
     }
-  });
+  } catch (e) {
+    return { error: 500 };
+  }
 }
+
+/**
+ * @description Create a category
+ */
+async function create (client, data) {
+  let result;
+  try {
+    await client.query('BEGIN');
+    // Add category
+    const insertCategoryText = 'INSERT INTO categories VALUES($1, $2, $3)';
+    const insertCategoryVals = [data.name, data.user, data.blurb];
+    await client.query(insertCategoryText, insertCategoryVals);
+    // Automatically subscribe creator
+    const insertSubscriptionText = 'INSERT INTO category_subscriptions VALUES($1, $2)';
+    const insertSubscriptionVals = [data.name, data.user];
+    await client.query(insertSubscriptionText, insertSubscriptionVals);
+    await client.query('COMMIT');
+    result = { success: 'Category added' };
+  } catch (e) {
+    client.query('ROLLBACK');
+    console.error(e);
+    result = { error: 500 };
+  } finally {
+    client.release();
+    return result;
+  }
+}
+
+async function subscribe (client, params, body) {
+  const { category: reqCategory, update: reqUpdate } = params;
+  let result;
+  try {
+    await client.query('BEGIN');
+    let insertSubscriptionText;
+    switch (reqUpdate) {
+      case 'subscribe':
+        insertSubscriptionText = 'INSERT INTO category_subscriptions VALUES($1, $2)';
+        break;
+      case 'unsubscribe':
+        insertSubscriptionText = 'DELETE FROM category_subscriptions \
+          WHERE category = $1 AND user_id = $2';
+      default:
+        break;
+    }
+    const insertSubscriptionVals = [reqCategory, body.userId];
+    await client.query(insertSubscriptionText, insertSubscriptionVals);
+    await client.query('COMMIT');
+    result = { success: 'Category created' };
+  } catch (e) {
+    await client.query('ROLLBACK');
+    console.error(e);
+    result = { error: 500 };
+  } finally {
+    client.release();
+    return result;
+  }
+}  
 
 module.exports = {
   get,
   getAll,
-  getCategoryPosts,
-  addPost,
-  switchPostCategory,
-  add,
-  updateSubscription,
+  create,
+  subscribe,
 };

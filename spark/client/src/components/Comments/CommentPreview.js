@@ -9,6 +9,8 @@ import { getRandomID } from '../../utils';
 
 class CommentPreview extends Component {
   state = {
+    offset: 0,
+    limit: 10,
     editing: false,
     replying: false,
     tempReplyId: getRandomID(),
@@ -23,6 +25,19 @@ class CommentPreview extends Component {
       replying,
     });
   }
+  setCommentChildrenOffset = async(commentId) => {
+    const res = await this.props.postGetComment(
+      commentId,
+      'children',
+      this.state.offset,
+      this.state.limit
+    );
+    if (!res) return;
+    const { offset } = res;
+    this.setState({
+      offset,
+    });
+  }
   render() {
     const {
       width,
@@ -34,18 +49,20 @@ class CommentPreview extends Component {
       threadView,
       commentView,
       commentDelete,
+      postGetComment,
+      postGetComments,
       ...comment,
     } = this.props;
     const {
       author,
       body,
-      timestamp,
+      created,
       votes,
       id,
       children,
       postId,
-      ancestorId,
       deleted,
+      depleted,
     } = comment;
     const commentEl = this.state.editing
       ? (
@@ -66,7 +83,7 @@ class CommentPreview extends Component {
           profileSetUser={profileSetUser}
           body={body}
           deleted={deleted}
-          timestamp={timestamp}
+          created={created}
           setEditMode={this.setEditMode}
           setReplyMode={this.setReplyMode}
           threadView={threadView}
@@ -87,7 +104,6 @@ class CommentPreview extends Component {
               setReplyMode={this.setReplyMode}
               initialValues={{
                 parentId: id,
-                ancestorId: ancestorId || id,
                 body: '',
               }}
             />
@@ -104,6 +120,14 @@ class CommentPreview extends Component {
               username={username}
               threadView={threadView}
               commentDelete={commentDelete}
+              postGetComment={this.setCommentChildrenOffset}
+              postGetComments={postGetComments}
+              depleted={depleted}
+              postId={postId}
+              nested
+              commentId={id}
+              offset={this.state.offset}
+              limit={this.state.limit}
             />
         }
       </Box>
@@ -114,7 +138,7 @@ class CommentPreview extends Component {
 CommentPreview.propTypes = {
   id: PropTypes.string,
   body: PropTypes.string,
-  timestamp: PropTypes.number,
+  created: PropTypes.string,
   author: PropTypes.string,
   votes: PropTypes.shape({
     upVote: PropTypes.number,
@@ -125,6 +149,7 @@ CommentPreview.propTypes = {
   votesGiven: PropTypes.object,
   username: PropTypes.string,
   commentDelete: PropTypes.func,
+  postGetComment: PropTypes.func,
 };
 
 export default CommentPreview;

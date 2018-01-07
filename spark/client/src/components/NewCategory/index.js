@@ -17,35 +17,35 @@ import FormFields from 'grommet/components/FormFields';
 import Footer from 'grommet/components/Footer';
 import Button from 'grommet/components/Button';
 import Suggestions from './Suggestions';
-import { FormTextInput, FormTextArea, FormCheckBox } from '../Forms';
+import { FormTextInput, FormTextArea/*, FormCheckBox*/ } from '../Forms';
 import Loading from '../Loading';
 import { validate, warn } from './validation';
 import {
+  categoriesResetCreateData,
   categoriesCreateNew,
   categoriesGetSuggestions,
   categoriesSetActive,
 } from '../../actions/categories';
+import { postSetCreating } from '../../actions/post';
 import { getIsMobile } from '../../selectors/responsive';
 
 class NewCategory extends Component {
-  state = {
-    shouldRedirect: false,
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (this.props.isCreating && nextProps.active && !nextProps.isCreating) {
-      this.setState({ shouldRedirect: true });
+  componentWillUnmount() {
+    this.props.actions.categoriesSetActive('');
+    this.props.actions.categoriesResetCreateData();
+    if (this.props.postUpdating) {
+      this.props.actions.postSetCreating(false);
     }
   }
-
-  componentWillUnmount() {
-    this.setState({ shouldRedirect: false });
-    this.props.actions.categoriesSetActive('');
-  }
-
   render() {
-    if (this.state.shouldRedirect) {
-      return <Redirect to={`/categories/category/${this.props.active}`} />
+    if (this.props.submitStatus === 'success') {
+      let el;
+      if (this.props.postUpdating) {
+        el = <Redirect to="/posts/new" />;
+      } else {
+        el = <Redirect to={`/categories/category/${this.props.active}`} />;
+      }
+      return el;
     }
     const {
       handleSubmit,
@@ -99,12 +99,15 @@ class NewCategory extends Component {
                 placeholder="Provide a brief description of this category."
                 component={FormTextArea}
               />
-              <Field
-                name="private"
-                label="Private"
-                id="create-category-private"
-                component={FormCheckBox}
-              />
+              {
+                // TODO: add private groups
+                // <Field
+                //   name="private"
+                //   label="Private"
+                //   id="create-category-private"
+                //   component={FormCheckBox}
+                // />
+              }
             </FormFields>
             <Footer pad={{ vertical: 'medium' }}>
               <Button
@@ -119,19 +122,23 @@ class NewCategory extends Component {
   }
 };
 
-const mapStateToProps = ({ navbar, categories, responsive }) => ({
+const mapStateToProps = ({ navbar, categories, responsive, post }) => ({
+  postUpdating: post.creating,
   navTitle: navbar.title,
   active: categories.active,
+  submitStatus: categories.submitStatus,
   categoriesQuery: categories.categorySuggestions.query,
   isCreating: categories.isCreating,
   isMobile: getIsMobile(responsive),
-  initialValues: { ...categories.emptyValues },
+  initialValues: categories.initialValues,
   categoriesSuggestions: categories.categorySuggestions.results,
-  categoriesLoading: categories.categorySuggestions.loading, 
+  categoriesLoading: categories.categorySuggestions.loading,
 });
 
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
+    postSetCreating,
+    categoriesResetCreateData,
     onSubmit: categoriesCreateNew,
     changeFormValue,
     categoriesGetSuggestions,
@@ -139,10 +146,7 @@ const mapDispatchToProps = dispatch => ({
   }, dispatch),
 });
 
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(
+export default connect(mapStateToProps, mapDispatchToProps)(
   reduxForm({
     form: 'createCategory',
     validate,

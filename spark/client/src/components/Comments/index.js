@@ -3,8 +3,6 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Section from 'grommet/components/Section';
-import Footer from 'grommet/components/Footer';
-import Button from 'grommet/components/Button';
 import ListPlaceHolder from 'grommet-addons/components/ListPlaceholder';
 import Comments from './Comments';
 import FilterBar from '../FilterBar';
@@ -13,6 +11,7 @@ import { userRecordVote } from '../../actions/user';
 import {
   postSelectSortCriterion,
   postGetComments,
+  postGetComment,
   postUpdateComments,
 } from '../../actions/post';
 import { commentDelete } from '../../actions/comment';
@@ -31,6 +30,9 @@ export const CommentsContainer = ({
   username,
   threadView,
   commentView,
+  nested,
+  postGetComment,
+  postGetComments,
   ...filterProps,
 }) => {
   let commentsEl;
@@ -70,23 +72,13 @@ export const CommentsContainer = ({
           threadView={threadView}
           commentView={commentView}
           commentDelete={actions.commentDelete}
+          depleted={depleted}
+          loading={loading}
+          postId={postId}
+          postGetComments={postGetComments}
+          postGetComment={postGetComment}
+          nested={nested}
         />
-        {
-          !(depleted || loading) &&
-            <Footer justify="center">
-              <Button
-                plain
-                label={!commentView ? 'Load more' : null}
-                path={commentView ? `/posts/thread/${postId}/` : null}
-                onClick={!commentView
-                  ? () => {
-                    actions.postGetComments(postId);
-                  }
-                  : null
-                }
-              />
-            </Footer>
-        }
       </Section>
     );
   }
@@ -123,6 +115,7 @@ const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     postSelectSortCriterion,
     postGetComments,
+    postGetComment,
     postUpdateComments,
     profileSetUser,
     userRecordVote,

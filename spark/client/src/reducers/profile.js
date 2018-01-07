@@ -72,6 +72,67 @@ const profile = (state = initialState, action) => {
       if (comments) newState.comments.comments = comments;
       return newState;
     }
+    case types.POST_EDIT_DATA: {
+      const { postId, vals } = action;
+      const items = [...state.posts.posts];
+      const oldIndex = items.findIndex(item => item.id === postId);
+      if (oldIndex < 0) return state;
+      const oldItem = items[oldIndex];
+      const newItem = { ...oldItem };
+      Object.keys(vals).forEach((val) => {
+        newItem[val] = vals[val];
+      });
+      items.splice(oldIndex, 1, newItem);
+      return { ...state, posts: items };
+    }
+    case types.COMMENT_EDIT_DATA: {
+      const { commentId, vals } = action;
+      const { comments: { comments: oldComments }, previewActive } = state;
+      let newState = state;
+      if (previewActive) {
+        const oldIndex = oldComments.findIndex(c => c.id === commentId);
+        if (oldIndex) {
+          const newComments = [...oldComments];
+          const newComment = { ...oldComments[oldIndex] };
+          Object.keys(vals).forEach((val) => {
+            newComment[val] = vals[val];
+          });
+          newComments.splice(oldIndex, 1, newComment);
+          newState = {
+            ...state,
+            comments: {
+              ...state.comments,
+              comments: newComments,
+            },
+          };
+        }
+      }
+      return newState;
+    }
+    case types.COMMENT_ADD_NEW: {
+      const { commentData } = action;
+      const { comments: { comments: oldComments }, previewActive } = state;
+      let newState = state;
+      if (previewActive) {
+        const newComments = [...oldComments];
+        newComments.unshift(commentData);
+        const parentIndex = newComments.findIndex(c => c.id === commentData.parentId);
+        if (parentIndex > -1) {
+          const editedParent = { ...oldComments[parentIndex] };
+          editedParent.children = [...editedParent.children];
+          editedParent.children.unshift(commentData.id);
+          newComments.splice(parentIndex, 1, editedParent);
+        }
+        newState = {
+          ...state,
+          comments: {
+            ...state.comments,
+            comments: newComments,
+          },
+        };
+      }
+      return newState;
+    }
     case types.PROFILE_SET_PREVIEW_ACTIVE: {
       const { previewActive } = action;
       return { ...state, previewActive };
@@ -124,20 +185,34 @@ const profile = (state = initialState, action) => {
       if (!previousVote && previousVote === option) {
         return state;
       }
-      const items = [...state[target]];
+      const items = [...state[target][target]];
       const oldIndex = items.findIndex(item => item.id === id);
       if (oldIndex < 0) return state;
       const oldItem = items[oldIndex];
       const votes = { ...oldItem.votes };
+      const newProfile = { ...state.user };
       if (option) {
-        votes[option] += 1;
+        votes[option] = (+votes[option]) + 1;
+        newProfile[`${target}VotesReceived`][option] = (+newProfile[`${target}VotesReceived`][option]) + 1;
+        if (!previousVote) {
+          newProfile.votesGiven[id] = option;
+        }
       }
       if (previousVote && previousVote !== option) {
-        votes[previousVote] -= 1;
+        votes[previousVote] = (+votes[previousVote]) - 1;
+        newProfile[`${target}VotesReceived`][previousVote] = (+newProfile[`${target}VotesReceived`][previousVote]) - 1;
+        newProfile.votesGiven[id] = option;
       }
       const newItem = { ...oldItem, votes };
       items.splice(oldIndex, 1, newItem);
-      return { ...state, [target]: items };
+      return {
+        ...state,
+        user: newProfile,
+        [target]: {
+          ...state[target],
+          [target]: items,
+        },
+      };
     }
     default:
       return state;

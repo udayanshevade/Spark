@@ -46,7 +46,7 @@ export const postsLoadData = (query = '', category) => async(dispatch, getState)
       morePosts = [...oldPosts, ...morePosts];
     }
     dispatch(postsUpdate(morePosts));
-    dispatch(postsUpdateOffset(offset + limit));
+    dispatch(postsUpdateOffset(offset + morePosts.length));
   }
   dispatch(postsSetLoading(false));
 };

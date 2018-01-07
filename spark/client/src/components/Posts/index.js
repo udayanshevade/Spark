@@ -9,6 +9,7 @@ import Button from 'grommet/components/Button';
 import List from 'grommet/components/List';
 import ListItem from 'grommet/components/ListItem';
 import ListPlaceHolder from 'grommet-addons/components/ListPlaceholder';
+import FlipMove from 'react-flip-move';
 import Navbar from '../Navbar';
 import PostPreview from './PostPreview';
 import FilterBar from '../FilterBar';
@@ -58,28 +59,36 @@ export const PostsComponent = ({
         />
         <Box pad={{ vertical: 'none' }} className="list-items-container">
           <List>
-            {
-              posts.map((post, i) => (
-                <ListItem
-                  key={`post-list-item-${i}`}
-                  pad={{ horizontal: 'none' }}
-                >
-                  <PostPreview
-                    width={width}
-                    profileSetUser={actions.profileSetUser}
-                    bodyCharLim={bodyCharLim}
-                    applyVote={(id, vote) => {
-                      actions.userRecordVote('posts', id, vote);
-                    }}
-                    votesGiven={votesGiven}
-                    username={username}
-                    postDelete={actions.postDelete}
-                    postUpdateCreateData={actions.postUpdateCreateData}
-                    {...post}
-                  />
-                </ListItem>
-              ))
-            }
+            <FlipMove
+              duration={350}
+              easing="ease-in-out"
+              typeName={null}
+              enterAnimation="accordionVertical"
+              leaveAnimation="accordionVertical"
+            >
+              {
+                posts.map((post, i) => (
+                  <ListItem
+                    key={`post-list-item-${post.id}`}
+                    pad={{ horizontal: 'none' }}
+                  >
+                    <PostPreview
+                      width={width}
+                      profileSetUser={actions.profileSetUser}
+                      bodyCharLim={bodyCharLim}
+                      applyVote={(id, vote) => {
+                        actions.userRecordVote('posts', id, vote);
+                      }}
+                      votesGiven={votesGiven}
+                      username={username}
+                      postDelete={actions.postDelete}
+                      postUpdateCreateData={actions.postUpdateCreateData}
+                      {...post}
+                    />
+                  </ListItem>
+                ))
+              }
+            </FlipMove>
           </List>
           {
             !(depleted || loading) &&
