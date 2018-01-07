@@ -22,123 +22,177 @@ app.use(multer().single());
 app.get('/', (req, res) => {
   const help = `
   <pre>
-    Welcome to the Udacity Readable API!
-
-    Use an Authorization header to work with your own data:
-
-    fetch(url, { headers: { 'Authorization': 'whatever-you-want' }})
+    Welcome to the Spark aggregator API!
 
     The following endpoints are available:
 
-    GET /categories
+    GET /categories/get/:query*?
       USAGE: 
-        Get all of the categories available for the app. List is found in categories.js.
-        Feel free to extend this list as you desire.
-    
-    GET /categories/:category/posts
-      USAGE:
-        Get all of the posts for a particular category
+        Get data for categories.
+      PARAMS:
+        query: String - optional filter
 
-    GET /posts
+    GET /categories/suggestions/:query*?
       USAGE:
-        Get all of the posts. Useful for the main page when no category is selected.
-    
+        Get category names only.
+      PARAMS:
+        query: String
+
+    GET /categories/category/:category
+      USAGE:
+        Get data for single, specific category.
+      PARAMS:
+        category: String
+
+    GET /categories/category/:category/posts/:query*?
+      USAGE:
+        Get posts for a given category
+      PARAMS:
+        query: optional filter
+
+    POST /categories/create
+      USAGE:
+        Create a category.
+      BODY:
+        name: String - category name
+        body: String - description
+
+    POST /categories/subscribe/:category/:update
+      USAGE:
+        Updates a user subscription for a given category.
+      PARAMS:
+        category: String
+        update: String - "unsubscribe" or "subscribe"
+
+    GET /posts/get/:query*?
+      USAGE:
+        Get data for all posts. Optional query to filter.
+      PARAMS:
+        query: String - optional filter
+
+    GET /posts/thread/:id
+      USAGE:
+        Get the details of a single post
+      PARAMS:
+        id: String
+
     POST /posts
       USAGE:
         Add a new post
-      
       PARAMS: 
-        id - UUID should be fine, but any unique id will work
-        timestamp - timestamp in whatever format you like, you can use Date.now() if you like
-        title - String
-        body - String
-        author - String
-        category: Any of the categories listed in categories.js. Feel free to extend this list as you desire.
+        id: UUID
+        title: String
+        body: String
+        author: String
+        category: String
 
-    GET /posts/:id
+    PUT /votes/:id/vote
       USAGE:
-        Get the details of a single post
-
-    PUT /posts/:id/vote
-      USAGE:
-        Used for voting on a post
+        Vote on a post
       PARAMS:
-        option - String: Either "upVote" or "downVote"
-        
-    PUT /posts/:id/edit
+        id: String - id of the target
+      BODY:
+        voterId: String - id of the user
+        option: String - can be "upVote", "downVote" or null
+
+    PUT /posts/thread/:id/:author/edit
       USAGE:
         Edit the details of an existing post
       PARAMS:
-        title - String
-        body - String
+        id: String - id of the post
+        author: String - id of the poster
+      BODY:
+        title: String
+        body: String
+        url: String
+        category: String
 
-    DELETE /posts/:id
+    DELETE /posts/thread/:id/:author/:delete
       USAGE:
-        Sets the deleted flag for a post to 'true'. 
-        Sets the parentDeleted flag for all child comments to 'true'.
+        Sets the deleted value for a post to 'true'. 
+        The post becomes accessible.
+      PARAMS:
+        id: String
+        author: String
+        delete: String - option to delete / restore
 
-    GET /posts/:id/comments
+    GET /posts/thread/:id/comments
       USAGE:
         Get all the comments for a single post
-    
+      PARAMS:
+        id: String
+
+    GET /comments/:id/:descendantsOnly*
+      USAGE:
+        Get all comments in a specific comment chain
+      PARAMS:
+        descendantsOnly - determines whether to exclude topmost comment
+
     POST /comments
       USAGE:
         Add a comment to a post
-
       PARAMS:
-        id: Any unique ID. As with posts, UUID is probably the best here.
-        timestamp: timestamp. Get this however you want.
+        id: UUID
         body: String
         author: String
-        postId: Should match a post id in the database.
-        parentId: Should match a post id in the database
+        postId: Should match a post id in the database
+        parentId: Should match a comment id in the database
 
     GET /comments/:id
       USAGE:
         Get the details for a single comment
+      PARAMS:
+        id: String
 
-    PUT /comments/:id/vote
-      USAGE:
-        Used for voting on a comment.
-
-    PUT /comments/:id
+    PUT /comments/:id/:author/edit
       USAGE:
         Edit the details of an existing comment
-     
       PARAMS:
-        timestamp: timestamp.
+        id: String
+        author: String
+      BODY:
         body: String
 
-    DELETE /comments/:id
+    DELETE /comments/:id/:author/:delete
       USAGE:
         Sets a comment's deleted flag to 'true'
+      PARAMS:
+        id: String
+        author: String
+        delete: String - "delete" or "restore"
 
     GET /user/:userId/profile
       USAGE:
         Gets the details for a user profile
+      PARAMS:
+        userId: String
 
     POST /user/:userId/login
       USAGE:
         Logs in a user and sends back a sessionToken
-
       PARAMS:
+        userId: String
+      BODY:
         password: String
 
     POST /user/:userId/signup
       USAGE:
         Creates a new user account
-
       PARAMS:
-        timestamp: timestamp.
         userId: String
         password: String
 
-    PUT /user/:userId/update
+    GET /user/:userId/posts
       USAGE:
-        Updates user details
-
+        Get posts by user
       PARAMS:
-        body: details to update
+        userId: String
+
+    GET /user/:userId/comments
+      USAGE:
+        Get comments by user
+      PARAMS:
+        userId: String
  </pre>
   `
 
@@ -352,6 +406,32 @@ app.post('/posts', async(req, res) => {
 });
 
 /**
+ * @description Edit a post
+ */
+app.put('/posts/thread/:id/:author/edit', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[401] = authErrorMsg;
+  const errorFn = handleErrorFn(res, errors);
+  const verified = verifySessionToken(req.sessionToken, req.params.author);
+  if (!verified) {
+    errorFn(401);
+    return;
+  }
+  try {
+    const client = await pool.getClient();
+    const result = await posts.edit(client, req.params.id, req.body);
+    if (result.error) {
+      errorFn(result.error);
+    } else {
+      res.send(result);
+    }
+  } catch (e) {
+    console.error(e);
+    errorFn(500);
+  }
+});
+
+/**
  * @description Delete a post
  */
 app.delete('/posts/thread/:id/:author/:delete', async(req, res) => {
@@ -367,61 +447,6 @@ app.delete('/posts/thread/:id/:author/:delete', async(req, res) => {
   try {
     const client = await pool.getClient();
     const result = await posts.deletePost(client, req.params);
-    if (result.error) {
-      errorFn(result.error);
-    } else {
-      res.send(result);
-    }
-  } catch (e) {
-    console.error(e);
-    errorFn(500);
-  }
-});
-
-/**
- * @description Vote on a post or comment
- */
-app.put('/votes/:id/vote', async(req, res) => {
-  const errors = clone(defaultError);
-  errors[401] = authErrorMsg;
-  const errorFn = handleErrorFn(res, errors);
-  const { option, voterId } = req.body;
-  const verified = verifySessionToken(req.sessionToken, voterId);
-  if (!verified) {
-    errorFn(401);
-    return;
-  }
-  const target = req.params.id;
-  // update record of voter
-  try {
-    const client = await pool.getClient();
-    const result = await user.vote(client, voterId, target, option);
-    if (result.error) {
-      errorFn(result.error);
-    } else {
-      res.send(result);
-    }
-  } catch (e) {
-    console.error(e);
-    errorFn(500);
-  }
-});
-
-/**
- * @description Edit a post
- */
-app.put('/posts/thread/:id/:author/edit', async(req, res) => {
-  const errors = clone(defaultError);
-  errors[401] = authErrorMsg;
-  const errorFn = handleErrorFn(res, errors);
-  const verified = verifySessionToken(req.sessionToken, req.params.author);
-  if (!verified) {
-    errorFn(401);
-    return;
-  }
-  try {
-    const client = await pool.getClient();
-    const result = await posts.edit(client, req.params.id, req.body);
     if (result.error) {
       errorFn(result.error);
     } else {
@@ -547,6 +572,35 @@ app.delete('/comments/:id/:author/:delete', async(req, res) => {
   try {
     const client = await pool.getClient();
     const result = await comments.deleteComment(client, req.params.id, req.params.delete);
+    if (result.error) {
+      errorFn(result.error);
+    } else {
+      res.send(result);
+    }
+  } catch (e) {
+    console.error(e);
+    errorFn(500);
+  }
+});
+
+/**
+ * @description Vote on a post or comment
+ */
+app.put('/votes/:id/vote', async(req, res) => {
+  const errors = clone(defaultError);
+  errors[401] = authErrorMsg;
+  const errorFn = handleErrorFn(res, errors);
+  const { option, voterId } = req.body;
+  const verified = verifySessionToken(req.sessionToken, voterId);
+  if (!verified) {
+    errorFn(401);
+    return;
+  }
+  const target = req.params.id;
+  // update record of voter
+  try {
+    const client = await pool.getClient();
+    const result = await user.vote(client, voterId, target, option);
     if (result.error) {
       errorFn(result.error);
     } else {

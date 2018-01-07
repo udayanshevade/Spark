@@ -1,30 +1,24 @@
 const clone = require('clone');
 const { generateSessionToken } = require('./utils');
 
-const db = {
-  "user": {
-    sessionToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJ1c2VyIiwiaWF0IjoxNTA0ODMwMzM3fQ.3TV_r0Bngo1Mvl-zKtzb6gUJt9BKKVbbg7PXJa9QTBg',
-    email: 'sample@email.com',
-    password: 'password',
-    subscriptions: ['react', 'redux', 'udacity'],
-    profile: {
-      id: 'user',
-      created: 1468166872634,
-      comments: ['894tuq4ut84ut8v4t8wun89g', '8tu4bsun805n8un48ve89'],
-      posts: ['8xf0y6ziyjabvozdd253nd', '6ni6ok3ym7mf1p33lnez', 'llgj1kasd78f1ptk1nz1'],
-      categories: [],
-      votesGiven: {},
-      commentsVotesReceived: {
-        upVote: 6,
-        downVote: -5,
-      },
-      postsVotesReceived: {
-        upVote: 21,
-        downVote: -5,
-      },
-    },
+/* sample schema:
+{
+  id: 'user',
+  created: 1468166872634,
+  votesGiven: {
+    random_id_1: 'upVote',
+    random_id_2: 'downVote',
   },
-};
+  commentsVotesReceived: {
+    upVote: 6,
+    downVote: -5,
+  },
+  postsVotesReceived: {
+    upVote: 21,
+    downVote: -5,
+  },
+}
+*/
 
 const newVotesReceived = {
   upVote: 0,

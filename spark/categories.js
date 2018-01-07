@@ -1,34 +1,13 @@
 const Fuse = require('fuse.js');
 
-const db = {
-  'react': {
-    name: 'react',
-    path: 'react',
-    creator: 'user',
-    private: false,
-    posts: ['8xf0y6ziyjabvozdd253nd'],
-    blurb: 'Explore and discuss react.',
-    subscribers: 1,
-  },
-  'redux': {
-    name: 'redux',
-    path: 'redux',
-    creator: 'user',
-    private: false,
-    posts: ['6ni6ok3ym7mf1p33lnez', 'llgj1kasd78f1ptk1nz1'],
-    blurb: 'Explore and discuss redux.',
-    subscribers: 1,
-  },
-  'udacity': {
-    name: 'udacity',
-    path: 'udacity',
-    creator: 'user',
-    private: false,
-    posts: [],
-    blurb: 'Explore and discuss Udacity.',
-    subscribers: 1,
+/* sample schema:
+  name: 'react',
+  creator: 'user',
+  private: false,
+  blurb: 'Explore and discuss react.',
+  subscribers: 1,
   }
-};
+*/
 
 const fuseOptions = {
   keys: ['name'],
