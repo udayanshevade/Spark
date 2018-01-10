@@ -1,7 +1,8 @@
 const { Pool } = require('pg');
+const config = require('config');
 
-const poolConfigObj = exports.DATABASE_URL
-  ? { connectionString: exports.DATABASE_URL }
+const poolConfigObj = config.DATABASE_URL
+  ? { connectionString: config.DATABASE_URL }
   : {
     username: 'vagrant',
     host: 'localhost',
