@@ -4,9 +4,11 @@
   "description": "A server for the Udacity Reddit Clone project for ReactND",
   "main": "index.js",
   "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run client\"",
     "server": "nodemon -L server.js --watch spark/ --ignore 'spark/client/**/*'",
     "client": "node start-client.js"
   },
+  "proxy": "http://localhost:3001",
   "author": "David Harris",
   "license": "ISC",
   "dependencies": {
@@ -22,5 +24,9 @@
     "reselect": "^3.0.1",
     "sanitize-html": "^1.15.0",
     "uuid": "^3.1.0"
+  },
+  "devDependencies": {
+    "concurrently": "^3.5.1",
+    "nodemon": "^1.14.10"
   }
 }

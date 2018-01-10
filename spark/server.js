@@ -14,7 +14,11 @@ const pool = require('./db');
 
 const app = express();
 
-app.use(express.static('public'));
+if (process.env.NODE_ENV === 'production') {
+  app.use(express.static('client/build'));
+} else {
+  app.use(express.static('public'));
+}
 app.use(cors());
 app.use(bodyParser.json());
 app.use(multer().single());
