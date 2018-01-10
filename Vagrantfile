@@ -59,6 +59,6 @@ Vagrant.configure(VAGRANTFILE_VERSION) do |config|
   # config.push.define "atlas" do |push|
   #   push.app = "YOUR_ATLAS_USERNAME/YOUR_APPLICATION_NAME"
   # end
-  config.vm.provision "shell", path: "provision.sh"
-  config.vm.provision "shell", path: "provision_node.sh", privileged: false
+  config.vm.provision "shell", path: "provision/provision.sh"
+  config.vm.provision "shell", path: "provision/provision_node.sh", privileged: false
 end

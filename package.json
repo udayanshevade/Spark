@@ -1,10 +1,31 @@
 {
-  "name": "lookup-server",
+  "name": "reddit-clone-server",
   "version": "0.0.1",
-  "private": true,
+  "description": "A server for the Udacity Reddit Clone project for ReactND",
+  "main": "index.js",
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\"",
-    "server": "node spark/server.js",
-    "client": "node spark/start-client.js"
+    "server": "node server/server.js",
+    "client": "node start-client.js"
+  },
+  "proxy": "http://localhost:3001",
+  "author": "David Harris",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.17.1",
+    "clone": "^2.1.1",
+    "cors": "^2.8.3",
+    "dotenv": "^4.0.0",
+    "express": "^4.15.2",
+    "fuse.js": "^3.1.0",
+    "jsonwebtoken": "^8.0.0",
+    "multer": "^1.3.0",
+    "pg": "^7.3.0",
+    "reselect": "^3.0.1",
+    "sanitize-html": "^1.15.0",
+    "uuid": "^3.1.0"
+  },
+  "devDependencies": {
+    "concurrently": "^3.5.1"
   }
 }
