@@ -10,4 +10,4 @@ nvm install node
 
 # install global node packages
 echo "Installing global packages..."
-npm install -g nodemon@1.10.0 npm-check-updates
+npm install -g nodemon@1.10.0 npm-check-updates concurrently

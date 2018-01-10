@@ -1,0 +1,10 @@
+{
+  "name": "lookup-server",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "concurrently \"npm run server\" \"npm run client\"",
+    "server": "node spark/server.js",
+    "client": "node spark/start-client.js"
+  }
+}

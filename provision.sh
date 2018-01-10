@@ -14,5 +14,6 @@ cat "/vagrant/.profile" >> "/home/vagrant/.profile"
 # solves potential windows compatibility issue appending `\r` line ends
 sudo apt-get install -y dos2unix
 sudo dos2unix /home/vagrant/.profile
+sudo dos2unix /vagrant/dev.sh
 sudo dos2unix /vagrant/server.sh
 sudo dos2unix /vagrant/client.sh
