@@ -1,10 +1,15 @@
 const { Pool } = require('pg');
 
-const pool = new Pool({
-  username: 'vagrant',
-  database: 'spark',
-  password: 'password',
-});
+const poolConfigObj = exports.dbUrl
+  ? { connectionString: exports.dbUrl }
+  : {
+    username: 'vagrant',
+    host: 'localhost',
+    database: 'spark',
+    password: 'password',
+  };
+
+const pool = new Pool(poolConfigObj);
 
 pool.on('error', (err, client) => {
   console.log('Unexpected error', err);
