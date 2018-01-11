@@ -28,170 +28,123 @@ Find the app [here](https://us-spark-aggregator.herokuapp.com/).
 ## Server API
 The following endpoints are available:
 
-  `GET /categories/get/:query*?`
-    **USAGE:**
-      Get data for categories.
-    **PARAMS:**
-      query: String - optional filter
+| Endpoints | Usage | Params |
+| --- | --- | --- |
+| `GET /categories/get/:query*?`
+| Get data for categories.
+| **query**: [String] - optional filter |
 
-  `GET /categories/suggestions/:query*?`
-    **USAGE:**
-      Get category names only.
-    **PARAMS:**
-      query: String
+| `GET /categories/suggestions/:query*?`
+| Get category names only.
+| **query**: [String] |
 
-  `GET /categories/category/:category`
-    **USAGE:**
-      Get data for single, specific category.
-    **PARAMS:**
-      category: String
+| `GET /categories/category/:category`
+| Get data for single, specific category.
+| **category**: [String] |
 
-  `GET /categories/category/:category/posts/:query*?`
-    **USAGE:**
-      Get posts for a given category
-    **PARAMS:**
-      query: optional filter
+| `GET /categories/category/:category/posts/:query*?`
+| Get posts for a given category
+| **query**: optional filter |
 
-  `POST /categories/create`
-    **USAGE:**
-      Create a category.
-    **BODY:**
-      name: String - category name
-      body: String - description
+| `POST /categories/create`
+| Create a category.
+| - **name**: [String] - category name <br>
+  - **body**: [String] - description |
 
-  `POST /categories/subscribe/:category/:update`
-    **USAGE:**
-      Updates a user subscription for a given category.
-    **PARAMS:**
-      category: String
-      update: String - "unsubscribe" or "subscribe"
+| `POST /categories/subscribe/:category/:update`
+| Updates a user subscription for a given category.
+| - **category**: [String] <br>
+  - **update**: [String] - "unsubscribe" or "subscribe" |
 
-  `GET /posts/get/:query*?`
-    **USAGE:**
-      Get data for all posts. Optional query to filter.
-    **PARAMS:**
-      query: String - optional filter
+| `GET /posts/get/:query*?`
+| Get data for all posts. Optional query to filter.
+| - **query**: [String] - optional filter |
 
-  `GET /posts/thread/:id`
-    **USAGE:**
-      Get the details of a single post
-    **PARAMS:**
-      id: String
+| `GET /posts/thread/:id`
+| Get the details of a single post
+| - **id**: [UUID]
 
-  `POST /posts`
-    **USAGE:**
-      Add a new post
-    **PARAMS:** 
-      id: UUID
-      title: String
-      body: String
-      author: String
-      category: String
+| `POST /posts`
+| Add a new post
+| - **id**: [UUID] <br>
+  - **title**: [String] <br>
+  - **body**: [String] <br>
+  - **author**: [String] <br>
+  - **category**: [String] |
 
-  `PUT /votes/:id/vote`
-    **USAGE:**
-      Vote on a post
-    **PARAMS:**
-      id: String - id of the target
-    **BODY:**
-      voterId: String - id of the user
-      option: String - can be "upVote", "downVote" or null
+|`PUT /votes/:id/vote`
+| Vote on a post
+| - **id**: [UUID] - id of the target <br>
+  - **voterId**: [String] - id of the user <br>
+  - **option**: [String] - can be "upVote", "downVote" or `null` |
 
-  `PUT /posts/thread/:id/:author/edit`
-    **USAGE:**
-      Edit the details of an existing post
-    **PARAMS:**
-      id: String - id of the post
-      author: String - id of the poster
-    **BODY:**
-      title: String
-      body: String
-      url: String
-      category: String
+|`PUT /posts/thread/:id/:author/edit`
+| Edit the details of an existing post
+| **id**: [UUID] - id of the post <br>
+  **author**: [String] - id of the poster <br>
+  **title**: [String] <br>
+  **body**: [String] <br>
+  **url**: [String] <br>
+  **category**: [String] <br> |
 
-  `DELETE /posts/thread/:id/:author/:delete`
-    **USAGE:**
-      Sets the deleted value for a post to 'true'. 
-      The post becomes accessible.
-    **PARAMS:**
-      id: String
-      author: String
-      delete: String - option to delete / restore
+| `DELETE /posts/thread/:id/:author/:delete`
+| Sets the deleted value for a post to 'true'. <br>
+  The post becomes accessible.
+| - **id**: [UUID] <br>
+  - **author**: [String] <br>
+  - **delete**: [String] - option to delete / restore |
 
-  `GET /posts/thread/:id/comments`
-    **USAGE:**
-      Get all the comments for a single post
-    **PARAMS:**
-      id: String
+| `GET /posts/thread/:id/comments`
+| Get all the comments for a single post
+| - **id**: [UUID] |
 
-  `GET /comments/:id/:descendantsOnly*`
-    **USAGE:**
-      Get all comments in a specific comment chain
-    **PARAMS:**
-      descendantsOnly - determines whether to exclude topmost comment
+| `GET /comments/:id/:descendantsOnly*`
+| Get all comments in a specific comment chain
+| - **descendantsOnly**: [String] - determines whether to exclude topmost comment |
 
-  `POST /comments`
-    **USAGE:**
-      Add a comment to a post
-    **PARAMS:**
-      id: UUID
-      body: String
-      author: String
-      postId: Should match a post id in the database
-      parentId: Should match a comment id in the database
+| `POST /comments`
+| Add a comment to a post
+| - **id**: [UUID] <br>
+  - **body**: [String] <br>
+  - **author**: [String] <br>
+  - **postId**: [UUID] Should match a post id in the database <br>
+  - **parentId**: [UUID] Should match a comment id in the database |
 
-  `GET /comments/:id`
-    **USAGE:**
-      Get the details for a single comment
-    **PARAMS:**
-      id: String
+| `GET /comments/:id`
+| Get the details for a single comment
+| - **id**: [String] |
 
-  `PUT /comments/:id/:author/edit`
-    **USAGE:**
-      Edit the details of an existing comment
-    **PARAMS:**
-      id: String
-      author: String
-    **BODY:**
-      body: String
+| `PUT /comments/:id/:author/edit`
+| Edit the details of an existing comment
+| - **id**: [UUID] <br>
+  - **author**: [String] <br>
+  **BODY:** <br>
+  - **body**: [String] |
 
-  `DELETE /comments/:id/:author/:delete`
-    **USAGE:**
-      Sets a comment's deleted flag to 'true'
-    **PARAMS:**
-      id: String
-      author: String
-      delete: String - "delete" or "restore"
+| `DELETE /comments/:id/:author/:delete`
+| Sets a comment's deleted flag to 'true'
+| - **id**: [UUID] <br>
+  - **author**: [String] <br>
+  - **delete**: [String] - "delete" or "restore" <br>
 
-  `GET /user/:userId/profile`
-    **USAGE:**
-      Gets the details for a user profile
-    **PARAMS:**
-      userId: String
+| `GET /user/:userId/profile`
+| Gets the details for a user profile
+| - **userId**: [String] |
 
-  `POST /user/:userId/login`
-    **USAGE:**
-      Logs in a user and sends back a sessionToken
-    **PARAMS:**
-      userId: String
-    **BODY:**
-      password: String
+| `POST /user/:userId/login`
+| Logs in a user and sends back a sessionToken
+| - **userId**: [String] <br>
+  - **password**: [String] |
 
-  `POST /user/:userId/signup`
-    **USAGE:**
-      Creates a new user account
-    **PARAMS:**
-      userId: String
-        password: String
+| `POST /user/:userId/signup`
+| Creates a new user account
+| - **userId**: [String] <br>
+  - **password**: [String] |
 
-  `GET /user/:userId/posts`
-    **USAGE:**
-      Get posts by user
-    **PARAMS:**
-      userId: String
+| `GET /user/:userId/posts`
+| Get posts by user
+| **userId**: [String] |
 
-  `GET /user/:userId/comments`
-    **USAGE:**
-      Get comments by user
-    **PARAMS:**
-      userId: String
+| `GET /user/:userId/comments`
+| Get comments by user
+| - **userId**: [String] |
