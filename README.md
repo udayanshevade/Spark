@@ -12,7 +12,7 @@ Find the app [here](https://us-spark-aggregator.herokuapp.com/).
 
 - Install latest [Vagrant](https://www.vagrantup.com/docs/installation/) and [VirtualBox](https://www.virtualbox.org/)
 - Navigate to project directory and run `vagrant up` followed by `vagrant ssh`
- - Note: if you are using Windows, you might need to run Bash as an Administrator
+  - Note: if you are using Windows, you will **need** to run Bash as an Administrator.
 - Run aliased command `dev` to install dependencies and serve project
 - Open localhost:3000 in a browser
 
