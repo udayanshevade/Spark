@@ -169,7 +169,7 @@ export const postUpdateCategorySuggestions = results => ({
 });
 
 export const postLoadCategorySuggestions = query => async(dispatch) => {
-  const url = `${categoriesURL}/suggestions/${query}/suggestions`;
+  const url = `${categoriesURL}/suggestions/${query}`;
   const suggestions = await Requests.get({ url });
   dispatch(postUpdateCategorySuggestions(suggestions));
 };

@@ -66,7 +66,7 @@ export const categoriesSetSuggestionsLoading = loading => ({
 });
 
 export const categoriesLoadSuggestions = query => async(dispatch) => {
-  const url = `${categoriesURL}/suggestions/${query}/suggestions`;
+  const url = `${categoriesURL}/suggestions/${query}`;
   const suggestions = await Requests.get({ url });
   dispatch(categoriesUpdateSuggestions(suggestions));
   return suggestions;
