@@ -180,6 +180,7 @@ async function add (client, post) {
     };
   } catch (e) {
     console.error(e);
+    client.query('ROLLBACK');
     if (e.message.indexOf('foreign key constraint "posts_category_fkey"') > -1) {
       console.log('error of interest');
       response = { error: 403.1 };
