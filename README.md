@@ -1,23 +1,32 @@
 # Content aggregator API Server
 
-Setup:
+## Description:
 
-- Install [Vagrant](https://www.vagrantup.com/docs/installation/) and [VirtualBox](https://www.virtualbox.org/)
+Read and submit posts, comment and vote on content.
+
+## Live preview:
+
+Find the app [here](https://us-spark-aggregator.herokuapp.com/).
+
+## Local setup:
+
+- Install latest [Vagrant](https://www.vagrantup.com/docs/installation/) and [VirtualBox](https://www.virtualbox.org/)
 - Navigate to project directory and run `vagrant up` followed by `vagrant ssh`
- - Note: if you are using Windows, make sure to run Git Bash as Administrator
-- Run aliased command `server` to serve backend
-- In a separate terminal, run `vagrant up` and `vagrant ssh`
-- Run aliased command `client` to serve frontend
+ - Note: if you are using Windows, you might need to run Bash as an Administrator
+- Run aliased command `dev` to install dependencies and serve project
 - Open localhost:3000 in a browser
 
-## Installation
-Install packages: `npm install`
-Launch server: `node server`
-Unless modified in `config.js` server will use port 5001
+## App usage:
 
+- Create user credential to persist changes in the app
+- Create categories, submit and comment on posts, vote
 
-## API
-The following endpoints are available:  
+## Deployment:
+
+- Uses Heroku for deployment, with the postgresql addon for persisting database changes in production.
+
+## Server API
+The following endpoints are available:
 
   `GET /categories/get/:query*?`
     **USAGE:**
