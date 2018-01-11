@@ -48,12 +48,10 @@ class Post extends Component {
   }
 
   async componentDidMount() {
-    const { actions, data, match } = this.props;
+    const { actions, match } = this.props;
     const { id, commentId } = match.params;
-    if (!(data && data.id === id)) {
-      actions.postEmpty();
-      await actions.postGetData(id);
-    }
+    actions.postEmpty();
+    await actions.postGetData(id);
     await this.getCommentData(id, commentId);
   }
 
@@ -70,8 +68,8 @@ class Post extends Component {
     }
   }
 
-  async componentWillUnmount() {
-    await this.props.actions.postEmpty();
+  componentWillUnmount() {
+    this.props.actions.postEmpty();
   }
 
   render() {

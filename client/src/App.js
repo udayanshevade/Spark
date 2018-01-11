@@ -37,7 +37,7 @@ class AppComponent extends Component {
         <Route path="/" component={Profile} />
         <Route exact path="/posts/thread/:id/:title?" component={Post} />
         <Route
-          path="/posts/:id/comment/:commentId"
+          path="/posts/comment/:id/:commentId"
           render={routeProps => <Post commentView {...routeProps} />}
         />
         <Route

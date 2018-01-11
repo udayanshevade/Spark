@@ -91,7 +91,7 @@ const Comment = ({
             <Button
               plain
               label="link"
-              path={`/posts/${postId}/comment/${id}`}
+              path={`/posts/comment/${postId}/${id}`}
               className="options-tray__button"
             />
             <Button
