@@ -62,7 +62,10 @@ class Post extends Component {
     const { match: nextMatch } = nextProps;
     const { id, commentId } = match.params;
     const { commentId: nextCommentId } = nextMatch.params;
-    if (commentId && nextCommentId && !(commentId === nextCommentId)) {
+    if (
+      (!commentId && nextCommentId) ||
+      (commentId && nextCommentId && commentId !== nextCommentId)
+    ) {
       await this.getCommentData(id, nextCommentId);
     }
   }
