@@ -100,26 +100,24 @@ class UpdatePost extends Component {
                   actions.postUpdateCreateData({ category: val });
                 }}
                 options={suggestions}
-                help={
-                  !suggestions.length &&
-                    <Anchor
-                      reverse
-                      primary
-                      path="/categories/create"
-                      onClick={() => {
-                        actions.postUpdateCreateData({
-                          title,
-                          url,
-                          body,
-                          category,
-                        });
-                        actions.postSetUpdating(true);
-                      }}
-                      icon={<ArrowNext size="xsmall" />}
-                      className="next-link"
-                    >
-                      create one
-                    </Anchor>
+                help={<Anchor
+                    reverse
+                    primary
+                    path="/categories/create"
+                    onClick={() => {
+                      actions.postUpdateCreateData({
+                        title,
+                        url,
+                        body,
+                        category,
+                      });
+                      actions.postSetUpdating(true);
+                    }}
+                    icon={<ArrowNext size="xsmall" />}
+                    className="next-link"
+                  >
+                    create one
+                  </Anchor>
                 }
                 placeholder="Where to post, e.g. react"
                 touch={() => {

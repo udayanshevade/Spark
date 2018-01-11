@@ -25,6 +25,7 @@ import {
   categoriesCreateNew,
   categoriesGetSuggestions,
   categoriesSetActive,
+  categoriesSetSubmitStatus,
 } from '../../actions/categories';
 import { postSetCreating } from '../../actions/post';
 import { getIsMobile } from '../../selectors/responsive';
@@ -35,6 +36,9 @@ class NewCategory extends Component {
     this.props.actions.categoriesResetCreateData();
     if (this.props.postUpdating) {
       this.props.actions.postSetCreating(false);
+    }
+    if (this.props.submitStatus === 'success') {
+      this.props.actions.categoriesSetSubmitStatus('pending');
     }
   }
   render() {
@@ -138,6 +142,7 @@ const mapStateToProps = ({ navbar, categories, responsive, post }) => ({
 const mapDispatchToProps = dispatch => ({
   actions: bindActionCreators({
     postSetCreating,
+    categoriesSetSubmitStatus,
     categoriesResetCreateData,
     onSubmit: categoriesCreateNew,
     changeFormValue,

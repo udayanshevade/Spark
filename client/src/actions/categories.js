@@ -39,13 +39,18 @@ export const categoriesUpdateDepleted = depleted => ({
 });
 
 export const categoriesLoadData = (query = '') => async(dispatch, getState) => {
-  const { offset } = getState().categories;
+  const { offset, categories: oldCategories } = getState().categories;
   dispatch(categoriesSetLoading(true));
-  const url = `${categoriesURL}/get/${query}`;
+  const queryText = query.toLowerCase();
+  const url = `${categoriesURL}/get/${queryText}`;
   const headers = { offset };
   const { categories, depleted } = await Requests.get({ url, headers });
+  let newCategories = [...categories];
+  if (offset) {
+    newCategories = [...oldCategories, ...categories];
+  }
   dispatch(categoriesSetLoading(false));
-  dispatch(categoriesUpdate(categories));
+  dispatch(categoriesUpdate(newCategories));
   dispatch(categoriesUpdateDepleted(depleted));
   dispatch(categoriesUpdateOffset(offset + categories.length));
 };
@@ -66,7 +71,8 @@ export const categoriesSetSuggestionsLoading = loading => ({
 });
 
 export const categoriesLoadSuggestions = query => async(dispatch) => {
-  const url = `${categoriesURL}/suggestions/${query}`;
+  const queryText = query.toLowerCase();
+  const url = `${categoriesURL}/suggestions/${queryText}`;
   const suggestions = await Requests.get({ url });
   dispatch(categoriesUpdateSuggestions(suggestions));
   return suggestions;
@@ -86,8 +92,9 @@ export const categoriesGetSuggestions = query => async(dispatch, getState) => {
   const newTimeoutId = setTimeout(async() => {
     dispatch(categoriesSetSuggestionsLoading(true));
     // load appropriate data
-    const suggestions = await dispatch(categoriesLoadSuggestions(query));
-    dispatch(categoriesUpdateSuggestionsQuery(query));
+    const queryText = query.toLowerCase();
+    const suggestions = await dispatch(categoriesLoadSuggestions(queryText));
+    dispatch(categoriesUpdateSuggestionsQuery(queryText));
     dispatch(categoriesUpdateSuggestions(suggestions));
     dispatch(categoriesSetSuggestionsLoading(false));
   }, timeoutLength);
@@ -104,7 +111,7 @@ export const categoriesSetSubmitStatus = submitStatus => ({
   submitStatus,
 });
 
-export const categoriesCreateNew = data => async(dispatch, getState) => {
+export const categoriesCreateNew = rawData => async(dispatch, getState) => {
   const { user, categories: { categories, categorySuggestions }, post } = getState();
   if (!user.user) {
     dispatch(appShowTipWithText('Login to create a category', 'footer-login-button'));
@@ -115,6 +122,7 @@ export const categoriesCreateNew = data => async(dispatch, getState) => {
   const url = `${categoriesURL}/create`;
   // pre-emptive check to see if category exists,
   // prevents additional roundtrip
+  const data = { ...rawData, name: rawData.name.toLowerCase() };
   if (data.name === categorySuggestions.results[0]) {
     console.log('Category already exists');
     throw new SubmissionError({ name: 'Category exists' });
@@ -129,14 +137,13 @@ export const categoriesCreateNew = data => async(dispatch, getState) => {
     const newCategories = [...categories];
     newCategories.unshift({
       ...data,
-      path: data.name,
-      posts: [],
     });
     const newSubscriptions = [...subscriptions];
     newSubscriptions.unshift(data.name);
     dispatch(categoriesSetActive(data.name));
     dispatch(categoriesUpdate(newCategories));
     dispatch(userUpdateData({ ...user.user, subscriptions: newSubscriptions }));
+    dispatch(categoriesUpdateOffset(0));
     dispatch(categoriesSetSubmitStatus('success'));
     dispatch(categoriesSetIsCreating(false));
     if (post.creating) {
