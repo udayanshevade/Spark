@@ -220,8 +220,14 @@ const defaultError = { 500: serverErrorMsg };
 app.get('/categories/get/:query*?', async(req, res) => {
   const errors = { 500: serverErrorMsg };
   const errorFn = handleErrorFn(res, errors);
+  const { offset } = req.headers;
   try {
-    const data = await categories.getAll(pool, req.params.query);
+    const data = await categories.getAll(
+      pool, 
+      req.params.query,
+      null,
+      offset
+    );
     if (data.error) {
       errorFn(data.error);
     } else {
@@ -282,7 +288,7 @@ app.post('/categories/create', async(req, res) => {
 app.get('/categories/suggestions/:query*?', async(req, res) => {
   const errors = clone(defaultError);
   const errorFn = handleErrorFn(res, errors);
-  const data = await categories.getAll(pool, req.params.query, true);
+  const data = await categories.getAll(pool, req.params.query, true, 0, 5);
   if (data.error) {
     errorFn(data.error);
   } else {

@@ -9,6 +9,8 @@ const initialValues = {
 export const initialState = {
   query: '',
   submitStatus: 'pending',
+  offset: 0,
+  depleted: false,
   categories: [],
   loading: false,
   active: '',
@@ -45,15 +47,26 @@ const categories = (state = initialState, action) => {
         submitStatus,
       };
     }
-    case types.CATEGORIES_SET_LOADING:
-      const { loading } = action; 
+    case types.CATEGORIES_SET_LOADING: {
+      const { loading } = action;
       return { ...state, loading };
-    case types.CATEGORIES_SET_IS_CREATING:
+    }
+    case types.CATEGORIES_SET_IS_CREATING: {
       const { isCreating } = action; 
       return { ...state, isCreating };
-    case types.CATEGORIES_UPDATE:
+    }
+    case types.CATEGORIES_UPDATE: {
       const { categories } = action;
       return { ...state, categories };
+    }
+    case types.CATEGORIES_UPDATE_OFFSET: {
+      const { offset } = action;
+      return { ...state, offset };
+    }
+    case types.CATEGORIES_UPDATE_DEPLETED: {
+      const { depleted } = action;
+      return { ...state, depleted };
+    }
     case types.CATEGORIES_SET_ACTIVE:
       const { active } = action;
       return { ...state, active };

@@ -28,12 +28,26 @@ export const categoriesUpdate = categories => ({
   categories,
 });
 
-export const categoriesLoadData = (query = '') => async(dispatch) => {
+export const categoriesUpdateOffset = offset => ({
+  type: types.CATEGORIES_UPDATE_OFFSET,
+  offset,
+});
+
+export const categoriesUpdateDepleted = depleted => ({
+  type: types.CATEGORIES_UPDATE_DEPLETED,
+  depleted,
+});
+
+export const categoriesLoadData = (query = '') => async(dispatch, getState) => {
+  const { offset } = getState().categories;
   dispatch(categoriesSetLoading(true));
   const url = `${categoriesURL}/get/${query}`;
-  const categories = await Requests.get({ url });
+  const headers = { offset };
+  const { categories, depleted } = await Requests.get({ url, headers });
   dispatch(categoriesSetLoading(false));
   dispatch(categoriesUpdate(categories));
+  dispatch(categoriesUpdateDepleted(depleted));
+  dispatch(categoriesUpdateOffset(offset + categories.length));
 };
 
 export const categoriesSetActive = active => ({

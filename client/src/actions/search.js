@@ -1,5 +1,10 @@
 import * as types from './types';
-import { categoriesLoadData, categoriesQueryUpdate } from './categories';
+import {
+  categoriesLoadData,
+  categoriesQueryUpdate,
+  categoriesUpdate,
+  categoriesUpdateOffset,
+} from './categories';
 import {
   postsUpdate,
   postsUpdateOffset,
@@ -9,7 +14,7 @@ import {
 
 export const searchQueryChange = (e, category) => (dispatch, getState) => {
   const query = e.target.value;
-  const { search, posts } = getState();
+  const { search, posts, categories } = getState();
   const {
     filters,
     activeFilter,
@@ -25,6 +30,11 @@ export const searchQueryChange = (e, category) => (dispatch, getState) => {
   const newTimeoutId = setTimeout(() => {
     // load appropriate data
     if (filter === 'categories') {
+      const { query: prevQuery } = categories;
+      if (query !== prevQuery) {
+        dispatch(categoriesUpdate([]));
+        dispatch(categoriesUpdateOffset(0));
+      }
       dispatch(categoriesLoadData(query));
     } else {
       const { query: prevQuery } = posts;

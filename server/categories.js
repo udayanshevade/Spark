@@ -21,7 +21,7 @@ const getFuseObject = (dbVals) => {
 /**
  * @description Gets all (matching) categories
  */
-async function getAll (pool, query, namesOnly) {
+async function getAll (pool, query, namesOnly, offset = 0, limit = 10) {
   const queryText = namesOnly
     ? 'SELECT name FROM categories'
     : `SELECT name, creator, private, blurb, COUNT(category) AS subscribers
@@ -31,11 +31,16 @@ async function getAll (pool, query, namesOnly) {
     const data = await pool.query(queryText);
     const { rows: results } = data;
     let categories = results;
+    let depleted = false;
     if (query) {
       const fuse = getFuseObject(results);
       categories = fuse.search(query);
     }
-    return categories;
+    categories = categories.slice(offset, limit);
+    if (categories.length < limit) {
+      depleted = true;
+    }
+    return namesOnly ? categories : { categories, depleted };
   } catch (e) {
     console.error(e);
     return { error: 500 };

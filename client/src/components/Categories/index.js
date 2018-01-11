@@ -8,11 +8,12 @@ import ListPlaceHolder from 'grommet-addons/components/ListPlaceholder';
 import Button from 'grommet/components/Button';
 import Box from 'grommet/components/Box';
 import Paragraph from 'grommet/components/Paragraph';
+import Footer from 'grommet/components/Footer';
 import Loading from '../Loading';
 import Navbar from '../Navbar';
 import * as categoriesActions from '../../actions/categories';
 
-export const CategoriesComponent = ({ loading, categories, actions, active }) => {
+export const CategoriesComponent = ({ query, depleted, loading, categories, actions, active }) => {
   let categoriesEl;
   if (loading) {
     categoriesEl = <Loading />;
@@ -65,6 +66,18 @@ export const CategoriesComponent = ({ loading, categories, actions, active }) =>
         />
       </Box>
       {categoriesEl}
+      {
+        !(depleted || loading) &&
+          <Footer justify="center">
+            <Button
+              plain
+              label="Load more"
+              onClick={() => {
+                actions.categoriesLoadData(query);
+              }}
+            />
+          </Footer>
+      }
     </div>
   );
 }
@@ -82,6 +95,8 @@ CategoriesComponent.propTypes = {
 };
 
 const mapStateToProps = ({ categories }) => ({
+  depleted: categories.depleted,
+  query: categories.query,
   loading: categories.loading,
   categories: categories.categories,
   active: categories.active,
