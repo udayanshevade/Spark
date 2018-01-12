@@ -76,7 +76,8 @@ export const commentDelete = (commentId, deleted, author, postId) => async(dispa
     return;
   }
   const { sessionToken, profile: userData } = user.user;
-  const url = `${APIbaseURL}/${commentId}/${author}/${deleted ? 'restore' : 'delete'}`;
+  const shouldDelete = deleted ? 'restore' : 'delete';
+  const url = `${APIbaseURL}/${commentId}/${author}/${shouldDelete}`;
   const res = await Requests.delete({
     url,
     headers: {
@@ -85,5 +86,8 @@ export const commentDelete = (commentId, deleted, author, postId) => async(dispa
     },
   });
   if (res.error) return;
-  dispatch(commentEditData(commentId, { deleted: !deleted }, postId));
+  const newVals = Object.keys(res).length
+      ? { ...res }
+      : { deleted: shouldDelete === 'delete' };
+  dispatch(commentEditData(commentId, newVals, postId));
 };

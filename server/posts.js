@@ -261,7 +261,6 @@ async function deletePost (client, params) {
       response = {};
     } else {
       const row = rows[0];
-      console.log(rows);
       response = {
         title: row.title,
         url: row.url,

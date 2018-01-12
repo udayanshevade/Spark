@@ -210,22 +210,34 @@ async function getComments (
           }
         }
         return (!c.parent_id && limited) || c.parent_id;
-      }).map((raw) => ({
-        id: raw.comment_id,
-        children: raw.children || [],
-        parentId: raw.parent_id,
-        postId: raw.post_id,
-        created: raw.created,
-        body: raw.body,
-        author: raw.author,
-        votes: {
-          upVote: +raw.upvote,
-          downVote: +raw.downvote,
-        },
-        deleted: raw.deleted,
-        depleted: raw.depleted,
-        depth: raw.depth,
-      }));
+      }).map((r) => (r.deleted
+        ? {
+          id: r.comment_id,
+          parentId: r.parent_id,
+          postId: r.post_id,
+          deleted: r.deleted,
+          depleted: r.depleted,
+          children: r.children || [],
+          author: r.author,
+          depth: r.depth,
+        }
+        : {
+          id: r.comment_id,
+          parentId: r.parent_id,
+          postId: r.post_id,
+          children: r.children || [],
+          body: r.body,
+          author: r.author,
+          created: r.created,
+          deleted: r.deleted,
+          depleted: r.depleted,
+          depth: r.depth,
+          votes: {
+            upVote: +r.upvote,
+            downVote: +r.downvote,
+          },
+        }
+      ));
       return { comments, depleted };
     }
   } catch (e) {
@@ -299,13 +311,62 @@ async function deleteComment (client, id, shouldDelete) {
   let response = { errors: 500 };
   try {
     await client.query('BEGIN');
-    const commentDeleteText = `UPDATE comments SET deleted = $1
-      WHERE comment_id = $2`;
+    let commentDeleteText;
+    switch (shouldDelete) {
+      case 'restore': {
+        commentDeleteText = `WITH returned AS (
+          UPDATE comments SET deleted = false
+            WHERE comment_id = $1 RETURNING *
+          ) SELECT DISTINCT
+            body,
+            created,
+            deleted,
+            sum(
+              CASE WHEN vote = 'upVote'
+                AND target_id = comment_id
+                THEN 1 ELSE 0 END
+              ) OVER (PARTITION BY comment_id)
+            as upvote,
+            sum(
+              CASE WHEN vote = 'downVote'
+                AND target_id = comment_id
+                THEN 1 ELSE 0 END
+              ) OVER (PARTITION BY comment_id)
+            as downvote
+          FROM returned LEFT JOIN votes ON comment_id = target_id`;
+        break;
+      }
+      case 'delete': {
+        commentDeleteText = `UPDATE comments SET deleted = true
+          WHERE comment_id = $1`;
+        break;
+      }
+      default: {
+        break;
+      }
+    }
     const doDelete = shouldDelete === 'delete';
-    const commentDeleteVals = [doDelete, id];
-    await client.query(commentDeleteText, commentDeleteVals);
+    const commentDeleteVals = [id];
+    const { rows } = await client.query(commentDeleteText, commentDeleteVals);
     await client.query('COMMIT');
-    response = { success: `Comment ${shouldDelete === 'delete' ? 'deleted' : 'restored'}` };
+    if (!rows.length) {
+      response = {};
+    } else {
+      const row = rows[0];
+      response = {
+        id: row.comment_id,
+        parentId: row.parent_id,
+        postId: row.post_id,
+        body: row.body,
+        author: row.author,
+        created: row.created,
+        deleted: row.deleted,
+        votes: {
+          upVote: +row.upvote,
+          downVote: +row.downvote,
+        },
+      };
+    }
   } catch (e) {
     console.error(e);
     await client.query('ROLLBACK');
@@ -353,19 +414,27 @@ async function getUserComments (
     const { rows } = await client.query(commentsQueryText, commentsQueryVals);
     if (!rows) return { error: 500 };
     const depleted = offset + limit > rows.length - 1;
-    const comments = rows.map(r => ({
-      id: r.comment_id,
-      parentId: r.parent_id,
-      postId: r.post_id,
-      body: r.body,
-      author: r.author,
-      created: r.created,
-      deleted: r.deleted,
-      votes: {
-        upVote: +r.upvote,
-        downVote: +r.downvote,
-      },
-    }));
+    const comments = rows.map(r => (r.deleted
+      ? {
+        id: r.comment_id,
+        parentId: r.parent_id,
+        postId: r.post_id,
+        deleted: r.deleted,
+      }
+      : {
+        id: r.comment_id,
+        parentId: r.parent_id,
+        postId: r.post_id,
+        body: r.body,
+        author: r.author,
+        created: r.created,
+        deleted: r.deleted,
+        votes: {
+          upVote: +r.upvote,
+          downVote: +r.downvote,
+        },
+      }
+    ));
     return { comments, depleted };
   } catch (e) {
     console.error(e);

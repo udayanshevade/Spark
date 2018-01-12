@@ -77,11 +77,13 @@ const Comment = ({
           >
             {deleted ? 'deleted' : body || null}
           </Paragraph>
-          <Timestamp
-            value={(new Date(created)).toISOString()}
-            fields="date"
-            className="comment-timestamp"
-          />
+          {(!deleted &&
+            <Timestamp
+              value={(new Date(created)).toISOString()}
+              fields="date"
+              className="comment-timestamp"
+            />) || null
+          }
           <Box
             direction="row"
             className="options-tray"
@@ -110,7 +112,7 @@ const Comment = ({
                 />
             }
             {
-              threadView && username && !deleted &&
+              !deleted && threadView && username &&
                 <Button
                   plain
                   label="reply"
