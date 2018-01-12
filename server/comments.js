@@ -210,8 +210,8 @@ async function getComments (
           }
         }
         return (!c.parent_id && limited) || c.parent_id;
-      }).map((r) => (r.deleted
-        ? {
+      }).map((r) => {
+        const comment = {
           id: r.comment_id,
           parentId: r.parent_id,
           postId: r.post_id,
@@ -219,25 +219,19 @@ async function getComments (
           depleted: r.depleted,
           children: r.children || [],
           author: r.author,
-          depth: r.depth,
-        }
-        : {
-          id: r.comment_id,
-          parentId: r.parent_id,
-          postId: r.post_id,
-          children: r.children || [],
-          body: r.body,
-          author: r.author,
-          created: r.created,
-          deleted: r.deleted,
-          depleted: r.depleted,
           depth: r.depth,
           votes: {
             upVote: +r.upvote,
             downVote: +r.downvote,
           },
+        };
+        if (!r.deleted) {
+          comment.body = r.body;
+          comment.author = r.author;
+          comment.created: r.created;
         }
-      ));
+        return comment;
+      });
       return { comments, depleted };
     }
   } catch (e) {
@@ -414,27 +408,28 @@ async function getUserComments (
     const { rows } = await client.query(commentsQueryText, commentsQueryVals);
     if (!rows) return { error: 500 };
     const depleted = offset + limit > rows.length - 1;
-    const comments = rows.map(r => (r.deleted
-      ? {
+    const comments = rows.map((r) => {
+      const comment = {
         id: r.comment_id,
         parentId: r.parent_id,
         postId: r.post_id,
         deleted: r.deleted,
-      }
-      : {
-        id: r.comment_id,
-        parentId: r.parent_id,
-        postId: r.post_id,
-        body: r.body,
+        depleted: r.depleted,
+        children: r.children || [],
         author: r.author,
-        created: r.created,
-        deleted: r.deleted,
+        depth: r.depth,
         votes: {
           upVote: +r.upvote,
           downVote: +r.downvote,
         },
+      };
+      if (!r.deleted) {
+        comment.body = r.body;
+        comment.author = r.author;
+        comment.created: r.created;
       }
-    ));
+      return comment;
+    });
     return { comments, depleted };
   } catch (e) {
     console.error(e);
