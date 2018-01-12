@@ -228,7 +228,7 @@ async function getComments (
         if (!r.deleted) {
           comment.body = r.body;
           comment.author = r.author;
-          comment.created: r.created;
+          comment.created = r.created;
         }
         return comment;
       });
@@ -426,7 +426,7 @@ async function getUserComments (
       if (!r.deleted) {
         comment.body = r.body;
         comment.author = r.author;
-        comment.created: r.created;
+        comment.created = r.created;
       }
       return comment;
     });
