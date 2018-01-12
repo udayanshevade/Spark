@@ -6,6 +6,8 @@ import VotesMeter from '../VotesMeter';
 import Section from 'grommet/components/Section';
 import Box from 'grommet/components/Box';
 import List from 'grommet/components/List';
+import ListItem from 'grommet/components/ListItem';
+import FlipMove from 'react-flip-move';
 import Value from 'grommet/components/Value';
 import Footer from 'grommet/components/Footer';
 import Button from 'grommet/components/Button';
@@ -63,25 +65,38 @@ const PostHistory = ({
         {...sortProps}
       />
       <List>
-        {
-          posts.map((post, i) => (
-            <PostPreview
-              key={`profile-post-${i}`}
-              width={width}
-              profileSetUser={actions.profileSetUser}
-              applyVote={(id, vote) => {
-                actions.applyVote('posts', id, vote);
-              }}
-              postDelete={actions.postDelete}
-              postUpdateCreateData={actions.postUpdateCreateData}
-              votesGiven={votesGiven}
-              username={username}
-              profileSetPreviewActive={actions.profileSetPreviewActive}
-              bodyCharLim={bodyCharLim}
-              {...post}
-            />
-          ))
-        }
+        <FlipMove
+          duration={350}
+          easing="ease-in-out"
+          typeName={null}
+          enterAnimation="accordionVertical"
+          leaveAnimation="accordionVertical"
+        >
+          {
+            posts.map((post, i) => (
+              <ListItem
+                key={`profile-post-${i}`}
+                pad={{ horizontal: 'none' }}
+                className="post-list-item"
+              >
+                <PostPreview
+                  width={width}
+                  profileSetUser={actions.profileSetUser}
+                  applyVote={(id, vote) => {
+                    actions.applyVote('posts', id, vote);
+                  }}
+                  postDelete={actions.postDelete}
+                  postUpdateCreateData={actions.postUpdateCreateData}
+                  votesGiven={votesGiven}
+                  username={username}
+                  profileSetPreviewActive={actions.profileSetPreviewActive}
+                  bodyCharLim={bodyCharLim}
+                  {...post}
+                />
+              </ListItem>
+            ))
+          }
+        </FlipMove>
       </List>
       {
         !(depleted || loading) &&

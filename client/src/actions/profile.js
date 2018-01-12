@@ -62,7 +62,13 @@ export const profileUpdateDepleted = (depleted, affects) => ({
 });
 
 export const profileGetPosts = profile => async(dispatch, getState) => {
-  const { posts: postsState } = getState().profile;
+  const { profile: profileState, user: userState } = getState();
+  const { posts: postsState } = profileState;
+  const { user: userData } = userState;
+  let username;
+  if (userData && userData.profile) {
+    username = userData.profile.id;
+  }
   const {
     posts: oldPosts,
     offset,
@@ -77,6 +83,9 @@ export const profileGetPosts = profile => async(dispatch, getState) => {
     direction,
     criterion,
   };
+  if (username) {
+    headers.username = username;
+  }
   dispatch(profileSetLoading(true, 'posts'));
   const res = await Requests.get({
     url,

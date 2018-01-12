@@ -206,6 +206,11 @@
   background: white;
 }
 
+.comment-list-item-container .new-comment {
+  width: 100%;
+  max-width: 480px;
+}
+
 .comments-section {
   z-index: 1;
   background: white;

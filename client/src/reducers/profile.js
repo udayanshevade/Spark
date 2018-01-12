@@ -83,29 +83,33 @@ const profile = (state = initialState, action) => {
         newItem[val] = vals[val];
       });
       items.splice(oldIndex, 1, newItem);
-      return { ...state, posts: items };
+      return {
+        ...state,
+        posts: {
+          ...state.posts,
+          posts: items,
+        },
+      };
     }
     case types.COMMENT_EDIT_DATA: {
       const { commentId, vals } = action;
-      const { comments: { comments: oldComments }, previewActive } = state;
+      const { comments: { comments: oldComments } } = state;
       let newState = state;
-      if (previewActive) {
-        const oldIndex = oldComments.findIndex(c => c.id === commentId);
-        if (oldIndex) {
-          const newComments = [...oldComments];
-          const newComment = { ...oldComments[oldIndex] };
-          Object.keys(vals).forEach((val) => {
-            newComment[val] = vals[val];
-          });
-          newComments.splice(oldIndex, 1, newComment);
-          newState = {
-            ...state,
-            comments: {
-              ...state.comments,
-              comments: newComments,
-            },
-          };
-        }
+      const oldIndex = oldComments.findIndex(c => c.id === commentId);
+      if (oldIndex > -1) {
+        const newComments = [...oldComments];
+        const newComment = { ...oldComments[oldIndex] };
+        Object.keys(vals).forEach((val) => {
+          newComment[val] = vals[val];
+        });
+        newComments.splice(oldIndex, 1, newComment);
+        newState = {
+          ...state,
+          comments: {
+            ...state.comments,
+            comments: newComments,
+          },
+        };
       }
       return newState;
     }

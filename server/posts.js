@@ -86,7 +86,15 @@ async function get (pool, postId) {
 /**
  * @description Get post as constrained
  */
-async function getPosts (pool, constraint, query, criterion, direction, offset = 0, limit = 10) {
+async function getPosts (
+  pool,
+  constraint,
+  query,
+  criterion,
+  direction,
+  offset = 0,
+  limit = 10
+) {
   try {
     const postsQueryPrefix = `WITH basic_posts AS (
       SELECT
@@ -102,7 +110,9 @@ async function getPosts (pool, constraint, query, criterion, direction, offset =
       FROM posts
       LEFT JOIN comments USING (post_id)
       WHERE`;
-    const postsQuerySuffix = `NOT posts.deleted
+    const postsQuerySuffix = `${
+        constraint && constraint.username ? '' : 'NOT posts.deleted'
+      }
         GROUP BY post_id
       ) SELECT DISTINCT
         post_id,
@@ -133,27 +143,36 @@ async function getPosts (pool, constraint, query, criterion, direction, offset =
       const postsQueryText = `${postsQueryPrefix} ${postsQuerySuffix}`;
       dbRes = await pool.query(postsQueryText);
     } else {
-      const postsQueryFragment = `${constraint.key} = $1 AND`;
+      const postsQueryFragment = `${constraint.key} = $1 ${constraint.username ? '' : 'AND'}`;
       const postsQueryText = `${postsQueryPrefix} ${postsQueryFragment} ${postsQuerySuffix}`;
       dbRes = await pool.query(postsQueryText, [constraint.value]);
     }
     const { rows } = dbRes;
     if (!rows) return { error: 500 };
-    let selectedPosts = rows.map(row => ({
-      id: row.post_id,
-      url: row.url,
-      body: row.body,
-      title: row.title,
-      category: row.category,
-      author: row.author,
-      created: row.created,
-      deleted: row.deleted,
-      comments: +row.comments,
-      votes: {
-        upVote: +row.upvote,
-        downVote: +row.downvote,
-      },
-    }));
+    let selectedPosts = rows.map(row => (
+      row.deleted
+        ? {
+          id: row.post_id,
+          author: row.author,
+          deleted: row.deleted,
+          category: row.category,
+        }
+        : {
+          id: row.post_id,
+          url: row.url,
+          body: row.body,
+          title: row.title,
+          category: row.category,
+          author: row.author,
+          created: row.created,
+          deleted: row.deleted,
+          comments: +row.comments,
+          votes: {
+            upVote: +row.upvote,
+            downVote: +row.downvote,
+          },
+        }
+    ));
     if (query) {
       const fuse = new Fuse(selectedPosts, fuseOptions);
       selectedPosts = fuse.search(query);

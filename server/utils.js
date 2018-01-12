@@ -133,7 +133,6 @@ function getSortedList (list, criterion) {
       sorted = list;
     }
   }
-  console.log(sorted);
   return sorted;
 }
 

@@ -122,7 +122,7 @@ const PostPreview = ({
             responsive={false}
           >
             {
-              !threadView &&
+              !threadView && !deleted &&
                 <Button
                   plain
                   path={`/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}`}

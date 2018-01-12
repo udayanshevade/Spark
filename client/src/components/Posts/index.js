@@ -71,6 +71,7 @@ export const PostsComponent = ({
                   <ListItem
                     key={`post-list-item-${post.id}`}
                     pad={{ horizontal: 'none' }}
+                    className="post-list-item"
                   >
                     <PostPreview
                       width={width}

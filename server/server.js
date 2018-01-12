@@ -688,11 +688,15 @@ app.post('/user/:userId/signup', async(req, res) => {
 app.get('/user/:userId/posts', async(req, res) => {
   const errors = clone(defaultError);
   const errorFn = handleErrorFn(res, errors);
-  const { criterion, offset, limit, direction } = req.headers;
+  const { criterion, offset, limit, direction, username } = req.headers;
   // get posts by user
+  const constraint = { key: 'posts.author', value: req.params.userId };
+  if (username) {
+    constraint.username = username;
+  }
   const data = await posts.getPosts(
     pool,
-    { key: 'posts.author', value: req.params.userId },
+    constraint,
     null,
     criterion,
     direction,
