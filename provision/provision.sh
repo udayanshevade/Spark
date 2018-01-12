@@ -15,5 +15,6 @@ cat "/vagrant/.profile" >> "/home/vagrant/.profile"
 sudo apt-get install -y dos2unix
 sudo dos2unix /home/vagrant/.profile
 sudo dos2unix /vagrant/scripts/dev.sh
+sudo dos2unix /vagrant/scripts/refresh.sh
 sudo dos2unix /vagrant/scripts/server.sh
 sudo dos2unix /vagrant/scripts/client.sh

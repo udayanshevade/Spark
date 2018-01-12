@@ -44,17 +44,19 @@ const PostPreview = ({
     pad={{ horizontal: 'small' }}
     className={`preview-item__inner ${main ? 'post-header' : ''}`}
   >
-    <VoteBox
-      votes={votes}
-      applyVote={(vote) => {
-        applyVote(id, vote);
-      }}
-      vote={votesGiven ? votesGiven[id] : null}
-      showScore
-    />
+    {(!deleted &&
+      <VoteBox
+        votes={votes}
+        applyVote={(vote) => {
+          applyVote(id, vote);
+        }}
+        vote={votesGiven ? votesGiven[id] : null}
+        showScore
+      />) || null
+    }
     <Card
       flex
-      label={
+      label={(!deleted &&
         <div>
           <ProfileButton
             author={author}
@@ -67,25 +69,28 @@ const PostPreview = ({
               <span className="anchor-text-padded">in <Anchor path={`/categories/category/${category}`}>/{category}</Anchor></span>
           }
           :
-        </div>
+        </div>) || null
       }
-      heading={
-        <Anchor
-          href={
-            url.startsWith('http://') || url.startsWith('https://')
-              ? url
-              : `http://${url}`
-          }
-          onClick={() => {
-            if (profileSetPreviewActive) {
-              profileSetPreviewActive(false);
+      heading={deleted
+        ? <span
+            className="post-preview-title card-description--deleted"
+          >Deleted</span>
+        : <Anchor
+            href={
+              url.startsWith('http://') || url.startsWith('https://')
+                ? url
+                : `http://${url}`
             }
-          }}
-          path={!url ? `/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}` : null}
-          className={`list-item-link-container${url ? ' list-item--link-out' : ''}`}
-        >
-          <Heading tag="h4" className="post-preview-title">{title}</Heading>
-        </Anchor>
+            onClick={() => {
+              if (profileSetPreviewActive) {
+                profileSetPreviewActive(false);
+              }
+            }}
+            path={!url ? `/posts/thread/${id}/${title.toLowerCase().split(' ').join('-')}` : null}
+            className={`list-item-link-container${url ? ' list-item--link-out' : ''}`}
+          >
+            <Heading tag="h4" className="post-preview-title">{title}</Heading>
+          </Anchor>
       }
       description={
         <Box
@@ -94,18 +99,22 @@ const PostPreview = ({
           justify="center"
           align="start"
         >
-          <Blurb
-            blurb={body}
-            blurbExpanded={showFull}
-            blurbLimit={bodyCharLim}
-            toggleBlurbExpanded={toggleShowFull}
-            iconHide={!threadView}
-          />
-          <Timestamp
-            value={(new Date(created)).toISOString()}
-            fields="date"
-            className="post-timestamp"
-          />
+          {!deleted &&
+            <Blurb
+              blurb={body}
+              blurbExpanded={showFull}
+              blurbLimit={bodyCharLim}
+              toggleBlurbExpanded={toggleShowFull}
+              iconHide={!threadView}
+            />
+          }
+          {!deleted &&
+            <Timestamp
+              value={(new Date(created)).toISOString()}
+              fields="date"
+              className="post-timestamp"
+            />
+          }
           <Box
             direction="row"
             className="options-tray"
@@ -139,7 +148,7 @@ const PostPreview = ({
                 />
             }
             {
-              username === author &&
+              !deleted && username === author &&
                 <Button
                   plain
                   className="options-tray__button"

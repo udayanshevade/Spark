@@ -35,8 +35,18 @@ const buildRecursiveCommentQuery = (
       author,
       created,
       deleted,
-      sum(CASE WHEN vote = 'upVote' AND target_id = comment_id THEN 1 ELSE 0 END) OVER (PARTITION BY comment_id) as upvote,
-      sum(CASE WHEN vote = 'downVote' AND target_id = comment_id THEN 1 ELSE 0 END) OVER (PARTITION BY comment_id) as downvote
+      sum(
+        CASE WHEN vote = 'upVote'
+          AND target_id = comment_id
+          THEN 1 ELSE 0 END
+        ) OVER (PARTITION BY comment_id)
+      as upvote,
+      sum(
+        CASE WHEN vote = 'downVote'
+          AND target_id = comment_id
+          THEN 1 ELSE 0 END
+        ) OVER (PARTITION BY comment_id)
+      as downvote
     FROM comments LEFT JOIN votes ON comment_id = target_id
     ${constraint === 'post_id' ? 'WHERE post_id = $1' : ''}
   ), ancestor_comments AS (
@@ -103,8 +113,14 @@ const buildRecursiveCommentQuery = (
     a.upvote,
     a.downvote,
     a.depth,
-    (CASE WHEN a.depth < ${depth - 1} THEN true ELSE count(b.comment_id) OVER (PARTITION BY a.comment_id) = 0 END) AS depleted,
-    (CASE WHEN a.depth < ${depth - 1} THEN array_remove(array_agg(b.comment_id) OVER (PARTITION BY a.comment_id), NULL) ELSE NULL END) AS children
+    (CASE WHEN a.depth < ${depth - 1}
+      THEN true ELSE count(b.comment_id)
+      OVER (PARTITION BY a.comment_id) = 0 END
+    ) AS depleted,
+    (CASE WHEN a.depth < ${depth - 1}
+      THEN array_remove(array_agg(b.comment_id)
+      OVER (PARTITION BY a.comment_id), NULL) ELSE NULL END
+    ) AS children
   FROM result_comments AS a
     LEFT JOIN comments AS b
     ON a.comment_id = b.parent_id
@@ -316,8 +332,18 @@ async function getUserComments (
         author,
         created,
         deleted,
-        sum(CASE WHEN vote = 'upVote' AND target_id = comment_id THEN 1 ELSE 0 END) OVER (PARTITION BY comment_id) as upvote,
-        sum(CASE WHEN vote = 'downVote' AND target_id = comment_id THEN 1 ELSE 0 END) OVER (PARTITION BY comment_id) as downvote
+        sum(
+          CASE WHEN vote = 'upVote'
+            AND target_id = comment_id
+            THEN 1 ELSE 0 END
+          ) OVER (PARTITION BY comment_id)
+        as upvote,
+        sum(
+          CASE WHEN vote = 'downVote'
+            AND target_id = comment_id
+            THEN 1 ELSE 0 END
+          ) OVER (PARTITION BY comment_id)
+        as downvote
       FROM comments
       LEFT JOIN votes ON comment_id = target_id
       WHERE author = $1

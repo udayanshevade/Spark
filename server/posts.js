@@ -35,8 +35,18 @@ async function get (pool, postId) {
         author,
         created,
         deleted,
-        sum(CASE WHEN vote = 'upVote' AND target_id = post_id THEN 1 ELSE 0 END) OVER (PARTITION BY post_id) as upvote,
-        sum(CASE WHEN vote = 'downVote' AND target_id = post_id THEN 1 ELSE 0 END) OVER (PARTITION BY post_id) as downvote
+        sum(
+          CASE WHEN vote = 'upVote'
+            AND target_id = post_id
+            THEN 1 ELSE 0 END
+          ) OVER (PARTITION BY post_id)
+        as upvote,
+        sum(
+          CASE WHEN vote = 'downVote'
+            AND target_id = post_id
+            THEN 1 ELSE 0 END
+          ) OVER (PARTITION BY post_id)
+        as downvote
       FROM posts LEFT JOIN votes
       ON post_id = target_id
       WHERE post_id = $1`;
@@ -46,20 +56,27 @@ async function get (pool, postId) {
     if (!rows) return { error: 500 };
     const row = rows[0];
     if (!row) return {};
-    return {
-      id: row.post_id,
-      title: row.title,
-      url: row.url,
-      body: row.body,
-      category: row.category,
-      author: row.author,
-      created: row.created,
-      deleted: row.deleted,
-      votes: {
-        upVote: +row.upvote,
-        downVote: +row.downvote,
-      },
-    };
+    return row.deleted
+      ? {
+        id: row.post_id,
+        author: row.author,
+        deleted: row.deleted,
+        category: row.category,
+      }
+      : {
+        id: row.post_id,
+        title: row.title,
+        url: row.url,
+        body: row.body,
+        category: row.category,
+        author: row.author,
+        created: row.created,
+        deleted: row.deleted,
+        votes: {
+          upVote: +row.upvote,
+          downVote: +row.downvote,
+        },
+      };
   } catch (e) {
     console.error(e);
     return { error: 500 };
@@ -97,8 +114,18 @@ async function getPosts (pool, constraint, query, criterion, direction, offset =
         created,
         deleted,
         comments,
-        sum(CASE WHEN vote = 'upVote' AND target_id = post_id THEN 1 ELSE 0 END) OVER (PARTITION BY post_id) as upvote,
-        sum(CASE WHEN vote = 'downVote' AND target_id = post_id THEN 1 ELSE 0 END) OVER (PARTITION BY post_id) as downvote
+        sum(
+          CASE WHEN vote = 'upVote'
+            AND target_id = post_id
+            THEN 1 ELSE 0 END
+          ) OVER (PARTITION BY post_id)
+        as upvote,
+        sum(
+          CASE WHEN vote = 'downVote'
+            AND target_id = post_id
+            THEN 1 ELSE 0 END
+          ) OVER (PARTITION BY post_id)
+        as downvote
       FROM basic_posts LEFT JOIN votes
       ON post_id = target_id`;
     let dbRes;
@@ -196,21 +223,59 @@ async function add (client, post) {
 
 async function deletePost (client, params) {
   let response;
-  console.log(params.delete);
   try {
     await client.query('BEGIN');
     let postDeleteText;
     switch (params.delete) {
       case 'restore':
-        postDeleteText = 'UPDATE posts SET deleted = false WHERE post_id = $1';
+        postDeleteText = `WITH returned AS (
+          UPDATE posts SET deleted = false
+            WHERE post_id = $1 RETURNING *
+          ) SELECT DISTINCT
+            title,
+            url,
+            body,
+            created,
+            deleted,
+            sum(
+              CASE WHEN vote = 'upVote'
+                AND target_id = post_id
+                THEN 1 ELSE 0 END
+              ) OVER (PARTITION BY post_id)
+            as upvote,
+            sum(
+              CASE WHEN vote = 'downVote'
+                AND target_id = post_id
+                THEN 1 ELSE 0 END
+              ) OVER (PARTITION BY post_id)
+            as downvote
+          FROM returned LEFT JOIN votes ON post_id = target_id;`;
         break;
       default:
         postDeleteText = 'UPDATE posts SET deleted = true WHERE post_id = $1';
         break;
     }
-    await client.query(postDeleteText, [params.id]);
+    const { rows } = await client.query(postDeleteText, [params.id]);
     await client.query('COMMIT');
-    response = { success: `Post ${params.delete}d` };
+    if (!rows.length) {
+      response = {};
+    } else {
+      const row = rows[0];
+      console.log(rows);
+      response = {
+        title: row.title,
+        url: row.url,
+        body: row.body,
+        category: row.category,
+        author: row.author,
+        created: row.created,
+        deleted: row.deleted,
+        votes: {
+          upVote: +row.upvote,
+          downVote: +row.downvote,
+        },
+      };
+    }
   } catch (e) {
     console.error(e);
     client.query('ROLLBACK');
@@ -238,8 +303,18 @@ async function edit (client, postId, body) {
           p.author,
           p.created,
           p.deleted,
-          sum(CASE WHEN vote = 'upVote' AND target_id = post_id THEN 1 ELSE 0 END) OVER (PARTITION BY post_id) as upvote,
-          sum(CASE WHEN vote = 'downVote' AND target_id = post_id THEN 1 ELSE 0 END) OVER (PARTITION BY post_id) as downvote
+          sum(
+            CASE WHEN vote = 'upVote'
+              AND target_id = post_id
+              THEN 1 ELSE 0 END
+            ) OVER (PARTITION BY post_id)
+          as upvote,
+          sum(
+            CASE WHEN vote = 'downVote'
+              AND target_id = post_id
+              THEN 1 ELSE 0 END
+            ) OVER (PARTITION BY post_id)
+          as downvote
         FROM posts AS p LEFT JOIN votes AS v
         ON post_id = target_id
       ) AS votes_post

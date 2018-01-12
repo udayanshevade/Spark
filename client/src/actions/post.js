@@ -224,7 +224,9 @@ export const postDelete = (postId, author, shouldDelete) => async(dispatch, getS
     },
   });
   if (!res.error) {
-    const newVals = { deleted: shouldDelete === 'delete' };
+    const newVals = Object.keys(res).length
+      ? { ...res }
+      : { deleted: shouldDelete === 'delete' };
     dispatch(postEditData(postId, newVals));
   }
 };
