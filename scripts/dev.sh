@@ -1,5 +1,5 @@
 echo "Setting up frontend..."
-cd /vagrant/client
+cd /spark/client
 
 if lsof -Pi :3000 -sTCP:LISTEN -t >/dev/null ; then
     echo "Killing FE"
@@ -10,7 +10,7 @@ echo "Installing frontend dependencies..."
 npm install
 
 echo "Setting up backend..."
-cd /vagrant/
+cd /spark
 
 if lsof -Pi :5001 -sTCP:LISTEN -t >/dev/null ; then
     echo "Killing BE"

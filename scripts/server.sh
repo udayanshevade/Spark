@@ -1,5 +1,5 @@
 echo "Setting up backend..."
-cd /vagrant/
+cd /spark
 
 if lsof -Pi :5001 -sTCP:LISTEN -t >/dev/null ; then
     echo "Killing BE"

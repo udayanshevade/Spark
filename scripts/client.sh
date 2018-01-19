@@ -1,5 +1,5 @@
 echo "Setting up frontend..."
-cd /vagrant/client
+cd /spark/client
 
 if lsof -Pi :3000 -sTCP:LISTEN -t >/dev/null ; then
     echo "Killing FE"

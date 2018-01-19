@@ -1,4 +1,4 @@
-alias server='bash /vagrant/scripts/server.sh'
-alias client='bash /vagrant/scripts/client.sh'
-alias dev='bash /vagrant/scripts/dev.sh'
-alias refresh='bash /vagrant/scripts/refresh.sh'
+alias server='bash /spark/scripts/server.sh'
+alias client='bash /spark/scripts/client.sh'
+alias dev='bash /spark/scripts/dev.sh'
+alias refresh='bash /spark/scripts/refresh.sh'

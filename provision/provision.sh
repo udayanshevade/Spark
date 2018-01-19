@@ -7,14 +7,14 @@ apt-get -qqy install postgresql-9.5 curl git
 # setup database
 su postgres -c "psql -c \"CREATE ROLE vagrant WITH CREATEDB LOGIN PASSWORD 'password';\""
 su vagrant -c "createdb spark"
-su vagrant -c "psql spark -f /vagrant/spark.sql"
+su vagrant -c "psql spark -f /spark/spark.sql"
 # add helper aliases for project commands
-cat "/vagrant/.profile" >> "/home/vagrant/.profile"
+cat "/spark/.profile" >> "/home/vagrant/.profile"
 
 # solves potential windows compatibility issue appending `\r` line ends
 sudo apt-get install -y dos2unix
 sudo dos2unix /home/vagrant/.profile
-sudo dos2unix /vagrant/scripts/dev.sh
-sudo dos2unix /vagrant/scripts/refresh.sh
-sudo dos2unix /vagrant/scripts/server.sh
-sudo dos2unix /vagrant/scripts/client.sh
+sudo dos2unix /spark/scripts/dev.sh
+sudo dos2unix /spark/scripts/refresh.sh
+sudo dos2unix /spark/scripts/server.sh
+sudo dos2unix /spark/scripts/client.sh
