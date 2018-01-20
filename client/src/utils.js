@@ -59,13 +59,13 @@ const getWeightedSort = (unsorted) => {
  * @param {array} unsorted - raw array of items to sort
  */
 const getHotSort = (unsorted) => {
+  const now = Date.now();
   const sorted = unsorted.sort((
     { id: aId, created: aCreated, votes: { upVote: aUpVote, downVote: aDownVote }},
     { id: bId, created: bCreated, votes: { upVote: bUpVote, downVote: bDownVote }}
   ) => {
     const aAllVotes = aUpVote + aDownVote;
     const bAllVotes = bUpVote + bDownVote;
-    const now = Date.now();
     const aLapsed = (now - new Date(aCreated)) / milsToHours;
     const bLapsed = (now - new Date(bCreated)) / milsToHours;
     const aWeightedScore = getConfidenceWeight(aUpVote, aAllVotes) + (1 / Math.pow(aLapsed + 2, timeFactor));
@@ -90,7 +90,15 @@ export const getSortedList = (list, criterion) => {
       break;
     }
     case 'new': {
-      sorted = list.sort((a, b) => new Date(b.created) - new Date(a.created));
+      sorted = list.sort((a, b) => {
+        if (a.created < b.created) {
+          return 1;
+        } else if (a.created > b.created) {
+          return -1;
+        } else {
+          return 0;
+        }
+      });
       break;
     }
     case 'best': {

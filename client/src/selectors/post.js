@@ -55,7 +55,7 @@ export const getStructuredComments = createSelector(
   (ancestors, rawComments, criterion, direction) => {
     const structuredComments = structureComments(ancestors, rawComments, criterion);
     console.log(structuredComments);
-    const orderedComments = getRestrictedList(structuredComments, direction, 0, structuredComments.length);
+    const orderedComments = getRestrictedList(structuredComments, direction);
     return orderedComments;
   }
 );
