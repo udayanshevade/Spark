@@ -26,7 +26,7 @@ export const getRawComments = createSelector(
   }
 );
 
-const structureComments = (rootIds, rawComments) => {
+const structureComments = (rootIds, rawComments, criterion) => {
   const comments = [];
   for (const rootId of rootIds) {
     const comment = rawComments[rootId];
@@ -36,12 +36,13 @@ const structureComments = (rootIds, rawComments) => {
       ...comment,
       children: structureComments(
         childCommentIds,
-        rawComments
+        rawComments,
+        'best'
       ),
     };
     comments.push(newComment);
   }
-  return comments;
+  return getSortedList(comments, criterion);
 };
 
 export const getStructuredComments = createSelector(
@@ -52,9 +53,9 @@ export const getStructuredComments = createSelector(
     getPostCommentsDirection,
   ],
   (ancestors, rawComments, criterion, direction) => {
-    const structuredComments = structureComments(ancestors, rawComments);
-    const sortedComments = getSortedList(structuredComments, criterion);
-    const orderedComments = getRestrictedList(sortedComments, direction, 0, sortedComments.length);
+    const structuredComments = structureComments(ancestors, rawComments, criterion);
+    console.log(structuredComments);
+    const orderedComments = getRestrictedList(structuredComments, direction, 0, structuredComments.length);
     return orderedComments;
   }
 );

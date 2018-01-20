@@ -17,6 +17,12 @@ Find the app [here](https://us-spark-aggregator.herokuapp.com/).
 - Run aliased command `dev` to install dependencies and serve project
 - Open localhost:3000 in a browser
 
+## Setup issues:
+
+Make sure Vagrant/Virtualbox versions match the ones specified above.
+
+If there is a problem with the dependencies while serving the project, try reinstalling the dependencies.
+
 ## App usage:
 
 - Create user credential to persist changes in the app
