@@ -19,9 +19,11 @@ Find the app [here](https://us-spark-aggregator.herokuapp.com/).
 
 ## Setup issues:
 
-Make sure Vagrant/Virtualbox versions match the ones specified above.
+i. Make sure the Vagrant/Virtualbox versions match the ones specified above.
 
-If there is a problem with the dependencies while serving the project, try reinstalling the dependencies.
+ii. If there is a problem installing dependencies while serving the project, try deleting and/or reinstalling the dependencies.
+
+iii. For a mismatch in UIDs, try [this solution](https://stackoverflow.com/a/32256848/9059056). It is not an issue with Vagrant or the setup.
 
 ## App usage:
 
