@@ -88,7 +88,7 @@ class Post extends Component {
     } = this.props;
     if (loading || !data) {
       return <Loading />;
-    } else if (!data) {
+    } else if (!Object.keys(data).length) {
       return <Redirect to="/" />;
     }
     const { category } = data;
