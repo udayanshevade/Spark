@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "concurrently \"npm run server\" \"npm run client\"",
+    "dev": "concurrently \"npm run client\" \"nodemon -L server/server.js --watch server\"",
     "server": "node server/server.js",
     "client": "node start-client.js"
   },
@@ -26,6 +27,7 @@
     "uuid": "^3.1.0"
   },
   "devDependencies": {
-    "concurrently": "^3.5.1"
+    "concurrently": "^3.5.1",
+    "nodemon": "^1.14.11"
   }
 }

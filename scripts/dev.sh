@@ -17,8 +17,8 @@ if lsof -Pi :5001 -sTCP:LISTEN -t >/dev/null ; then
     lsof -P | grep ':5001' | awk '{print $2}' | xargs kill -9 &> /dev/null
 fi
 
-echo "Installing frontend dependencies..."
+echo "Installing backend dependencies..."
 npm install
 
 echo "Serving project..."
-npm start
+npm run dev

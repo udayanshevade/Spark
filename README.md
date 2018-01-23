@@ -26,14 +26,17 @@ If there is a problem with the dependencies while serving the project, try reins
 ## App usage:
 
 - Create user credential to persist changes in the app
-- Create categories, submit and comment on posts, vote
+  - Note: You must **log in** to access edit/delete functionality
+  - You may only delete/edit posts and comments that belong to you
+- Create categories, submit/comment on posts, and vote
 
 ## Deployment:
 
 - Uses Heroku for deployment, with the postgresql addon for persisting database changes in production.
 
 ## Server API
-The following endpoints are available:
+
+The backend uses a custom server with the following endpoints:
 
 | Endpoints | Usage | Params |
 | --- | --- | --- |
